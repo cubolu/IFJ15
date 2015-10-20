@@ -1,1 +1,1 @@
-# IFJ2015
+# IFJ15(C++) Interpreter
