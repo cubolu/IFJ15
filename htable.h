@@ -7,10 +7,10 @@
 #include "error.h"
 
 struct _htable_t {
-	list_t** array;
+    list_t** array;
     //For indexing into HTABLE_SIZES
-	size_t cap_index;
-	size_t size;
+    size_t cap_index;
+    size_t size;
 };
 
 htable_t* htable_init();

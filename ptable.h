@@ -6,10 +6,10 @@
 #include "list.h"
 
 struct _ptable_t {
-	list_t** array;
-	// size of ptable is 2^capacity_pow
-	size_t capacity_pow;
-	size_t size;
+    list_t** array;
+    // size of ptable is 2^capacity_pow
+    size_t capacity_pow;
+    size_t size;
 };
 
 ptable_t* ptable_init();
