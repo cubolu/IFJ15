@@ -16,13 +16,14 @@ ifj15: $(OBJ)
 .PHONY: clean pack debug test
 
 clean:
-	rm -rf ifj15 test/test *.o $(LOGIN).zip
+	rm -f ifj15 test/test *.o $(LOGIN).zip
+	@cd test; make clean
 
 pack:
 	zip $(LOGIN).zip *.c *.h Makefile
 
-test: test/test.c
-	cd test; $(CC) -o test test.c -std=c11 $(CHECK) && ./test; exit 0
+test: ifj15
+	@cd test; make run
 
 debug: CFLAGS+= $(DBGFLAGS)
 debug: remake

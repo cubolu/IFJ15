@@ -26,7 +26,7 @@ struct _list_t {
 #define list_init() _list_init(true)
 
 list_t* _list_init(bool ptable_insert);
-void list_free(list_t* list);
+void _list_free(list_t* list);
 
 void list_insert(list_t* list, void* key, void* item);
 void* _list_pop(list_t* list, void* key, key_t key_type);

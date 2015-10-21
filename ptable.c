@@ -7,8 +7,8 @@ void ptable_resize(ptable_t* ptable, resize_t resize);
 static size_t hash(void* key, size_t capacity_pow);
 static unsigned int pow2(unsigned int pow);
 
-ptable_t* ptable_init() {
-    ptable_t* ptable = _ifj15_calloc(PTABLE, sizeof(ptable_t), true);
+ptable_t* _ptable_init(bool ptable_insert) {
+    ptable_t* ptable = _ifj15_calloc(PTABLE, sizeof(ptable_t), ptable_insert);
     ptable->array = _ifj15_calloc(ARRAY, sizeof(list_t)*pow2(PTABLE_START_POW),
                                   false);
     ptable->capacity_pow = PTABLE_START_POW;
@@ -16,11 +16,11 @@ ptable_t* ptable_init() {
     return ptable;
 }
 
-void ptable_free(ptable_t* ptable) {
+void _ptable_free(ptable_t* ptable) {
     size_t capacity = pow2(ptable->capacity_pow);
     for (size_t i = 0; i < capacity; ++i) {
         if (ptable->array[i] != NULL)
-            list_free(ptable->array[i]);
+            _list_free(ptable->array[i]);
     }
     free(ptable);
 }
@@ -62,7 +62,7 @@ void ptable_resize(ptable_t* ptable, resize_t resize) {
                 ptable_insert(ptable, node->key, (ptr_t)node->item);
                 node = node->next;
             }
-            list_free(old_array[i]);
+            _list_free(old_array[i]);
         }
     }
     free(old_array);

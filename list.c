@@ -10,7 +10,7 @@ list_t* _list_init(bool ptable_insert) {
     return list;
 }
 
-void list_free(list_t* list) {
+void _list_free(list_t* list) {
     node_t* node = list->front;
     node_t* tmp;
     while (node != NULL) {

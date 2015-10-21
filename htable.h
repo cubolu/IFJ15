@@ -14,7 +14,7 @@ struct _htable_t {
 };
 
 htable_t* htable_init();
-void htable_free(htable_t* htable);
+void _htable_free(htable_t* htable);
 
 void htable_insert(htable_t* htable, char* key, void* item);
 void* htable_pop(htable_t* htable, char* key);

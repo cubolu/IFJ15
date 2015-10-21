@@ -21,11 +21,11 @@ htable_t* htable_init() {
     return htable;
 }
 
-void htable_free(htable_t* htable) {
+void _htable_free(htable_t* htable) {
     size_t capacity = HTABLE_SIZES[htable->cap_index];
     for (size_t i = 0; i < capacity; ++i) {
         if (htable->array[i] != NULL)
-            list_free(htable->array[i]);
+            _list_free(htable->array[i]);
     }
     free(htable);
 }
@@ -67,7 +67,7 @@ void htable_resize(htable_t* htable, resize_t resize) {
                 htable_insert(htable, (char*)node->key, node->item);
                 node = node->next;
             }
-            list_free(old_array[i]);
+            _list_free(old_array[i]);
         }
     }
     free(old_array);

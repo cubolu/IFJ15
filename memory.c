@@ -5,7 +5,7 @@ void ifj15_free_all();
 static unsigned int pow2(unsigned int pow);
 
 void ifj15_memory_init() {
-    ifj15_ptable = ptable_init();
+    ifj15_ptable = _ptable_init(false);
 }
 
 void* _ifj15_malloc(ptr_t type, size_t size, bool ptable_insert_b) {
@@ -29,7 +29,7 @@ void* ifj15_realloc(void* ptr, size_t size) {
 }
 
 void* _ifj15_calloc(ptr_t type, size_t size, bool ptable_insert_b) {
-    void* addr = calloc(1, size);
+    void* addr = calloc(size, 1);
     if (addr == NULL)
         error("Failed to allocate memory", ERROR_INTERNAL);
     if (ptable_insert_b)
@@ -45,11 +45,14 @@ void ifj15_free(void* ptr) {
 void _ifj15_free(void* ptr, ptr_t ptr_type) {
     switch(ptr_type) {
         case PTABLE:
-            ptable_free(ptr);
+            _ptable_free(ptr);
+            break;
         case HTABLE:
-            htable_free(ptr);
+            _htable_free(ptr);
+            break;
         case LIST:
-            list_free(ptr);
+            _list_free(ptr);
+            break;
         default:
             free(ptr);
     }
@@ -62,8 +65,9 @@ void ifj15_free_all() {
             node_t* node = ifj15_ptable->array[i]->front;
             while (node != NULL) {
                 _ifj15_free(node->key, (ptr_t)node->item);
+                node = node->next;
             }
-            list_free(ifj15_ptable->array[i]);
+            _list_free(ifj15_ptable->array[i]);
         }
     }
     free(ifj15_ptable->array);
