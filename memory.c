@@ -1,8 +1,12 @@
 #include "memory.h"
 
 void _ifj15_free(void* ptr, ptr_t ptr_type);
-void _ifj15_free_all();
+void ifj15_free_all();
 static unsigned int pow2(unsigned int pow);
+
+void ifj15_memory_init() {
+    ifj15_ptable = ptable_init();
+}
 
 void* _ifj15_malloc(ptr_t type, size_t size, bool ptable_insert_b) {
     void* addr = malloc(size);
@@ -51,7 +55,7 @@ void _ifj15_free(void* ptr, ptr_t ptr_type) {
     }
 }
 
-void _ifj15_free_all() {
+void ifj15_free_all() {
     size_t capacity = pow2(ifj15_ptable->capacity_pow);
     for (size_t i = 0; i < capacity; ++i) {
         if (ifj15_ptable->array[i] != NULL) {

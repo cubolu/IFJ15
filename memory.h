@@ -22,9 +22,10 @@ ptable_t* ifj15_ptable;
 
 #define ifj15_calloc(...) VFUNC(ifj15_calloc, __VAR_ARGS__)
 
+void ifj15_memory_init();
 void* _ifj15_malloc(ptr_t type, size_t size, bool ptable_insert_b);
 void* ifj15_realloc(void* ptr, size_t size);
 void* _ifj15_calloc(ptr_t type, size_t size, bool ptable_insert_b);
 void ifj15_free(void* ptr);
-void _ifj15_free_all();
+void ifj15_free_all();
 #endif

@@ -2,7 +2,7 @@
 
 void error(const char *error_str, error_t error_type) {
     fprintf(stderr, "Error: %s", error_str);
-    _ifj15_free_all();
+    ifj15_free_all();
     exit(error_type);
 }
 
