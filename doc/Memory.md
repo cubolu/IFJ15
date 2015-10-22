@@ -24,6 +24,7 @@ Every data structure has a ``*_init()` function which works with the memory mana
 ### Extending support for your structures
 
 To add support for a new structure into the IFJ15 Memory Management System you need to:
+
 1. Add your type to `enum_ptr_t` at `memory.h`
 2. Write a `your_data_structure_init()` method which uses `ifj15_*` memory allocation methods to insert your structure into the GPT.
 3. Write a `your_data_structure_free()` method and insert it to `_ifj15_free()` at 'memory.c'
@@ -31,5 +32,6 @@ To add support for a new structure into the IFJ15 Memory Management System you n
 
 ### Important tips
 
+- All currently available values for 'ptr_t' can be found in 'memory.h' where the enum is defined.
 - `your_data_structure_init()` **must only insert the top level pointer of your structure into the GPT.** Dynamically allocated sub-elements of your structure should be handled by your `_free` method without ever entering the GPT. This is to prevent unnecessary extra GPT entry overhead.
 - You can use methods prefixed with `_` e.g. `_ifj15_malloc()` to implement your `*_init()` function. You will need to do this to override the `bool ptable_insert_b` option from the default `true` to `false` to make sure sub-elements don't get entered into the GPT.
