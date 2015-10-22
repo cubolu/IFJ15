@@ -3,4 +3,7 @@
 
 #include "common.h"
 #include "list.h"
+#include "memory.h"
+#include "ptable.h"
+#include "htable.h"
 #endif

@@ -29,7 +29,7 @@ void* ifj15_realloc(void* ptr, size_t size) {
 }
 
 void* _ifj15_calloc(ptr_t type, size_t size, bool ptable_insert_b) {
-    void* addr = calloc(size, 1);
+    void* addr = calloc(1, size);
     if (addr == NULL)
         error("Failed to allocate memory", ERROR_INTERNAL);
     if (ptable_insert_b)
