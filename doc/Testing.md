@@ -23,3 +23,7 @@ apt-get install check
 - All unit tests are inside the `test` subdirectory.
 - You can run the tests by using `make test` in the main directory or `make run` in the `test` directory.
 - To successfully compile the tests from the `test` directory, you need to make sure the main project is complied in the parent directory, because the unit testing binary needs parent `*.o` files for linking.
+
+#### Useful tips
+- You can use Valgrind on the unit test program to check for memory leaks in your code.
+  - Example: `valgrind --leak-check=full ./test`

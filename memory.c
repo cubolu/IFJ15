@@ -17,11 +17,11 @@ void* _ifj15_malloc(ptr_t type, size_t size, bool ptable_insert_b) {
     return addr;
 }
 
-void* ifj15_realloc(void* ptr, size_t size) {
+void* _ifj15_realloc(void* ptr, size_t size, bool ptable_insert_b) {
     void* addr = realloc(ptr, size);
     if (addr == NULL)
         error("Failed to reallocate memory", ERROR_INTERNAL);
-    else if (addr != ptr) {
+    else if (addr != ptr && ptable_insert_b) {
         ptr_t oldp_type = ptable_pop(ifj15_ptable, ptr);
         ptable_insert(ifj15_ptable, addr, oldp_type);
     }
@@ -50,8 +50,11 @@ void _ifj15_free(void* ptr, ptr_t ptr_type) {
         case HTABLE:
             _htable_free(ptr);
             break;
-        case LIST:
-            _list_free(ptr);
+        case ULIST:
+            _ulist_free(ptr);
+            break;
+        case VECTOR:
+            _vector_free(ptr);
             break;
         default:
             free(ptr);
@@ -62,12 +65,12 @@ void ifj15_free_all() {
     size_t capacity = pow2(ifj15_ptable->capacity_pow);
     for (size_t i = 0; i < capacity; ++i) {
         if (ifj15_ptable->array[i] != NULL) {
-            node_t* node = ifj15_ptable->array[i]->front;
-            while (node != NULL) {
-                _ifj15_free(node->key, (ptr_t)node->item);
-                node = node->next;
+            unode_t* unode = ifj15_ptable->array[i]->front;
+            while (unode != NULL) {
+                _ifj15_free(unode->key, (ptr_t)unode->item);
+                unode = unode->next;
             }
-            _list_free(ifj15_ptable->array[i]);
+            _ulist_free(ifj15_ptable->array[i]);
         }
     }
     free(ifj15_ptable->array);

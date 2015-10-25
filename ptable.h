@@ -3,10 +3,10 @@
 
 #include "common.h"
 #include "memory.h"
-#include "list.h"
+#include "ulist.h"
 
 struct _ptable_t {
-    list_t** array;
+    ulist_t** array;
     // size of ptable is 2^capacity_pow
     size_t capacity_pow;
     size_t size;

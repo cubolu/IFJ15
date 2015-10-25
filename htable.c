@@ -14,7 +14,7 @@ static unsigned int hash(char* key, size_t cap_index);
 
 htable_t* htable_init() {
     htable_t* htable = _ifj15_calloc(HTABLE, sizeof(htable_t), true);
-    htable->array = _ifj15_calloc(ARRAY, sizeof(list_t)*HTABLE_START_SIZE,
+    htable->array = _ifj15_calloc(ARRAY, sizeof(ulist_t)*HTABLE_START_SIZE,
                                   false);
     htable->cap_index = 0;
     htable->size = 0;
@@ -25,19 +25,27 @@ void _htable_free(htable_t* htable) {
     size_t capacity = HTABLE_SIZES[htable->cap_index];
     for (size_t i = 0; i < capacity; ++i) {
         if (htable->array[i] != NULL)
-            _list_free(htable->array[i]);
+            _ulist_free(htable->array[i]);
     }
+    free(htable->array);
     free(htable);
 }
 
-void htable_insert(htable_t* htable, char* key, void* item) {
+void htable_set(htable_t* htable, char* key, void* item) {
     ++(htable->size);
     if (htable->size > 5*HTABLE_SIZES[htable->cap_index])
         htable_resize(htable, UP);
     size_t hash_code = hash(key, htable->cap_index);
     if (htable->array[hash_code] == NULL)
-        htable->array[hash_code] = _list_init(false);
-    list_insert(htable->array[hash_code], key, item);
+        htable->array[hash_code] = _ulist_init(false);
+    ulist_set(htable->array[hash_code], key, item);
+}
+
+void* htable_get(htable_t* htable, char* key) {
+    size_t hash_code = hash(key, htable->cap_index);
+    if (htable->array[hash_code] == NULL)
+        return 0;
+    return ulist_get(htable->array[hash_code], key);
 }
 
 void* htable_pop(htable_t* htable, char* key) {
@@ -46,8 +54,8 @@ void* htable_pop(htable_t* htable, char* key) {
         htable_resize(htable, DOWN);
     size_t hash_code = hash(key, htable->cap_index);
     if (htable->array[hash_code] == NULL)
-        error("htable_pop: Failed to find searched for item", ERROR_INTERNAL);
-    return list_pop(htable->array[hash_code], key);
+        return 0;
+    return ulist_pop(htable->array[hash_code], key);
 }
 
 void htable_resize(htable_t* htable, resize_t resize) {
@@ -57,17 +65,17 @@ void htable_resize(htable_t* htable, resize_t resize) {
     else
         --htable->cap_index;
 
-    list_t** old_array = htable->array;
+    ulist_t** old_array = htable->array;
     size_t capacity = HTABLE_SIZES[htable->cap_index];
-    htable->array = _ifj15_malloc(LIST, sizeof(list_t*)*capacity, false);
+    htable->array = _ifj15_malloc(ULIST, sizeof(ulist_t*)*capacity, false);
     for (size_t i = 0; i < old_capacity; ++i) {
         if (old_array[i] != NULL) {
-            node_t* node = old_array[i]->front;
-            while (node != NULL) {
-                htable_insert(htable, (char*)node->key, node->item);
-                node = node->next;
+            unode_t* unode = old_array[i]->front;
+            while (unode != NULL) {
+                htable_set(htable, (char*)unode->key, unode->item);
+                unode = unode->next;
             }
-            _list_free(old_array[i]);
+            _ulist_free(old_array[i]);
         }
     }
     free(old_array);
