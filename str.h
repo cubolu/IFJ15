@@ -17,5 +17,7 @@ void _str_free(str * s);
 
 void str_append_char(str * s, char c);
 
+bool str_equals(str * s, char * s2);
+
 #endif // STR_H
 
