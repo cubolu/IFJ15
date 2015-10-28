@@ -56,6 +56,9 @@ void _ifj15_free(void* ptr, ptr_t ptr_type) {
         case VECTOR:
             _vector_free(ptr);
             break;
+        case STRING:
+            _str_free(ptr);
+            break;
         default:
             free(ptr);
     }
