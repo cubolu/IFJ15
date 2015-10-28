@@ -36,6 +36,8 @@
 *.includes
 *.files
 *.config
+*.creator
+*.creator.user
 
 ifj15
 test/test
