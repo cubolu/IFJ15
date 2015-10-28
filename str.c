@@ -36,3 +36,8 @@ void str_append_char(str * s, char c)
 
     s->str[++s->curr_len] = '\0';
 }
+
+bool str_equals(str * s, char * s2)
+{
+    return !(strcmp(s->str, s2));
+}
