@@ -12,7 +12,9 @@ enum e_parser_state {PS_DEFAULT,
                     PS_FRACTIONAL_PART,
                     PS_EXPONENCIAL_PART,
                     PS_WHITESPACE,
-                    PS_FIRST_WHITESPACE};
+                    PS_FIRST_WHITESPACE,
+                    PS_ARGUMENTS_OF_DECLARATIONS_START,
+                    PS_ARGUMENTS_OF_DECLARATIONS_INSIDE};
 
 enum e_parser_type {INT,
                     STRING,
@@ -41,7 +43,7 @@ int parser_next_token()
         {
         case PS_DEFAULT:
 
-            //zakladny stav, zerie whitespace
+            //default state
             if (c == '\n' || c == ' ' || c == '\t')
                 state = PS_DEFAULT;
 
@@ -50,7 +52,7 @@ int parser_next_token()
 
             else if( c == '_' || ( c > 64 && c < 91) || ( c > 96 && c < 123) )
             {
-                str_append_char(s, c);
+                ungetc(c, source);
                 state = PS_IDENTIFICATOR;
             }
 
@@ -70,7 +72,7 @@ int parser_next_token()
                 state = PS_BLOCK_COMMENT;
             else{
 
-                // do tokenu poslem operator delenie
+                // operation divide send to token
 
                 ungetc(c, source);
             }
@@ -105,14 +107,18 @@ int parser_next_token()
                     ungetc(c, source);
                     if(parser_control_type(s) != 0)
                     {
-                        //send token
+                       //Identificator is not TYPE
+                        if(type_read == true){
+                            state = PS_ARGUMENTS_OF_DECLARATIONS_START;
+                            break;
+                        }
                         state = PS_DEFAULT;
                     }
                     else
                     {
                         if (type_read == true)
                         {
-                            error("Keyword can't be followed by another keyword.");
+                            error("Type keyword can't be followed by another type keyword.", ERROR_LEX);
 
                         }
                         type_read = true;
@@ -126,7 +132,7 @@ int parser_next_token()
         case PS_INT_PART:
 
             if(c_before == '0' && c != '.')
-                //chyba
+                error("Incorrect representation of number", ERROR_LEX);
 
             if (c == '.')
                 state = PS_FRACTIONAL_PART;
@@ -146,11 +152,11 @@ int parser_next_token()
                 state = PS_FRACTIONAL_PART;
 
             else if (c == 'E' || c == 'e'){
-                TODO;
+
                 state = PS_EXPONENCIAL_PART;
             }
             else if (c == '.')
-                //ERROR
+                error("Incorrect representation of number", ERROR_LEX);
 
 
 
@@ -179,8 +185,7 @@ int parser_next_token()
             }
 
             else if(c == '.')
-                //ERROR
-                TODO;
+                error("Incorrect representation of number", ERROR_LEX);
 
 
             break;
@@ -195,6 +200,7 @@ int parser_next_token()
             {
                 state = PS_WHITESPACE;
             }
+            break;
 
         case PS_WHITESPACE:
 
@@ -205,8 +211,40 @@ int parser_next_token()
             {
                 state = PS_IDENTIFICATOR;
             }
+            break;
+
+        case PS_ARGUMENTS_OF_DECLARATIONS_START:
+
+            if (c != ' ' || c != '\t' || c != '\n' )
+                state = PS_ARGUMENTS_OF_DECLARATIONS_START;
+            else if( c == '(' ){
+                state = PS_ARGUMENTS_OF_DECLARATIONS_INSIDE;
+
+            }
+            else if (c == ';')
+            {
+                //send token as declaration of variable
+
+            }
+            else if(c == '=')
+            {
+                ungetc(c, source);
+                state = PS_DEFAULT;
+                //send token as declaration of variable
+
+            }
+            else
+                error("Incorrect declaration.", ERROR_LEX);
+
+            type_read = false;
+            break;
 
 
+        case PS_ARGUMENTS_OF_DECLARATIONS_INSIDE:
+
+           //TUTO SOM SKONCIL, PRACUJEM NA DEKLAROVANEJ FUNKCII
+
+            break;
 
         }
 
