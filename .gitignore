@@ -31,5 +31,11 @@
 # Debug files
 *.dSYM/
 
+#Qt Creator files
+*.project
+*.includes
+*.files
+*.config
+
 ifj15
 test/test
