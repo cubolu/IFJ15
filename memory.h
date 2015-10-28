@@ -7,8 +7,9 @@
 #include "vector.h"
 #include "ptable.h"
 #include "htable.h"
+#include "str.h"
 
-enum _ptr_t {PTABLE, HTABLE, ULIST, VECTOR, ARRAY, SIMPLE};
+enum _ptr_t {PTABLE, HTABLE, ULIST, VECTOR, ARRAY, SIMPLE, STRING};
 
 // Global program pointer table
 ptable_t* ifj15_ptable;
