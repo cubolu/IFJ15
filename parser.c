@@ -265,6 +265,7 @@ int parser_next_token()
 
             else
             {
+                ungetc(c, soubor);
                 state = PS_IDENTIFICATOR_OF_DECLARATION;
             }
             break;
@@ -280,6 +281,7 @@ int parser_next_token()
             else if (c == ';')
             {
                 //send token as declaration of variable
+                state = PS_DEFAULT;
 
             }
             else if(c == '=')
@@ -300,6 +302,7 @@ int parser_next_token()
 
            //TUTO SOM SKONCIL, PRACUJEM NA DEKLAROVANEJ FUNKCII
 
+
             break;
 
         case PS_IDENTIFICATOR_OF_DECLARATION:
@@ -309,11 +312,8 @@ int parser_next_token()
                 state = PS_IDENTIFICATOR_OF_DECLARATION;
                 //save char in string
             }
-            else if(c_before == '_' || ( c_before > 64 && c_before < 91) || ( c_before > 96 && c_before < 123) )
-            {   //first time in this state, keyword of type isn't followed by identificator
-                error("Keyword type without identificator of variable.");
 
-            }
+
             else
             {
                 ungetc(c, source);
