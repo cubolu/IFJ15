@@ -56,7 +56,7 @@ int parser_next_token()
                 state = PS_SLASH;
 
             //start of identificator
-            else if( c == '_' || ( c > 64 && c < 91) || ( c > 96 && c < 123) )
+            else if( c == '_' || ( c >= 'A' && c <= 'Z') || ( c >= 'a' && c < 'z') )
             {
                 ungetc(c, source);
                 state = PS_IDENTIFICATOR;
@@ -211,7 +211,7 @@ int parser_next_token()
 
         case PS_FRACTIONAL_PART:
 
-            if( c > 47 && c < 58 )
+            if( c >= '0' && c <= '9' )
                 //spracuj
                 //pokracujem v citani znakov
                 state = PS_FRACTIONAL_PART;
