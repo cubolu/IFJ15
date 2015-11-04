@@ -63,7 +63,7 @@ int parser_next_token()
             }
 
             //start of non negative number
-            else if ( c > 47 && c < 58)
+            else if ( c >= '0' && c < '9')
                 state = PS_INT_PART_1;
 
 
@@ -76,11 +76,32 @@ int parser_next_token()
                 state = PS_COMMENT;
             else if ( c == '*')
                 state = PS_BLOCK_COMMENT;
-            else{
+            else if( c == '_' || ( c >= 'A' && c <= 'Z') || ( c > 'a' && c < 'z') )
+            {
+                //send operator
+                ungetc(c, soubor);
+                state = PS_DEFAULT;
+            }
+            else if (c == '\n' || c == ' ' || c == '\t')
+            {
+                //send operator
+                ungetc(c, soubor);
+                state = PS_DEFAULT;
+            }
+            else if ( c >= '0' && c < '9')
+            {
+                //send operator
+                ungetc(c, soubor);
+                state = PS_DEFAULT;
+            }
+            else
+            {
+                ungetc(c, soubor);
+                state = PS_DEFAULT;
+            }
 
-                // operation divide send to token
 
-                ungetc(c, source);
+
             }
 
             break;
@@ -111,7 +132,7 @@ int parser_next_token()
         case PS_IDENTIFICATOR:
 
 
-            if ( c == '_' || ( c > 64 && c < 91) || ( c > 96 && c < 123) || ( c > 47 && c < 58) )
+            if ( c == '_' || ( c >= 'A' && c <= 'Z') || ( c > 'a' && c < 'z') || ( c >= '0' && c <= '9') )
                 state = PS_IDENTIFICATOR;
 
             else
@@ -120,7 +141,7 @@ int parser_next_token()
                     if(parser_control_type(s) == 0)
                     {
                         //We found keyword
-                        //do something wit keyword
+                        //do something with keyword
                         state = PS_FIRST_WHITESPACE;
 
                     }
@@ -307,7 +328,7 @@ int parser_next_token()
 
         case PS_IDENTIFICATOR_OF_DECLARATION:
 
-            if ( c == '_' || ( c > 64 && c < 91) || ( c > 96 && c < 123) || ( c > 47 && c < 58) )
+            if ( c == '_' || ( c >= 'A' && c <= 'Z') || ( c > 'a' && c < 'z') || ( c >= '0' && c <= '9') )
             {
                 state = PS_IDENTIFICATOR_OF_DECLARATION;
                 //save char in string
