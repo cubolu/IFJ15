@@ -2,6 +2,8 @@
 #include <ctype.h>
 #include "str.h"
 #include "error.h"
+#include "parser.h"
+#include "token.h"
 
 enum e_parser_state {PS_DEFAULT,
                      PS_COMMENT,
@@ -18,19 +20,28 @@ enum e_parser_state {PS_DEFAULT,
                     PS_ARGUMENTS_OF_DECLARATIONS_START,
                     PS_ARGUMENTS_OF_DECLARATIONS_INSIDE};
 
-enum e_parser_type {INT,
-                    STRING,
-                    DOUBLE,
-                    AUTO};
+
+int parser_control_type(str *s);
+
+parser * parser_init(char * filename)
+{
+    // TODO alokovat systematicky
+    parser * p = malloc(sizeof(parser));
+
+    p->file = fopen(filename, "r");
+    //TODO overit otevreni
+
+    return p;
+}
 
 
 
-int parser_next_token()
+int parser_next_token(parser * p)
 {
     //datovy typ token
     int c = NULL;
     bool type_read = false;
-    e_parser_state state = PS_DEFAULT;
+    enum e_parser_state state = PS_DEFAULT;
 
     int c_before = NULL;
 
@@ -39,7 +50,7 @@ int parser_next_token()
     while(1)
     {
         c_before = c;
-        c = getc(source);
+        c = getc(p->file);
 
         switch(state)
         {
@@ -58,7 +69,7 @@ int parser_next_token()
             //start of identificator
             else if( c == '_' || ( c >= 'A' && c <= 'Z') || ( c >= 'a' && c < 'z') )
             {
-                ungetc(c, source);
+                ungetc(c, p->file);
                 state = PS_IDENTIFICATOR;
             }
 
@@ -79,29 +90,25 @@ int parser_next_token()
             else if( c == '_' || ( c >= 'A' && c <= 'Z') || ( c > 'a' && c < 'z') )
             {
                 //send operator
-                ungetc(c, soubor);
+                ungetc(c, p->file);
                 state = PS_DEFAULT;
             }
             else if (c == '\n' || c == ' ' || c == '\t')
             {
                 //send operator
-                ungetc(c, soubor);
+                ungetc(c, p->file);
                 state = PS_DEFAULT;
             }
             else if ( c >= '0' && c < '9')
             {
                 //send operator
-                ungetc(c, soubor);
+                ungetc(c, p->file);
                 state = PS_DEFAULT;
             }
             else
             {
-                ungetc(c, soubor);
+                ungetc(c, p->file);
                 state = PS_DEFAULT;
-            }
-
-
-
             }
 
             break;
@@ -133,11 +140,15 @@ int parser_next_token()
 
 
             if ( c == '_' || ( c >= 'A' && c <= 'Z') || ( c > 'a' && c < 'z') || ( c >= '0' && c <= '9') )
+            {
+                str_append_char(s, c);
+
                 state = PS_IDENTIFICATOR;
+            }
 
             else
             {
-                    ungetc(c, source);
+                    ungetc(c, p->file);
                     if(parser_control_type(s) == 0)
                     {
                         //We found keyword
@@ -177,7 +188,7 @@ int parser_next_token()
 
             else{
 
-                ungetc(c, source);
+                ungetc(c, p->file);
                 state = PS_DEFAULT;
             }
             break;
@@ -202,7 +213,7 @@ int parser_next_token()
             else
             {
                 //spracuj
-                ungetc(c, soubor);
+                ungetc(c, p->file);
                 state = PS_DEFAULT;
 
             }
@@ -243,7 +254,8 @@ int parser_next_token()
 
                 else if(c >= '0' && c <= '9')
 
-                    TODO;
+                    //TODO
+                    ;
                 else if(c == '.')
                     error("Incorect representation of number", ERROR_LEX);
             }
@@ -259,7 +271,7 @@ int parser_next_token()
 
             else
             {
-                ungetc(c, soubor);
+                ungetc(c, p->file);
                 //send number to token
                 state = PS_DEFAULT;
             }
@@ -286,7 +298,7 @@ int parser_next_token()
 
             else
             {
-                ungetc(c, soubor);
+                ungetc(c, p->file);
                 state = PS_IDENTIFICATOR_OF_DECLARATION;
             }
             break;
@@ -307,7 +319,7 @@ int parser_next_token()
             }
             else if(c == '=')
             {
-                ungetc(c, source);
+                ungetc(c, p->file);
                 state = PS_DEFAULT;
                 //send token as declaration of variable
 
@@ -337,7 +349,7 @@ int parser_next_token()
 
             else
             {
-                ungetc(c, source);
+                ungetc(c, p->file);
                 if(parser_control_type(s) == 0)
                 {
                     //Identificator is keyword
@@ -351,16 +363,12 @@ int parser_next_token()
                     state = PS_ARGUMENTS_OF_DECLARATIONS_START;
                 }
 
-                }
             }
-
-
-
         }
 
+
+
     }
-
-
 }
 
 /************************************
