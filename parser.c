@@ -2,6 +2,8 @@
 #include <ctype.h>
 #include "str.h"
 #include "error.h"
+#include "parser.h"
+#include "token.h"
 
 enum e_parser_state {PS_DEFAULT,
                     PS_COMMENT,
@@ -35,20 +37,28 @@ enum e_parser_state {PS_DEFAULT,
                     PS_FOR_LOOP_INICIALISATION_END,
                     PS_FOR_LOOP_INICIALISATION_VALUE_NUMBER};
 
-enum e_parser_type {INT,
-                    STRING,
-                    DOUBLE,
-                    AUTO};
+
+int parser_control_type(str *s);
+int parser_control_keyword(str *s);
+
+parser * parser_init(char * filename)
+{
+    // TODO alokovat systematicky
+    parser * p = malloc(sizeof(parser));
+
+    p->file = fopen(filename, "r");
+    //TODO overit otevreni
+
+    return p;
+}
 
 
 
-int parser_next_token()
+int parser_next_token(parser * p)
 {
     //datovy typ token
     int c = NULL;
-    bool type_read = false;
-
-    e_parser_state state = PS_DEFAULT;
+    enum e_parser_state state = PS_DEFAULT;
 
     int c_before = NULL;
 
@@ -58,7 +68,7 @@ int parser_next_token()
     {
 
         c_before = c;
-        c = getc(source);
+        c = getc(p->file);
 
         switch(state)
         {
@@ -75,9 +85,9 @@ int parser_next_token()
                 state = PS_SLASH;
 
             //start of identificator
-            else if( c == '_' || ( c > 64 && c < 91) || ( c > 96 && c < 123) )
+            else if( c == '_' || ( c >= 'A' && c <= 'Z') || ( c >= 'a' && c < 'z') )
             {
-                ungetc(c, source);
+                ungetc(c, p->file);
                 state = PS_IDENTIFICATOR;
             }
 
@@ -129,30 +139,27 @@ int parser_next_token()
             else if( c == '_' || ( c >= 'A' && c <= 'Z') || ( c > 'a' && c < 'z') )
             {
                 //send operator
-                ungetc(c, source);
+                ungetc(c, p->file);
+
                 state = PS_DEFAULT;
             }
             else if (c == '\n' || c == ' ' || c == '\t')
             {
                 //send operator
-                ungetc(c, source);
+                ungetc(c, p->file);
                 state = PS_DEFAULT;
             }
             else if ( c >= '0' && c < '9')
             {
                 //send operator
-                ungetc(c, source);
+                ungetc(c, p->file);
                 state = PS_DEFAULT;
             }
             else
             {
-                ungetc(c, source);
+                ungetc(c, p->file);
                 state = PS_DEFAULT;
             }
-
-
-
-
 
             break;
 
@@ -183,11 +190,15 @@ int parser_next_token()
 
 
             if ( c == '_' || ( c >= 'A' && c <= 'Z') || ( c > 'a' && c < 'z') || ( c >= '0' && c <= '9') )
+            {
+                str_append_char(s, c);
+
                 state = PS_IDENTIFICATOR;
+            }
 
             else
             {
-                    ungetc(c, source);
+                    ungetc(c, p->file);
                     if(parser_control_type(s) == 0)
                     {
                         //We found keyword type
@@ -244,8 +255,8 @@ int parser_next_token()
 
 
             else{
+                ungetc(c, p->file);
                 //send token
-                ungetc(c, source);
                 state = PS_DEFAULT;
             }
             break;
@@ -255,7 +266,7 @@ int parser_next_token()
             if (c >= '1' && c <= '9')
             {
                 //spracuj
-                state = PS_INT_PART_2;file
+                state = PS_INT_PART_2;
             }
             else if (c == '.')
             {
@@ -270,7 +281,7 @@ int parser_next_token()
             else
             {
                 //send token
-                ungetc(c, source);
+                ungetc(c, p->file);
                 state = PS_DEFAULT;
 
             }
@@ -279,7 +290,7 @@ int parser_next_token()
 
         case PS_FRACTIONAL_PART:
 
-            if( c > 47 && c < 58 )
+            if( c >= '0' && c <= '9' )
                 //spracuj
                 //pokracujem v citani znakov
                 state = PS_FRACTIONAL_PART;
@@ -295,7 +306,7 @@ int parser_next_token()
             else
             {
                 //send token
-                ungetc(c, source);
+                ungetc(c, p->file);
                 state = PS_DEFAULT;
             }
 
@@ -318,7 +329,8 @@ int parser_next_token()
 
                 else if(c >= '0' && c <= '9')
 
-                    TODO;
+                    //TODO
+                    ;
                 else if(c == '.')
                     error("Incorect representation of number", ERROR_LEX);
             }
@@ -334,7 +346,7 @@ int parser_next_token()
 
             else
             {
-                ungetc(c, source);
+                ungetc(c, p->file);
                 //send number to token
                 state = PS_DEFAULT;
             }
@@ -361,7 +373,7 @@ int parser_next_token()
 
             else
             {
-                ungetc(c, source);
+                ungetc(c, p->file);
                 state = PS_IDENTIFICATOR_OF_DECLARATION;
             }
             break;
@@ -372,7 +384,7 @@ int parser_next_token()
             if (c != ' ' || c != '\t' || c != '\n' )
                 state = PS_ARGUMENTS_OF_DECLARATION_START;
             else if( c == '(' ){
-                state = PS_ARGUMENTS_OF_DECLARATIONS_INSIDE;
+                state = PS_ARGUMENTS_OF_DECLARATION_INSIDE_1;
 
             }
             else if (c == ';')
@@ -383,7 +395,7 @@ int parser_next_token()
             }
             else if(c == '=')
             {
-                ungetc(c, source);
+                ungetc(c, p->file);
                 state = PS_DEFAULT;
                 //send token as declaration of variable
 
@@ -391,7 +403,6 @@ int parser_next_token()
             else
                 error("Incorrect declaration.", ERROR_LEX);
 
-            type_read = false;
             break;
 
 
@@ -466,7 +477,7 @@ int parser_next_token()
             }
             else if((c == '\n' || c == ' ' || c == '\t') || (c == ',') || (c == ')'))
             {
-                ungetc(c, source);
+                ungetc(c, p->file);
                 if(parser_control_keyword(s) != 0)
                     state = PS_ARGUMENTS_OF_DECLARATION_END;
                 else
@@ -510,7 +521,7 @@ int parser_next_token()
 
             else
             {
-                ungetc(c, source);
+                ungetc(c, p->file);
                 if(parser_control_keyword(s) == 0)
                 {
                     //Identificator is keyword
@@ -637,7 +648,6 @@ int parser_next_token()
 
             break;
 
-
         case PS_WHITESPACE_4:
 
             //after identificator, looking for '='
@@ -745,12 +755,9 @@ int parser_next_token()
 
             break;
 
-
-
         }
 
     }
-
 }
 
 
@@ -794,7 +801,7 @@ int parser_control_keyword(str *s){
 
 
     if (str_equals(s, "double") || str_equals(s, "string") || str_equals(s, "auto") || str_equals(s, "int") || str_equals(s, "cin") || str_equals(s, "cout") ||
-            str_equals(s, "for") |\ str_equals(s, "if") || str_equals(s, "return") || str_equals(s, "else"))
+            str_equals(s, "for") || str_equals(s, "if") || str_equals(s, "return") || str_equals(s, "else"))
         return 0;
     else
         return 1;
