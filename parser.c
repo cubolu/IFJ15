@@ -6,10 +6,11 @@
 #include "token.h"
 
 enum e_parser_state {PS_DEFAULT,
-                     PS_COMMENT,
+                    PS_COMMENT,
                     PS_SLASH,
                     PS_BLOCK_COMMENT,
                     PS_IDENTIFICATOR,
+                    PS_SYMBOL_OF_SUBTRACTION,
                     PS_INT_PART_1,
                     PS_INT_PART_2,
                     PS_FRACTIONAL_PART,
@@ -17,11 +18,28 @@ enum e_parser_state {PS_DEFAULT,
                     PS_WHITESPACE,
                     PS_FIRST_WHITESPACE,
                     PS_IDENTIFICATOR_OF_DECLARATION,
-                    PS_ARGUMENTS_OF_DECLARATIONS_START,
-                    PS_ARGUMENTS_OF_DECLARATIONS_INSIDE};
+                    PS_ARGUMENTS_OF_DECLARATION_START,
+                    PS_ARGUMENTS_OF_DECLARATION_INSIDE_1,
+                    PS_ARGUMENTS_OF_DECLARATION_TYPE,
+                    PS_WHITESPACE_1,
+                    PS_ARGUMENTS_OF_DECLARATION_IDENTIFICATOR,
+                    PS_ARGUMENTS_OF_DECLARATION_END,
+                    PS_CHECK_KEYWORD,
+                    PS_FOR_LOOP_START,
+                    PS_WHITESPACE_2,
+                    PS_FOR_LOOP_INICIALISATION_TYPE,
+                    PS_WHITESPACE_3,
+                    PS_FOR_LOOP_INICIALISATION_IDENTIFICATOR,
+                    PS_WHITESPACE_4,
+                    PS_FOR_LOOP_INICIALISATION_VALUE_START,
+                    PS_FOR_LOOP_INICIALISATION_VALUE_VARIABLE,
+                    PS_WHITESPACE_5,
+                    PS_FOR_LOOP_INICIALISATION_END,
+                    PS_FOR_LOOP_INICIALISATION_VALUE_NUMBER};
 
 
 int parser_control_type(str *s);
+int parser_control_keyword(str *s);
 
 parser * parser_init(char * filename)
 {
@@ -40,7 +58,6 @@ int parser_next_token(parser * p)
 {
     //datovy typ token
     int c = NULL;
-    bool type_read = false;
     enum e_parser_state state = PS_DEFAULT;
 
     int c_before = NULL;
@@ -49,6 +66,7 @@ int parser_next_token(parser * p)
 
     while(1)
     {
+
         c_before = c;
         c = getc(p->file);
 
@@ -76,6 +94,37 @@ int parser_next_token(parser * p)
             //start of non negative number
             else if ( c >= '0' && c < '9')
                 state = PS_INT_PART_1;
+            else if (c == '=')
+            {
+                //send operator
+                state = PS_DEFAULT;
+            }
+            else if(c == '*')
+            {
+                //send operator
+                state = PS_DEFAULT;
+            }
+            else if (c == '{')
+            {
+                //send start of block
+                state = PS_DEFAULT;
+            }
+            else if (c == '}')
+            {
+                //send end of block
+                state = PS_DEFAULT;
+            }
+            else if (c == ';')
+            {
+                //send semicolon
+                state = PS_DEFAULT;
+            }
+            else if (c == '-')
+            {
+                //save char
+                state = PS_SYMBOL_OF_SUBTRACTION;
+            }
+
 
 
             break;
@@ -91,6 +140,7 @@ int parser_next_token(parser * p)
             {
                 //send operator
                 ungetc(c, p->file);
+
                 state = PS_DEFAULT;
             }
             else if (c == '\n' || c == ' ' || c == '\t')
@@ -151,16 +201,34 @@ int parser_next_token(parser * p)
                     ungetc(c, p->file);
                     if(parser_control_type(s) == 0)
                     {
-                        //We found keyword
+                        //We found keyword type
                         //do something with keyword
                         state = PS_FIRST_WHITESPACE;
 
+                    }
+                    else if(parser_control_keyword(s) == 0){
+
+                        //we found keyword (except type)
+                        state = PS_CHECK_KEYWORD;
                     }
 
                     //do something with identificator
                     state = PS_DEFAULT;
             }
 
+
+            break;
+
+        case PS_SYMBOL_OF_SUBTRACTION:
+
+            //decision between operation SUBTRACTION or start of Negative number
+            if(c == '\n' || c == ' ' || c == '\t')
+            {
+                //send token with operation SUBTRACTION
+                state = PS_DEFAULT;
+            }
+            else if( c >= '0' && c < '9')
+                state = PS_INT_PART_1;
 
             break;
 
@@ -187,8 +255,8 @@ int parser_next_token(parser * p)
 
 
             else{
-
                 ungetc(c, p->file);
+                //send token
                 state = PS_DEFAULT;
             }
             break;
@@ -212,7 +280,7 @@ int parser_next_token(parser * p)
             }
             else
             {
-                //spracuj
+                //send token
                 ungetc(c, p->file);
                 state = PS_DEFAULT;
 
@@ -234,6 +302,13 @@ int parser_next_token(parser * p)
             }
             else if (c == '.')
                 error("Incorrect representation of number", ERROR_LEX);
+
+            else
+            {
+                //send token
+                ungetc(c, p->file);
+                state = PS_DEFAULT;
+            }
 
 
 
@@ -303,12 +378,13 @@ int parser_next_token(parser * p)
             }
             break;
 
-        case PS_ARGUMENTS_OF_DECLARATIONS_START:
+        case PS_ARGUMENTS_OF_DECLARATION_START:
 
+            //variable is declared, state control next char and decide between declaration of function, declaration of variable and inicialisation
             if (c != ' ' || c != '\t' || c != '\n' )
-                state = PS_ARGUMENTS_OF_DECLARATIONS_START;
+                state = PS_ARGUMENTS_OF_DECLARATION_START;
             else if( c == '(' ){
-                state = PS_ARGUMENTS_OF_DECLARATIONS_INSIDE;
+                state = PS_ARGUMENTS_OF_DECLARATION_INSIDE_1;
 
             }
             else if (c == ';')
@@ -327,14 +403,110 @@ int parser_next_token(parser * p)
             else
                 error("Incorrect declaration.", ERROR_LEX);
 
-            type_read = false;
             break;
 
 
-        case PS_ARGUMENTS_OF_DECLARATIONS_INSIDE:
+        case PS_ARGUMENTS_OF_DECLARATION_INSIDE_1:
 
-           //TUTO SOM SKONCIL, PRACUJEM NA DEKLAROVANEJ FUNKCII
+            //Inside parameters of declaration of function
+            if(c == '\n' || c == ' ' || c == '\t')
+                state = PS_ARGUMENTS_OF_DECLARATION_INSIDE_1;
+            else if( c == '_' || ( c >= 'A' && c <= 'Z') || ( c > 'a' && c < 'z') )
+            {
+                //save char
+                state = PS_ARGUMENTS_OF_DECLARATION_TYPE;
+            }
+            else
+            {
+                error("Nonvalid declaration of function.", ERROR_LEX);
+            }
 
+            break;
+
+        case PS_ARGUMENTS_OF_DECLARATION_TYPE:
+
+            //loading the type of variable inside of declaration of function
+            if ( c == '_' || ( c >= 'A' && c <= 'Z') || ( c > 'a' && c < 'z') )
+            {
+                //save char
+                state = PS_ARGUMENTS_OF_DECLARATION_TYPE;
+            }
+            else if (c == '\n' || c == ' ' || c == '\t')
+            {
+                if(parser_control_type(s) == 0)
+                {
+                    state = PS_WHITESPACE_1;
+
+                }
+                else
+                {
+                    error("Type of variable is not correct.", ERROR_LEX);
+                }
+
+            }
+            else
+            {
+                error("Type of variable is not correct.", ERROR_LEX);
+            }
+            break;
+
+
+        case PS_WHITESPACE_1:
+
+            //Interstate, eats whitespaces
+            if(c == '\n' || c == ' ' || c == '\t')
+                state = PS_WHITESPACE_1;
+            else if( c == '_' || ( c >= 'A' && c <= 'Z') || ( c > 'a' && c < 'z') )
+            {
+                //save char
+                state = PS_ARGUMENTS_OF_DECLARATION_IDENTIFICATOR;
+
+            }
+            else
+                error("Nonvalid name of variable.", ERROR_LEX);
+
+            break;
+
+        case PS_ARGUMENTS_OF_DECLARATION_IDENTIFICATOR:
+
+            //identificator of variable inside of declaration of function
+            if( c == '_' || ( c >= 'A' && c <= 'Z') || ( c > 'a' && c < 'z') || ( c >= '0' && c <= '9') )
+            {
+                //save char
+                state = PS_ARGUMENTS_OF_DECLARATION_IDENTIFICATOR;
+            }
+            else if((c == '\n' || c == ' ' || c == '\t') || (c == ',') || (c == ')'))
+            {
+                ungetc(c, p->file);
+                if(parser_control_keyword(s) != 0)
+                    state = PS_ARGUMENTS_OF_DECLARATION_END;
+                else
+                    error("Identificator of variable can't be keyword.", ERROR_LEX);
+
+            }
+            else
+                error("Nonvalid name of variable.", ERROR_LEX);
+
+
+            break;
+
+        case PS_ARGUMENTS_OF_DECLARATION_END:
+
+            //possible end of declartaion of function... decide between end, or continuing in loading params
+            if(c == '\n' || c == ' ' || c == '\t')
+                state = PS_ARGUMENTS_OF_DECLARATION_END;
+            else if (c == ')')
+            {
+                //save and send token
+                state = PS_DEFAULT;
+            }
+            else if(c == ',')
+            {
+                //save / create new token for next declaration of variable inside declaration of function
+                state = PS_ARGUMENTS_OF_DECLARATION_TYPE;
+            }
+            else
+                error("Nonvalid declaration of function.", ERROR_LEX);
 
             break;
 
@@ -350,29 +522,249 @@ int parser_next_token(parser * p)
             else
             {
                 ungetc(c, p->file);
-                if(parser_control_type(s) == 0)
+                if(parser_control_keyword(s) == 0)
                 {
                     //Identificator is keyword
 
-                    error("Type keyword can't be followed by another type keyword.", ERROR_LEX);
+                    error("Type keyword can't be followed by keyword.", ERROR_LEX);
 
                 }
                 else
                 {
 
-                    state = PS_ARGUMENTS_OF_DECLARATIONS_START;
+                    state = PS_ARGUMENTS_OF_DECLARATION_START;
                 }
 
             }
+
+            break;
+
+        case PS_CHECK_KEYWORD:
+
+            //keyword is not type, we decide between others keywords
+            if (str_equals(s, "for"))
+            {
+                state = PS_FOR_LOOP_START;
+            }
+            else if(str_equals(s, "return"))
+            {
+                //send token
+                state = PS_DEFAULT;
+            }
+
+            break;
+
+
+        case PS_FOR_LOOP_START:
+
+            //start of for loop
+            if(c == '\n' || c == ' ' || c == '\t')
+                state = PS_FOR_LOOP_START;
+            else if (c == '(')
+            {
+                //save char?
+                state = PS_WHITESPACE_2;
+            }
+            else
+                error("non valid for cycle.", ERROR_LEX);
+
+
+            break;
+
+        case PS_WHITESPACE_2:
+
+            //inside of declaration of for loop, eating whitespace
+            if(c == '\n' || c == ' ' || c == '\t')
+                state = PS_WHITESPACE_2;
+            else if ( ( c >= 'A' && c <= 'Z') || ( c > 'a' && c < 'z') )
+            {
+                //save char
+                state = PS_FOR_LOOP_INICIALISATION_TYPE;
+            }
+            else
+                error("In inicialisation of for loop, type of variable is necessary.", ERROR_LEX);
+
+            break;
+
+        case PS_FOR_LOOP_INICIALISATION_TYPE:
+
+            //loading type of varaible in inicialisation of for loop
+            if ( ( c >= 'A' && c <= 'Z') || ( c > 'a' && c < 'z') )
+            {
+                //save char
+                state = PS_FOR_LOOP_INICIALISATION_TYPE;
+            }
+            else if(c == '\n' || c == ' ' || c == '\t')
+            {
+                if(parser_control_type(s) == 0)
+                {
+                    //keyword type is OK, save to token
+                    state = PS_WHITESPACE_3;
+                }
+                else
+                    error("Inicialisation of expression in for loop is invalid.", ERROR_LEX);
+            }
+
+            else
+                error("Inicialisation of expression in for loop is invalid.", ERROR_LEX);
+
+            break;
+
+        case PS_WHITESPACE_3:
+
+            //eats whitespace, looking for start of identificator of variable
+            if(c == '\n' || c == ' ' || c == '\t')
+                state = PS_WHITESPACE_3;
+            if ( c == '_' || ( c >= 'A' && c <= 'Z') || ( c > 'a' && c < 'z') )
+            {
+                //save char
+                state = PS_FOR_LOOP_INICIALISATION_IDENTIFICATOR;
+            }
+
+            break;
+
+
+        case PS_FOR_LOOP_INICIALISATION_IDENTIFICATOR:
+
+            //loading identificator of variable
+            if ( c == '_' || ( c >= 'A' && c <= 'Z') || ( c > 'a' && c < 'z') || ( c >= '0' && c <= '9') )
+            {
+                //save char
+                state = PS_FOR_LOOP_INICIALISATION_IDENTIFICATOR;
+            }
+            else if(c == '=')
+            {
+                if(parser_control_keyword(s) != 0)
+                {
+                    state = PS_FOR_LOOP_INICIALISATION_VALUE_START;
+                }
+                else
+                    error("Identificator can't be represented by keyword.", ERROR_LEX);
+            }
+            else if (c == '\n' || c == ' ' || c == '\t')
+                state = PS_WHITESPACE_4;
+            else
+                error("Invalid identificator.", ERROR_LEX);
+
+            break;
+
+        case PS_WHITESPACE_4:
+
+            //after identificator, looking for '='
+            if(c == '\n' || c == ' ' || c == '\t')
+                state = PS_WHITESPACE_4;
+            else if (c == '=')
+            {
+                if(parser_control_keyword(s) != 0)
+                {
+                    state = PS_FOR_LOOP_INICIALISATION_VALUE_START;
+                }
+                else
+                    error("Identificator can't be represented by keyword.", ERROR_LEX);
+            }
+            else
+                error("Invalid identificator.", ERROR_LEX);
+
+            break;
+
+
+        case PS_FOR_LOOP_INICIALISATION_VALUE_START:
+
+            //'='found, waiting for start of variable or number. Variable can later become calling of function. Now I don' t see that.
+            if(c == '\n' || c == ' ' || c == '\t')
+                state = PS_FOR_LOOP_INICIALISATION_VALUE_START;
+            else if ( c == '_' || ( c >= 'A' && c <= 'Z') || ( c > 'a' && c < 'z') )
+            {
+                //save char
+                state = PS_FOR_LOOP_INICIALISATION_VALUE_VARIABLE;
+            }
+            else if( (c >= '1' && c <= '9') || c == '-' || c == '+')
+            {
+                //save char
+                state = PS_FOR_LOOP_INICIALISATION_VALUE_NUMBER;
+            }
+            else
+                error("Invalid inicialisation of variable.", ERROR_LEX);
+
+            break;
+
+
+        case PS_FOR_LOOP_INICIALISATION_VALUE_VARIABLE:
+
+            //loading of identificator of variable in inicialisation of for loop
+            if ( c == '_' || ( c >= 'A' && c <= 'Z') || ( c > 'a' && c < 'z') || ( c >= '0' && c <= '9') )
+            {
+                //save char
+                state = PS_FOR_LOOP_INICIALISATION_VALUE_VARIABLE;
+            }
+            else if(c == '\n' || c == ' ' || c == '\t')
+                state = PS_WHITESPACE_5;
+            else if(c == ';')
+            {
+                //save to token
+                state = PS_FOR_LOOP_INICIALISATION_END;
+            }
+            else
+                error("Invalid inicialisation part of for loop.", ERROR_LEX);
+
+            break;
+
+
+        case PS_WHITESPACE_5:
+
+            //eats whitespace and waits on ';'
+            if(c == '\n' || c == ' ' || c == '\t')
+                state = PS_WHITESPACE_4;
+
+            else if (c == ';')
+            {
+                //save to token
+                state = PS_FOR_LOOP_INICIALISATION_END;
+            }
+            else
+                error("Invalid inicialisation part of for loop.", ERROR_LEX);
+
+            break;
+
+        case PS_FOR_LOOP_INICIALISATION_VALUE_NUMBER:
+
+            //in case when value is in forme of number
+            if (c >= '0' && c <= '9')
+            {
+                //SAVE CHAR
+                state = PS_FOR_LOOP_INICIALISATION_VALUE_NUMBER;
+            }
+            else if(c == '\n' || c == ' ' || c == '\t')
+                state = PS_WHITESPACE_5;
+            else if (c == ';')
+            {
+                //save char
+                state = PS_FOR_LOOP_INICIALISATION_END;
+            }
+            else
+                error("Invalid inicialisation part of for loop.", ERROR_LEX);
+            break;
+
+        case PS_FOR_LOOP_INICIALISATION_END:
+
+            //inicialisation part ended, looking for first char of condition
+            if(c == '\n' || c == ' ' || c == '\t')
+                state = PS_FOR_LOOP_INICIALISATION_END;
+
+
+
+            break;
+
         }
-
-
 
     }
 }
 
+
+
+
 /************************************
- * check for keywords of language
+ * check for type keywords of language
  ************************************/
 int parser_control_type(str *s){
 
@@ -397,6 +789,20 @@ int parser_control_type(str *s){
 
         return 0;
     }
+    else
+        return 1;
+}
+
+
+/************************************
+ * check for keywords of language
+ ************************************/
+int parser_control_keyword(str *s){
+
+
+    if (str_equals(s, "double") || str_equals(s, "string") || str_equals(s, "auto") || str_equals(s, "int") || str_equals(s, "cin") || str_equals(s, "cout") ||
+            str_equals(s, "for") || str_equals(s, "if") || str_equals(s, "return") || str_equals(s, "else"))
+        return 0;
     else
         return 1;
 }
