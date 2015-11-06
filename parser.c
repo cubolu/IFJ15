@@ -116,6 +116,7 @@ int parser_next_token()
             }
 
 
+
             break;
 
 
@@ -533,6 +534,11 @@ int parser_next_token()
             if (str_equals(s, "for"))
             {
                 state = PS_FOR_LOOP_START;
+            }
+            else if(str_equals(s, "return"))
+            {
+                //send token
+                state = PS_DEFAULT;
             }
 
             break;
