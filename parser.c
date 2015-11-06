@@ -4,10 +4,11 @@
 #include "error.h"
 
 enum e_parser_state {PS_DEFAULT,
-                     PS_COMMENT,
+                    PS_COMMENT,
                     PS_SLASH,
                     PS_BLOCK_COMMENT,
                     PS_IDENTIFICATOR,
+                    PS_SYMBOL_OF_SUBTRACTION,
                     PS_INT_PART_1,
                     PS_INT_PART_2,
                     PS_FRACTIONAL_PART,
@@ -28,7 +29,11 @@ enum e_parser_state {PS_DEFAULT,
                     PS_WHITESPACE_3,
                     PS_FOR_LOOP_INICIALISATION_IDENTIFICATOR,
                     PS_WHITESPACE_4,
-                    PS_FOR_LOOP_INICIALISATION_VALUE_START};
+                    PS_FOR_LOOP_INICIALISATION_VALUE_START,
+                    PS_FOR_LOOP_INICIALISATION_VALUE_VARIABLE,
+                    PS_WHITESPACE_5,
+                    PS_FOR_LOOP_INICIALISATION_END,
+                    PS_FOR_LOOP_INICIALISATION_VALUE_NUMBER};
 
 enum e_parser_type {INT,
                     STRING,
@@ -42,6 +47,7 @@ int parser_next_token()
     //datovy typ token
     int c = NULL;
     bool type_read = false;
+
     e_parser_state state = PS_DEFAULT;
 
     int c_before = NULL;
@@ -50,6 +56,7 @@ int parser_next_token()
 
     while(1)
     {
+
         c_before = c;
         c = getc(source);
 
@@ -101,6 +108,11 @@ int parser_next_token()
             {
                 //send semicolon
                 state = PS_DEFAULT;
+            }
+            else if (c == '-')
+            {
+                //save char
+                state = PS_SYMBOL_OF_SUBTRACTION;
             }
 
 
@@ -192,6 +204,19 @@ int parser_next_token()
                     state = PS_DEFAULT;
             }
 
+
+            break;
+
+        case PS_SYMBOL_OF_SUBTRACTION:
+
+            //decision between operation SUBTRACTION or start of Negative number
+            if(c == '\n' || c == ' ' || c == '\t')
+            {
+                //send token with operation SUBTRACTION
+                state = PS_DEFAULT;
+            }
+            else if( c >= '0' && c < '9')
+                state = PS_INT_PART_1;
 
             break;
 
@@ -635,15 +660,84 @@ int parser_next_token()
             else if ( c == '_' || ( c >= 'A' && c <= 'Z') || ( c > 'a' && c < 'z') )
             {
                 //save char
-                //send to state loading identificator
+                state = PS_FOR_LOOP_INICIALISATION_VALUE_VARIABLE;
             }
-            else if( c >= '1' && c <= '9')
+            else if( (c >= '1' && c <= '9') || c == '-' || c == '+')
             {
                 //save char
-                //send to state loading decimal number
+                state = PS_FOR_LOOP_INICIALISATION_VALUE_NUMBER;
             }
             else
                 error("Invalid inicialisation of variable.", ERROR_LEX);
+
+            break;
+
+
+        case PS_FOR_LOOP_INICIALISATION_VALUE_VARIABLE:
+
+            //loading of identificator of variable in inicialisation of for loop
+            if ( c == '_' || ( c >= 'A' && c <= 'Z') || ( c > 'a' && c < 'z') || ( c >= '0' && c <= '9') )
+            {
+                //save char
+                state = PS_FOR_LOOP_INICIALISATION_VALUE_VARIABLE;
+            }
+            else if(c == '\n' || c == ' ' || c == '\t')
+                state = PS_WHITESPACE_5;
+            else if(c == ';')
+            {
+                //save to token
+                state = PS_FOR_LOOP_INICIALISATION_END;
+            }
+            else
+                error("Invalid inicialisation part of for loop.", ERROR_LEX);
+
+            break;
+
+
+        case PS_WHITESPACE_5:
+
+            //eats whitespace and waits on ';'
+            if(c == '\n' || c == ' ' || c == '\t')
+                state = PS_WHITESPACE_4;
+
+            else if (c == ';')
+            {
+                //save to token
+                state = PS_FOR_LOOP_INICIALISATION_END;
+            }
+            else
+                error("Invalid inicialisation part of for loop.", ERROR_LEX);
+
+            break;
+
+        case PS_FOR_LOOP_INICIALISATION_VALUE_NUMBER:
+
+            //in case when value is in forme of number
+            if (c >= '0' && c <= '9')
+            {
+                //SAVE CHAR
+                state = PS_FOR_LOOP_INICIALISATION_VALUE_NUMBER;
+            }
+            else if(c == '\n' || c == ' ' || c == '\t')
+                state = PS_WHITESPACE_5;
+            else if (c == ';')
+            {
+                //save char
+                state = PS_FOR_LOOP_INICIALISATION_END;
+            }
+            else
+                error("Invalid inicialisation part of for loop.", ERROR_LEX);
+            break;
+
+        case PS_FOR_LOOP_INICIALISATION_END:
+
+            //inicialisation part ended, looking for first char of condition
+            if(c == '\n' || c == ' ' || c == '\t')
+                state = PS_FOR_LOOP_INICIALISATION_END;
+
+
+
+            break;
 
 
 
