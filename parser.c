@@ -52,13 +52,13 @@ parser * parser_init(char * filename)
     return p;
 }
 
-
+#define next_state(s)   ( prev_state = state, state = s )
 
 int parser_next_token(parser * p)
 {
     //datovy typ token
     int c = NULL;
-    enum e_parser_state state = PS_DEFAULT;
+    enum e_parser_state state, prev_state = PS_DEFAULT;
 
     int c_before = NULL;
 
