@@ -35,7 +35,17 @@ enum e_parser_state {PS_DEFAULT,
                     PS_FOR_LOOP_INICIALISATION_VALUE_VARIABLE,
                     PS_WHITESPACE_5,
                     PS_FOR_LOOP_INICIALISATION_END,
-                    PS_FOR_LOOP_INICIALISATION_VALUE_NUMBER};
+                    PS_FOR_LOOP_INICIALISATION_VALUE_NUMBER,
+                    PS_CALL_FUNCTION_START,
+                    PS_CALL_FUNCTION_PARAM_IDENTIFICATOR,
+                    PS_CALL_FUNCTION_PARAM_NUMBER_INT_PART,
+                    PS_CALL_FUNCTION_PARAM_NUMBER_FRACTIONAL_PART,
+                    PS_CALL_FUNCTION_PARAM_STRING,
+                    PS_WHITESPACE_6,
+                    PS_CALL_FUNCTION_NEXT_PARAM,
+                    PS_CALL_FUNCTION_END,
+                    PS_CALL_FUNCTION_STRING};
+
 
 
 int parser_control_type(str *s);
@@ -754,6 +764,189 @@ int parser_next_token(parser * p)
 
 
             break;
+
+        case PS_CALL_FUNCTION_START:
+
+            //possible start of parameters of function, depends on last state
+
+            //control of last state --> IF
+            if(c == '\n' || c == ' ' || c == '\t');
+               //dont change state
+
+            else if ( c == '_' || ( c >= 'A' && c <= 'Z') || ( c > 'a' && c < 'z') )
+            {
+                //save char
+                next_state(PS_CALL_FUNCTION_PARAM_IDENTIFICATOR);
+            }
+            else if( (c >= '1' && c <= '9') || c == '-' || c == '+')
+            {
+                //save char
+                next_state(PS_CALL_FUNCTION_PARAM_NUMBER_INT_PART);
+            }
+            else if(c == '"')
+            {
+                //save char
+                next_state(PS_CALL_FUNCTION_STRING);
+            }
+
+            else
+                error("Invalid parameter of function.", ERROR_LEX);
+
+            break;
+
+        case PS_CALL_FUNCTION_PARAM_IDENTIFICATOR:
+
+
+            if ( c == '_' || ( c >= 'A' && c <= 'Z') || ( c > 'a' && c < 'z') || ( c >= '0' && c <= '9') )
+            {
+                //save char
+            }
+            else if (c == '\n' || c == ' ' || c == '\t')
+            {
+                next_state(PS_WHITESPACE_6);
+            }
+            else if(c == ',')
+            {
+                next_state(PS_CALL_FUNCTION_NEXT_PARAM);
+            }
+            else if(c == ')')
+            {
+                next_state(PS_CALL_FUNCTION_END);
+            }
+            else
+                error("Invalid parameter of function.", ERROR_LEX);
+
+
+            break;
+
+        case PS_WHITESPACE_6:
+
+            if (c == '\n' || c == ' ' || c == '\t');
+
+            else if(c == ',')
+            {
+                next_state(PS_CALL_FUNCTION_NEXT_PARAM);
+            }
+            else if(c == ')')
+            {
+                next_state(PS_CALL_FUNCTION_END);
+            }
+            else
+                error("Invalid parameter of function.", ERROR_LEX);
+
+            break;
+
+        case PS_CALL_FUNCTION_END:
+
+            if(c == '\n' || c == ' ' || c == '\t');
+               //dont change state
+
+            else if ( c == '_' || ( c >= 'A' && c <= 'Z') || ( c > 'a' && c < 'z') )
+            {
+                //save char
+                next_state(PS_CALL_FUNCTION_PARAM_IDENTIFICATOR);
+            }
+            else if( (c >= '1' && c <= '9') || c == '-' || c == '+')
+            {
+                //save char
+                next_state(PS_CALL_FUNCTION_PARAM_NUMBER);
+            }
+            else if(c == '"')
+            {
+                //save char
+                next_state(PS_CALL_FUNCTION_STRING);
+            }
+
+            else
+                error("Invalid parameter of function.", ERROR_LEX);
+
+            break;
+
+        case PS_CALL_FUNCTION_PARAM_NUMBER_INT_PART:
+
+            //just in case of first time in this case
+            if(prev_state == PS_CALL_FUNCTION_START || prev_state == PS_CALL_FUNCTION_NEXT_PARAM)
+            {
+                if(c_before == '0')
+                {
+                    if (c == '.');
+                        next_state(PS_CALL_FUNCTION_PARAM_NUMBER_FRACTIONAL_PART);
+                    else
+                        error("Incorrect representation parameter of function.", ERROR_LEX);
+                }
+                else if (c >= '1' && c <= '9')
+                    {
+                        //spracuj znak
+                        next_state(PS_CALL_FUNCTION_PARAM_NUMBER_INT_PART;
+                    }
+
+                else if (c == '.' && (c_before != '+' || c_before != '-'))
+                    next_state(PS_CALL_FUNCTION_PARAM_NUMBER_FRACTIONAL_PART);
+
+
+
+                else if((c == '\n' || c == ' ' || c == '\t') && (c_before != '+' || c_before != '-') )
+                {
+                    next_state(PS_WHITESPACE_6);
+                }
+                else if(c == ')' && (c_before != '+' || c_before != '-') )
+                {
+                    next_state(PS_CALL_FUNCTION_END);
+                }
+                else
+                    error("Invalid parameter of function.", ERROR_LEX);
+            }
+
+            else if (c >= '1' && c <= '9')
+            {
+                //spracuj
+
+            }
+            else if (c == '.')
+            {
+                //spracuj
+                state = PS_CALL_FUNCTION_PARAM_NUMBER_FRACTIONAL_PART;
+            }
+
+            else if(c == '\n' || c == ' ' || c == '\t')
+            {
+                next_state(PS_WHITESPACE_6);
+            }
+            else if(c == ')' )
+            {
+                next_state(PS_CALL_FUNCTION_END);
+            }
+            else
+                error("Invalid parameter of function.", ERROR_LEX);
+
+
+
+            break;
+
+        case PS_CALL_FUNCTION_PARAM_NUMBER_FRACTIONAL_PART:
+
+            if (c >= '1' && c <= '9')
+            {
+                //spracuj znak
+
+            }
+            else if (c == ')')
+            {
+                next_state(PS_CALL_FUNCTION_END);
+            }
+            else if (c == '\n' || c == ' ' || c == '\t')
+            {
+                next_state(PS_WHITESPACE_6);
+            }
+            else if (c == ',')
+            {
+                next_state(PS_CALL_FUNCTION_NEXT_PARAM);
+            }
+            else
+                error("Invalid parameter of function.", ERROR_LEX);
+
+            break;
+
 
         }
 
