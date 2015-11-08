@@ -13,11 +13,17 @@ typedef struct {
 
 str * str_init(void);
 
-void _str_free(str * s);
+void str_free(str * s);
 
 void str_append_char(str * s, char c);
 
 bool str_equals(str * s, char * s2);
+
+double str_to_double(str *s);
+
+int str_to_int(str *s);
+
+void str_clear(str *s);
 
 #endif // STR_H
 
