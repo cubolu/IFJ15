@@ -1,6 +1,7 @@
 #include "error.h"
+#include <stdnoreturn.h>
 
-void error(const char *error_str, error_t error_type) {
+void noreturn error(const char *error_str, error_t error_type) {
     fprintf(stderr, "Error: %s", error_str);
     ifj15_free_all();
     exit(error_type);
