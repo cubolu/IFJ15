@@ -44,6 +44,15 @@ enum e_parser_state {PS_DEFAULT,
                      PS_WHITESPACE_6,
                      PS_CALL_FUNCTION_NEXT_PARAM,
                      PS_CALL_FUNCTION_END,
+                     PS_IF_START,
+                     PS_IF_VARIABLE_1_START,
+                     PS_IF_VARIABLE_1_CONTINUE_IDENTIFICATOR,
+                     PS_IF_AFTER_FIRST_VARIABLE,
+                     PS_IF_COMPARAISON,
+                     PS_IF_VARIABLE_2_START,
+                     PS_IF_VARIABLE_2_CONTINUE_IDENTIFICATOR,
+                     PS_IF_AFTER_SECOND_VARIABLE,
+
                     };
 
 
@@ -71,6 +80,8 @@ parser * parser_init(char * filename)
 
 #define is_identificator_start(c)   ( c == '_' || ( c >= 'A' && c <= 'Z') || ( c >= 'a' && c < 'z') )
 #define is_identificator(c)         ( is_identificator_start(c) || is_digit(c) )
+
+
 
 token_t parser_next_token(parser * p)
 {
@@ -494,10 +505,15 @@ token_t parser_next_token(parser * p)
             //Inside parameters of declaration of function
             if( is_whitespace(c) )
                 state = PS_ARGUMENTS_OF_DECLARATION_INSIDE_1;
-            else if( is_identificator(c) )
+            else if( is_identificator_start(c) )
             {
                 //save char
                 state = PS_ARGUMENTS_OF_DECLARATION_TYPE;
+            }
+            else if(c == ')')
+            {
+                //send token
+                next_state(PS_DEFAULT);
             }
             else
             {
@@ -509,14 +525,14 @@ token_t parser_next_token(parser * p)
         case PS_ARGUMENTS_OF_DECLARATION_TYPE:
 
             //loading the type of variable inside of declaration of function
-            if ( is_identificator_start(c) )
+            if ( is_identificator(c) )
             {
                 //save char
                 state = PS_ARGUMENTS_OF_DECLARATION_TYPE;
             }
             else if ( is_whitespace(c) )
             {
-                if(parser_control_type(p->s) != VT_NOT_A_TYPE)
+                if(parser_control_type(p->s) == VT_NOT_A_TYPE)
                 {
                     state = PS_WHITESPACE_1;
 
@@ -640,6 +656,10 @@ token_t parser_next_token(parser * p)
 
                 return tok;
                 state = PS_DEFAULT;
+            }
+            else if(str_equals(p->s, "if"))
+            {
+                next_state(PS_IF_START);
             }
 
             break;
@@ -855,17 +875,17 @@ token_t parser_next_token(parser * p)
 
             else if ( is_identificator_start(c) )
             {
-                //save char
+                str_append_char(p->s, c);
                 next_state(PS_CALL_FUNCTION_PARAM_IDENTIFICATOR);
             }
             else if( (c >= '1' && c <= '9') || c == '-' || c == '+')
             {
-                //save char
+                str_append_char(p->s, c);
                 next_state(PS_CALL_FUNCTION_PARAM_NUMBER_INT_PART);
             }
             else if(c == '"')
             {
-                //save char
+                str_append_char(p->s, c);
                 next_state(PS_CALL_FUNCTION_PARAM_STRING);
             }
 
@@ -879,7 +899,7 @@ token_t parser_next_token(parser * p)
 
             if ( is_identificator(c) )
             {
-                //save char
+                str_append_char(p->s, c);
             }
             else if ( is_whitespace(c) )
             {
@@ -923,17 +943,17 @@ token_t parser_next_token(parser * p)
 
             else if ( is_identificator_start(c) )
             {
-                //save char
+                str_append_char(p->s, c);
                 next_state(PS_CALL_FUNCTION_PARAM_IDENTIFICATOR);
             }
             else if( (c >= '1' && c <= '9') || c == '-' || c == '+')
             {
-                //save char
+                str_append_char(p->s, c);
                 next_state(PS_CALL_FUNCTION_PARAM_NUMBER_INT_PART);
             }
             else if(c == '"')
             {
-                //save char
+                str_append_char(p->s, c);
                 next_state(PS_CALL_FUNCTION_PARAM_STRING);
             }
 
@@ -956,7 +976,7 @@ token_t parser_next_token(parser * p)
                 }
                 else if (c >= '1' && c <= '9')
                 {
-                    //spracuj znak
+                    str_append_char(p->s, c);
                     next_state(PS_CALL_FUNCTION_PARAM_NUMBER_INT_PART);
                 }
 
@@ -980,11 +1000,13 @@ token_t parser_next_token(parser * p)
             else if (c >= '1' && c <= '9')
             {
                 //spracuj
+                str_append_char(p->s, c);
 
             }
             else if (c == '.')
             {
                 //spracuj
+                str_append_char(p->s, c);
                 state = PS_CALL_FUNCTION_PARAM_NUMBER_FRACTIONAL_PART;
             }
 
@@ -1007,7 +1029,7 @@ token_t parser_next_token(parser * p)
 
             if (c >= '1' && c <= '9')
             {
-                //spracuj znak
+                str_append_char(p->s, c);
 
             }
             else if (c == ')')
@@ -1041,11 +1063,145 @@ token_t parser_next_token(parser * p)
         case PS_CALL_FUNCTION_END:
 
             //send token of calling function
+            //TODO structure of tokens for declarations of function works how?
             tok.type = TT_FUNCTION_CALL;
 
             return tok;
 
             break;
+
+        case PS_IF_START:
+
+            if ( is_whitespace(c) );
+
+            else if( c == '(')
+            {
+                //save char?
+                next_state(PS_IF_VARIABLE_1_START);
+            }
+            else
+                error("If has to be followed by '(", ERROR_LEX);
+
+
+            break;
+
+        case PS_IF_VARIABLE_1_START:
+
+            if ( is_whitespace(c) );
+
+            else if ( is_digit(c) || c == '+' || c == '-')
+            {
+                //save char
+                //TODO state for numbers
+            }
+            else if ( is_identificator_start(c))
+            {
+                //save char
+                next_state(PS_IF_VARIABLE_1_CONTINUE_IDENTIFICATOR);
+            }
+            else
+                error("Expected identificator of variable or number.", ERROR_LEX);
+
+            break;
+
+        case PS_IF_VARIABLE_1_CONTINUE_IDENTIFICATOR:
+
+            if (is_identificator(c))
+            {
+                //save char
+            }
+            else
+            {
+                ungetc(c, p->file);
+                next_state(PS_IF_AFTER_FIRST_VARIABLE);
+
+            }
+
+            break;
+
+        case PS_IF_AFTER_FIRST_VARIABLE:
+
+            if(is_whitespace(c));
+
+            else if(c == ')')
+            {
+                //send token
+                next_state(PS_DEFAULT);
+            }
+            else if(c == '<' || c == '>' || c == '!' || c == '=')
+            {
+                //save char
+                next_state(PS_IF_COMPARAISON);
+            }
+            else
+                error("Expected comparaison", ERROR_LEX);
+
+            break;
+
+        case PS_IF_COMPARAISON:
+
+            if (c == '=')
+            {
+               //save char
+                next_state(PS_IF_VARIABLE_2_START);
+            }
+            else
+            {
+                ungetc(c, p->file);
+                next_state(PS_IF_VARIABLE_2_START);
+            }
+            break;
+
+        case PS_IF_VARIABLE_2_START:
+
+            if ( is_whitespace(c) );
+
+            else if ( is_digit(c) || c == '+' || c == '-')
+            {
+                //save char
+                //TODO state for numbers
+            }
+            else if ( is_identificator_start(c))
+            {
+                //save char
+                next_state(PS_IF_VARIABLE_2_CONTINUE_IDENTIFICATOR);
+            }
+            else
+                error("Expected identificator of variable or number.", ERROR_LEX);
+
+            break;
+
+        case PS_IF_VARIABLE_2_CONTINUE_IDENTIFICATOR:
+
+            if (is_identificator(c))
+            {
+                //save char
+            }
+
+            else
+            {
+                ungetc(c, p->file);
+                next_state(PS_IF_AFTER_SECOND_VARIABLE);
+            }
+
+            break;
+
+
+        case PS_IF_AFTER_SECOND_VARIABLE:
+
+            if(is_whitespace(c));
+
+            else if (')')
+            {
+                //send token
+                next_state(PS_DEFAULT);
+            }
+            else
+                error("Expected ')'.", ERROR_LEX);
+
+            break;
+
+
 
 
         }
