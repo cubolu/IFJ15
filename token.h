@@ -48,6 +48,14 @@ enum e_variable_type {VT_NOT_A_TYPE = 0,
                       VT_DOUBLE,
                       VT_AUTO};
 
+enum e_keyword {KW_CIN,
+                KW_RETURN,
+                KW_FOR,
+                KW_IF,
+                KW_ELSE,
+                KW_COUT,
+                KW_NOT_A_KEYWORD};
+
 
 typedef struct {
     enum e_variable_type t;

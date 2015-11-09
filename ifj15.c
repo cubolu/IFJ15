@@ -27,7 +27,7 @@ int main(int argc, const char *argv[]) {
     printf("%g\n", str_to_double(s));*/
 
 
-    parser * p = parser_init("test.c");
+    parser * p = parser_init("test1");
 
     while(1)
     {

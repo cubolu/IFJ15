@@ -116,7 +116,7 @@ token_t parser_next_token(parser * p)
             if ( is_whitespace(c) )
                 state = PS_DEFAULT;
 
-            //start od commentar
+
             else if(c== '/')
                 state = PS_SLASH;
 
@@ -180,6 +180,8 @@ token_t parser_next_token(parser * p)
             {
                 state = PS_SYMBOL_OF_SUBTRACTION;
             }
+            else
+                error("KOKOTINA NEVYRIESENA ESTE.", ERROR_LEX);
 
             break;
 
@@ -253,20 +255,22 @@ token_t parser_next_token(parser * p)
                 {
                     tok.var_or_func_declaration.t = parser_control_type(p->s);
                     str_clear(p->s);
-                    //We found keyword type
-                    //do something with keyword
-                    state = PS_FIRST_WHITESPACE;
+                    //TOKEN TYPE KEYWORD
+
                     break;
 
                 }
-                else if(parser_control_keyword(p->s) == 0){
+                else if(parser_control_keyword(p->s) !=  KW_NOT_A_KEYWORD){
 
-                    //we found keyword (except type)
-                    state = PS_CHECK_KEYWORD;
+                    //TOKEN SEND KEYWORD
+
+                }
+                else
+                {
+                    //TOKEN SEND IDENTIFICATOR
+
                 }
 
-                //do something with identificator
-                state = PS_DEFAULT;
             }
 
 
@@ -334,7 +338,7 @@ token_t parser_next_token(parser * p)
 
         case PS_INT_PART_2:
 
-            if (c >= '1' && c <= '9')
+            if (c >= '0' && c <= '9')
             {
                 str_append_char(p->s, c);
                 state = PS_INT_PART_2;
@@ -357,9 +361,11 @@ token_t parser_next_token(parser * p)
 
                 tok.integer.value = str_to_int(p->s);
 
+                state = PS_DEFAULT;
+
                 return tok;
 
-                state = PS_DEFAULT;
+
 
             }
             break;
@@ -1249,11 +1255,25 @@ enum e_variable_type parser_control_type(str *s)
  ************************************/
 int parser_control_keyword(str *s)
 {
-    if (str_equals(s, "double") || str_equals(s, "string") || str_equals(s, "auto") || str_equals(s, "int") || str_equals(s, "cin") || str_equals(s, "cout") ||
-            str_equals(s, "for") || str_equals(s, "if") || str_equals(s, "return") || str_equals(s, "else"))
-        return 0;
+    if (str_equals(s, "cin"))
+        return KW_CIN;
+
+    else if (str_equals(s, "cout"))
+        return KW_COUT;
+
+    else if (str_equals(s, "for"))
+        return KW_FOR;
+
+    else if (str_equals(s, "if"))
+        return KW_IF;
+
+    else if (str_equals(s, "return"))
+        return KW_RETURN;
+
+    else if (str_equals(s, "else"))
+        return KW_ELSE;
     else
-        return 1;
+        return KW_NOT_A_KEYWORD;
 }
 
 
