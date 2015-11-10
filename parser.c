@@ -52,7 +52,10 @@ enum e_parser_state {PS_DEFAULT,
                      PS_IF_VARIABLE_2_START,
                      PS_IF_VARIABLE_2_CONTINUE_IDENTIFICATOR,
                      PS_IF_AFTER_SECOND_VARIABLE,
-
+                     PS_STRING,
+                     PS_STRING_BACKSLASH,
+                     PS_STRING_EXCAPE_SEQUENCE_1,
+                     PS_STRING_EXCAPE_SEQUENCE_2
                     };
 
 
@@ -111,6 +114,7 @@ token_t parser_next_token(parser * p)
         case PS_DEFAULT:
 
             //default state
+            //Implement SWITCH
 
             //eats whitespace
             if ( is_whitespace(c) )
@@ -132,6 +136,11 @@ token_t parser_next_token(parser * p)
             {
                 ungetc(c, p->file);
                 state = PS_INT_PART_1;
+            }
+
+            else if(c == '"')
+            {
+                state = PS_STRING;
             }
             else if (c == '=')
             {
@@ -178,7 +187,10 @@ token_t parser_next_token(parser * p)
             }
             else if (c == '-')
             {
-                state = PS_SYMBOL_OF_SUBTRACTION;
+                //TOKEN SEND
+                tok.type = TT_OPERATOR;
+                tok.op.type = OP_SUBTRACT;
+                return tok;
             }
             else
                 error("KOKOTINA NEVYRIESENA ESTE.", ERROR_LEX);
@@ -276,25 +288,7 @@ token_t parser_next_token(parser * p)
 
             break;
 
-        case PS_SYMBOL_OF_SUBTRACTION:
 
-            //decision between operation SUBTRACTION or start of Negative number
-            if( is_whitespace(c) )
-            {
-                tok.type = TT_OPERATOR;
-                tok.op.type = OP_SUBTRACT;
-
-                return tok;
-            }
-
-            else if( is_digit(c) )
-            {
-                str_append_char(p->s, '-');
-                str_append_char(p->s, c);
-                state = PS_INT_PART_1;
-            }
-
-            break;
 
         case PS_INT_PART_1:
 
@@ -448,768 +442,84 @@ token_t parser_next_token(parser * p)
 
             break;
 
-        case PS_FIRST_WHITESPACE:
 
-            if ( ! is_whitespace(c) )
+
+
+
+
+
+
+
+        case PS_STRING:
+
+            if(c == '\\' )
             {
-                error("You can't use type without name",ERROR_LEX);
-            }
-            else
-            {
-                state = PS_WHITESPACE;
-            }
-            break;
-
-        case PS_WHITESPACE:
-
-            if( is_whitespace(c) )
-                state = PS_WHITESPACE;
-
-            else if ( is_identificator_start(c) )
-            {
-                ungetc(c, p->file);
-                state = PS_IDENTIFICATOR_OF_DECLARATION;
-            }
-
-            else
-            {
-                error("Type without following identificator", ERROR_LEX);
-            }
-
-            break;
-
-        case PS_ARGUMENTS_OF_DECLARATION_START:
-
-            //variable is declared, state control next char and decide between declaration of function, declaration of variable and inicialisation
-            if ( is_whitespace(c) )
-                state = PS_ARGUMENTS_OF_DECLARATION_START;
-            else if( c == '(' ){
-                state = PS_ARGUMENTS_OF_DECLARATION_INSIDE_1;
-
-            }
-            else if (c == ';' || c == '=')
-            {
-                ungetc(c, p->file);
-                //send token as declaration of variable
-
-                tok.type = TT_VARIABLE_DECLARATION;
-                tok.var_or_func_declaration.name = p->s;
-                //tok.var_or_func_declaration.t = VT_AUTO; // TODO str_to_type()
-
-                return tok;
-
-                state = PS_DEFAULT;
-            }
-            else
-                error("Incorrect declaration.", ERROR_LEX);
-
-            break;
-
-
-        case PS_ARGUMENTS_OF_DECLARATION_INSIDE_1:
-
-            //Inside parameters of declaration of function
-            if( is_whitespace(c) )
-                state = PS_ARGUMENTS_OF_DECLARATION_INSIDE_1;
-            else if( is_identificator_start(c) )
-            {
-                //save char
-                state = PS_ARGUMENTS_OF_DECLARATION_TYPE;
-            }
-            else if(c == ')')
-            {
-                //send token
-                next_state(PS_DEFAULT);
-            }
-            else
-            {
-                error("Nonvalid declaration of function.", ERROR_LEX);
-            }
-
-            break;
-
-        case PS_ARGUMENTS_OF_DECLARATION_TYPE:
-
-            //loading the type of variable inside of declaration of function
-            if ( is_identificator(c) )
-            {
-                //save char
-                state = PS_ARGUMENTS_OF_DECLARATION_TYPE;
-            }
-            else if ( is_whitespace(c) )
-            {
-                if(parser_control_type(p->s) == VT_NOT_A_TYPE)
-                {
-                    state = PS_WHITESPACE_1;
-
-                }
-                else
-                {
-                    error("Type of variable is not correct.", ERROR_LEX);
-                }
-
-            }
-            else
-            {
-                error("Type of variable is not correct.", ERROR_LEX);
-            }
-            break;
-
-
-        case PS_WHITESPACE_1:
-
-            //Interstate, eats whitespaces
-            if( is_whitespace(c) )
-                state = PS_WHITESPACE_1;
-            else if( is_identificator_start(c) )
-            {
-                //save char
-                state = PS_ARGUMENTS_OF_DECLARATION_IDENTIFICATOR;
-
-            }
-            else
-                error("Nonvalid name of variable.", ERROR_LEX);
-
-            break;
-
-        case PS_ARGUMENTS_OF_DECLARATION_IDENTIFICATOR:
-
-            //identificator of variable inside of declaration of function
-            if( is_identificator(c) )
-            {
-                //save char
-                state = PS_ARGUMENTS_OF_DECLARATION_IDENTIFICATOR;
-            }
-            else if( is_whitespace(c) || (c == ',') || (c == ')'))
-            {
-                ungetc(c, p->file);
-                if(parser_control_keyword(p->s) != 0)
-                    state = PS_ARGUMENTS_OF_DECLARATION_END;
-                else
-                    error("Identificator of variable can't be keyword.", ERROR_LEX);
-
-            }
-            else
-                error("Nonvalid name of variable.", ERROR_LEX);
-
-
-            break;
-
-        case PS_ARGUMENTS_OF_DECLARATION_END:
-
-            //possible end of declartaion of function... decide between end, or continuing in loading params
-            if( is_whitespace(c)  )
-                state = PS_ARGUMENTS_OF_DECLARATION_END;
-            else if (c == ')')
-            {
-                tok.type = TT_FUNCTION_DECLARATION;
-
-                return tok;
-                state = PS_DEFAULT;
-            }
-            else if(c == ',')
-            {
-                //save / create new token for next declaration of variable inside declaration of function
-                // TODO wtf
-                state = PS_ARGUMENTS_OF_DECLARATION_TYPE;
-            }
-            else
-                error("Nonvalid declaration of function.", ERROR_LEX);
-
-            break;
-
-        case PS_IDENTIFICATOR_OF_DECLARATION:
-
-            if ( is_identificator(c) )
-            {
-                state = PS_IDENTIFICATOR_OF_DECLARATION;
-                str_append_char(p->s, c);
-                //save char in string
-            }
-
-
-            else
-            {
-                ungetc(c, p->file);
-                if(parser_control_keyword(p->s) == 0)
-                {
-                    //Identificator is keyword
-
-                    error("Type keyword can't be followed by keyword.", ERROR_LEX);
-
-                }
-                else
-                {
-
-                    state = PS_ARGUMENTS_OF_DECLARATION_START;
-                }
-
-            }
-
-            break;
-
-        case PS_CHECK_KEYWORD:
-
-            //keyword is not type, we decide between others keywords
-            if (str_equals(p->s, "for"))
-            {
-                state = PS_FOR_LOOP_START;
-            }
-            else if(str_equals(p->s, "return"))
-            {
-                //send token
-                tok.type = TT_RETURN;
-
-                return tok;
-                state = PS_DEFAULT;
-            }
-            else if(str_equals(p->s, "if"))
-            {
-                next_state(PS_IF_START);
-            }
-
-            break;
-
-
-        case PS_FOR_LOOP_START:
-
-            //start of for loop
-            if( is_whitespace(c) )
-                state = PS_FOR_LOOP_START;
-            else if (c == '(')
-            {
-                //save char?
-                state = PS_WHITESPACE_2;
-            }
-            else
-                error("non valid for cycle.", ERROR_LEX);
-
-
-            break;
-
-        case PS_WHITESPACE_2:
-
-            //inside of declaration of for loop, eating whitespace
-            if( is_whitespace(c) )
-                state = PS_WHITESPACE_2;
-            else if ( ( c >= 'A' && c <= 'Z') || ( c > 'a' && c < 'z') )
-            {
-                //save char
-                state = PS_FOR_LOOP_INICIALISATION_TYPE;
-            }
-            else
-                error("In inicialisation of for loop, type of variable is necessary.", ERROR_LEX);
-
-            break;
-
-        case PS_FOR_LOOP_INICIALISATION_TYPE:
-
-            //loading type of varaible in inicialisation of for loop
-            if ( ( c >= 'A' && c <= 'Z') || ( c > 'a' && c < 'z') )
-            {
-                //save char
-                state = PS_FOR_LOOP_INICIALISATION_TYPE;
-            }
-            else if( is_whitespace(c) )
-            {
-                if(parser_control_type(p->s) != VT_NOT_A_TYPE)
-                {
-                    //keyword type is OK, save to token
-                    state = PS_WHITESPACE_3;
-                }
-                else
-                    error("Inicialisation of expression in for loop is invalid.", ERROR_LEX);
-            }
-
-            else
-                error("Inicialisation of expression in for loop is invalid.", ERROR_LEX);
-
-            break;
-
-        case PS_WHITESPACE_3:
-
-            //eats whitespace, looking for start of identificator of variable
-            if( is_whitespace(c) )
-                state = PS_WHITESPACE_3;
-            if ( is_identificator_start(c) )
-            {
-                //save char
-                state = PS_FOR_LOOP_INICIALISATION_IDENTIFICATOR;
-            }
-
-            break;
-
-
-        case PS_FOR_LOOP_INICIALISATION_IDENTIFICATOR:
-
-            //loading identificator of variable
-            if ( is_identificator(c) )
-            {
-                //save char
-                state = PS_FOR_LOOP_INICIALISATION_IDENTIFICATOR;
-            }
-            else if(c == '=')
-            {
-                if(parser_control_keyword(p->s) != 0)
-                {
-                    state = PS_FOR_LOOP_INICIALISATION_VALUE_START;
-                }
-                else
-                    error("Identificator can't be represented by keyword.", ERROR_LEX);
-            }
-            else if ( is_whitespace(c) )
-                state = PS_WHITESPACE_4;
-            else
-                error("Invalid identificator.", ERROR_LEX);
-
-            break;
-
-        case PS_WHITESPACE_4:
-
-            //after identificator, looking for '='
-            if( is_whitespace(c) )
-                state = PS_WHITESPACE_4;
-            else if (c == '=')
-            {
-                if(parser_control_keyword(p->s) != 0)
-                {
-                    state = PS_FOR_LOOP_INICIALISATION_VALUE_START;
-                }
-                else
-                    error("Identificator can't be represented by keyword.", ERROR_LEX);
-            }
-            else
-                error("Invalid identificator.", ERROR_LEX);
-
-            break;
-
-
-        case PS_FOR_LOOP_INICIALISATION_VALUE_START:
-
-            //'='found, waiting for start of variable or number. Variable can later become calling of function. Now I don' t see that.
-            if( is_whitespace(c) )
-                state = PS_FOR_LOOP_INICIALISATION_VALUE_START;
-            else if ( is_identificator_start(c) )
-            {
-                //save char
-                state = PS_FOR_LOOP_INICIALISATION_VALUE_VARIABLE;
-            }
-            else if( (c >= '1' && c <= '9') || c == '-' || c == '+')
-            {
-                //save char
-                state = PS_FOR_LOOP_INICIALISATION_VALUE_NUMBER;
-            }
-            else
-                error("Invalid inicialisation of variable.", ERROR_LEX);
-
-            break;
-
-
-        case PS_FOR_LOOP_INICIALISATION_VALUE_VARIABLE:
-
-            //loading of identificator of variable in inicialisation of for loop
-            if ( is_identificator(c) )
-            {
-                //save char
-                state = PS_FOR_LOOP_INICIALISATION_VALUE_VARIABLE;
-            }
-            else if( is_whitespace(c) )
-                state = PS_WHITESPACE_5;
-            else if(c == ';')
-            {
-                //save to token
-                state = PS_FOR_LOOP_INICIALISATION_END;
-            }
-            else
-                error("Invalid inicialisation part of for loop.", ERROR_LEX);
-
-            break;
-
-
-        case PS_WHITESPACE_5:
-
-            //eats whitespace and waits on ';'
-            if( is_whitespace(c) )
-                state = PS_WHITESPACE_4;
-
-            else if (c == ';')
-            {
-                //save to token
-                state = PS_FOR_LOOP_INICIALISATION_END;
-            }
-            else
-                error("Invalid inicialisation part of for loop.", ERROR_LEX);
-
-            break;
-
-        case PS_FOR_LOOP_INICIALISATION_VALUE_NUMBER:
-
-            //in case when value is in forme of number
-            if (c >= '0' && c <= '9')
-            {
-                //SAVE CHAR
-                state = PS_FOR_LOOP_INICIALISATION_VALUE_NUMBER;
-            }
-            else if( is_whitespace(c) )
-                state = PS_WHITESPACE_5;
-            else if (c == ';')
-            {
-                //save char
-                state = PS_FOR_LOOP_INICIALISATION_END;
-            }
-            else
-                error("Invalid inicialisation part of for loop.", ERROR_LEX);
-            break;
-
-        case PS_FOR_LOOP_INICIALISATION_END:
-
-            //inicialisation part ended, looking for first char of condition
-            if( is_whitespace(c))
-                state = PS_FOR_LOOP_INICIALISATION_END;
-
-
-
-            break;
-
-        case PS_CALL_FUNCTION_START:
-
-            //possible start of parameters of function, depends on last state
-
-            //control of last state --> IF
-            if( is_whitespace(c) );
-            //dont change state
-
-            else if ( is_identificator_start(c) )
-            {
-                str_append_char(p->s, c);
-                next_state(PS_CALL_FUNCTION_PARAM_IDENTIFICATOR);
-            }
-            else if( (c >= '1' && c <= '9') || c == '-' || c == '+')
-            {
-                str_append_char(p->s, c);
-                next_state(PS_CALL_FUNCTION_PARAM_NUMBER_INT_PART);
+                state = PS_STRING_BACKSLASH;
             }
             else if(c == '"')
             {
-                str_append_char(p->s, c);
-                next_state(PS_CALL_FUNCTION_PARAM_STRING);
+                //TOKEN SEND, end of string
             }
-
-            else
-                error("Invalid parameter of function.", ERROR_LEX);
-
-            break;
-
-        case PS_CALL_FUNCTION_PARAM_IDENTIFICATOR:
-
-
-            if ( is_identificator(c) )
+            else if (c > '31')
             {
                 str_append_char(p->s, c);
-            }
-            else if ( is_whitespace(c) )
-            {
-                next_state(PS_WHITESPACE_6);
-            }
-            else if(c == ',')
-            {
-                next_state(PS_CALL_FUNCTION_NEXT_PARAM);
-            }
-            else if(c == ')')
-            {
-                next_state(PS_CALL_FUNCTION_END);
-            }
-            else
-                error("Invalid parameter of function.", ERROR_LEX);
-
-
-            break;
-
-        case PS_WHITESPACE_6:
-
-            if ( is_whitespace(c) );
-
-            else if(c == ',')
-            {
-                next_state(PS_CALL_FUNCTION_NEXT_PARAM);
-            }
-            else if(c == ')')
-            {
-                next_state(PS_CALL_FUNCTION_END);
-            }
-            else
-                error("Invalid parameter of function.", ERROR_LEX);
-
-            break;
-
-        case PS_CALL_FUNCTION_NEXT_PARAM:
-
-            if( is_whitespace(c) );
-            //dont change state
-
-            else if ( is_identificator_start(c) )
-            {
-                str_append_char(p->s, c);
-                next_state(PS_CALL_FUNCTION_PARAM_IDENTIFICATOR);
-            }
-            else if( (c >= '1' && c <= '9') || c == '-' || c == '+')
-            {
-                str_append_char(p->s, c);
-                next_state(PS_CALL_FUNCTION_PARAM_NUMBER_INT_PART);
-            }
-            else if(c == '"')
-            {
-                str_append_char(p->s, c);
-                next_state(PS_CALL_FUNCTION_PARAM_STRING);
-            }
-
-            else
-                error("Invalid parameter of function.", ERROR_LEX);
-
-            break;
-
-        case PS_CALL_FUNCTION_PARAM_NUMBER_INT_PART:
-
-            //just in case of first time in this case
-            if(prev_state == PS_CALL_FUNCTION_START || prev_state == PS_CALL_FUNCTION_NEXT_PARAM)
-            {
-                if(c_before == '0')
-                {
-                    if (c == '.')
-                        next_state(PS_CALL_FUNCTION_PARAM_NUMBER_FRACTIONAL_PART);
-                    else
-                        error("Incorrect representation parameter of function.", ERROR_LEX);
-                }
-                else if (c >= '1' && c <= '9')
-                {
-                    str_append_char(p->s, c);
-                    next_state(PS_CALL_FUNCTION_PARAM_NUMBER_INT_PART);
-                }
-
-                else if (c == '.' && (c_before != '+' || c_before != '-'))
-                    next_state(PS_CALL_FUNCTION_PARAM_NUMBER_FRACTIONAL_PART);
-
-
-
-                else if( is_whitespace(c) && (c_before != '+' || c_before != '-') )
-                {
-                    next_state(PS_WHITESPACE_6);
-                }
-                else if(c == ')' && (c_before != '+' || c_before != '-') )
-                {
-                    next_state(PS_CALL_FUNCTION_END);
-                }
-                else
-                    error("Invalid parameter of function.", ERROR_LEX);
-            }
-
-            else if (c >= '1' && c <= '9')
-            {
-                //spracuj
-                str_append_char(p->s, c);
-
-            }
-            else if (c == '.')
-            {
-                //spracuj
-                str_append_char(p->s, c);
-                state = PS_CALL_FUNCTION_PARAM_NUMBER_FRACTIONAL_PART;
-            }
-
-            else if( is_whitespace(c) )
-            {
-                next_state(PS_WHITESPACE_6);
-            }
-            else if(c == ')' )
-            {
-                next_state(PS_CALL_FUNCTION_END);
-            }
-            else
-                error("Invalid parameter of function.", ERROR_LEX);
-
-
-
-            break;
-
-        case PS_CALL_FUNCTION_PARAM_NUMBER_FRACTIONAL_PART:
-
-            if (c >= '1' && c <= '9')
-            {
-                str_append_char(p->s, c);
-
-            }
-            else if (c == ')')
-            {
-                next_state(PS_CALL_FUNCTION_END);
-            }
-            else if ( is_whitespace(c) )
-            {
-                next_state(PS_WHITESPACE_6);
-            }
-            else if (c == ',')
-            {
-                next_state(PS_CALL_FUNCTION_NEXT_PARAM);
-            }
-            else
-                error("Invalid parameter of function.", ERROR_LEX);
-
-            break;
-
-        case PS_CALL_FUNCTION_PARAM_STRING:
-
-            if (c != '"')
-                str_append_char(p->s, c);
-
-            else
-                next_state(PS_WHITESPACE_6);
-
-            break;
-
-
-        case PS_CALL_FUNCTION_END:
-
-            //send token of calling function
-            //TODO structure of tokens for declarations of function works how?
-            tok.type = TT_FUNCTION_CALL;
-
-            return tok;
-
-            break;
-
-        case PS_IF_START:
-
-            if ( is_whitespace(c) );
-
-            else if( c == '(')
-            {
-                //save char?
-                next_state(PS_IF_VARIABLE_1_START);
-            }
-            else
-                error("If has to be followed by '(", ERROR_LEX);
-
-
-            break;
-
-        case PS_IF_VARIABLE_1_START:
-
-            if ( is_whitespace(c) );
-
-            else if ( is_digit(c) || c == '+' || c == '-')
-            {
-                //save char
-                //TODO state for numbers
-            }
-            else if ( is_identificator_start(c))
-            {
-                //save char
-                next_state(PS_IF_VARIABLE_1_CONTINUE_IDENTIFICATOR);
-            }
-            else
-                error("Expected identificator of variable or number.", ERROR_LEX);
-
-            break;
-
-        case PS_IF_VARIABLE_1_CONTINUE_IDENTIFICATOR:
-
-            if (is_identificator(c))
-            {
                 //save char
             }
-            else
-            {
-                ungetc(c, p->file);
-                next_state(PS_IF_AFTER_FIRST_VARIABLE);
+            break;
 
+
+        case PS_STRING_BACKSLASH:
+
+            if (c == '"' )
+            {
+
+                str_append_char(p->s, '\"');
             }
+            else if(c == 'n')
+            {
+                str_append_char(p->s, '\n');
+            }
+            else if(c == 't')
+            {
+                str_append_char(p->s, '\t');
+            }
+            else if( c == '\\')
+            {
+                str_append_char(p->s, '\\');
+            }
+            else if(c == 'x')
+            {
+                state = PS_STRING_EXCAPE_SEQUENCE_1;
+            }
+
 
             break;
 
-        case PS_IF_AFTER_FIRST_VARIABLE:
+        case PS_STRING_EXCAPE_SEQUENCE_1:
 
-            if(is_whitespace(c));
-
-            else if(c == ')')
+            //TODO finish
+            if((c >= '0' && c <= '9') || (c >= 'A' && c >= 'F') )
             {
-                //send token
-                next_state(PS_DEFAULT);
-            }
-            else if(c == '<' || c == '>' || c == '!' || c == '=')
-            {
-                //save char
-                next_state(PS_IF_COMPARAISON);
+                state = PS_STRING_EXCAPE_SEQUENCE_2;
             }
             else
-                error("Expected comparaison", ERROR_LEX);
-
-            break;
-
-        case PS_IF_COMPARAISON:
-
-            if (c == '=')
-            {
-               //save char
-                next_state(PS_IF_VARIABLE_2_START);
-            }
-            else
-            {
-                ungetc(c, p->file);
-                next_state(PS_IF_VARIABLE_2_START);
-            }
-            break;
-
-        case PS_IF_VARIABLE_2_START:
-
-            if ( is_whitespace(c) );
-
-            else if ( is_digit(c) || c == '+' || c == '-')
-            {
-                //save char
-                //TODO state for numbers
-            }
-            else if ( is_identificator_start(c))
-            {
-                //save char
-                next_state(PS_IF_VARIABLE_2_CONTINUE_IDENTIFICATOR);
-            }
-            else
-                error("Expected identificator of variable or number.", ERROR_LEX);
-
-            break;
-
-        case PS_IF_VARIABLE_2_CONTINUE_IDENTIFICATOR:
-
-            if (is_identificator(c))
-            {
-                //save char
-            }
-
-            else
-            {
-                ungetc(c, p->file);
-                next_state(PS_IF_AFTER_SECOND_VARIABLE);
-            }
+                error("Invalid representation of char in escape sequence.", ERROR_LEX);
 
             break;
 
 
-        case PS_IF_AFTER_SECOND_VARIABLE:
+        case PS_STRING_EXCAPE_SEQUENCE_2:
 
-            if(is_whitespace(c));
-
-            else if (')')
+            if((c >= '0' && c <= '9') || (c >= 'A' && c >= 'F') )
             {
-                //send token
-                next_state(PS_DEFAULT);
+                //TODO SAVE FOUND CHAR
+                state = PS_STRING;
             }
             else
-                error("Expected ')'.", ERROR_LEX);
+                error("Invalid representation of char in escape sequence.", ERROR_LEX);
+
 
             break;
-
-
-
-
         }
 
     }
