@@ -10,52 +10,17 @@ enum e_parser_state {PS_DEFAULT,
                      PS_SLASH,
                      PS_BLOCK_COMMENT,
                      PS_IDENTIFICATOR,
-                     PS_SYMBOL_OF_SUBTRACTION,
                      PS_INT_PART_1,
                      PS_INT_PART_2,
                      PS_FRACTIONAL_PART,
                      PS_EXPONENCIAL_PART,
-                     PS_WHITESPACE,
-                     PS_FIRST_WHITESPACE,
-                     PS_IDENTIFICATOR_OF_DECLARATION,
-                     PS_ARGUMENTS_OF_DECLARATION_START,
-                     PS_ARGUMENTS_OF_DECLARATION_INSIDE_1,
-                     PS_ARGUMENTS_OF_DECLARATION_TYPE,
-                     PS_WHITESPACE_1,
-                     PS_ARGUMENTS_OF_DECLARATION_IDENTIFICATOR,
-                     PS_ARGUMENTS_OF_DECLARATION_END,
-                     PS_CHECK_KEYWORD,
-                     PS_FOR_LOOP_START,
-                     PS_WHITESPACE_2,
-                     PS_FOR_LOOP_INICIALISATION_TYPE,
-                     PS_WHITESPACE_3,
-                     PS_FOR_LOOP_INICIALISATION_IDENTIFICATOR,
-                     PS_WHITESPACE_4,
-                     PS_FOR_LOOP_INICIALISATION_VALUE_START,
-                     PS_FOR_LOOP_INICIALISATION_VALUE_VARIABLE,
-                     PS_WHITESPACE_5,
-                     PS_FOR_LOOP_INICIALISATION_END,
-                     PS_FOR_LOOP_INICIALISATION_VALUE_NUMBER,
-                     PS_CALL_FUNCTION_START,
-                     PS_CALL_FUNCTION_PARAM_IDENTIFICATOR,
-                     PS_CALL_FUNCTION_PARAM_NUMBER_INT_PART,
-                     PS_CALL_FUNCTION_PARAM_NUMBER_FRACTIONAL_PART,
-                     PS_CALL_FUNCTION_PARAM_STRING,
-                     PS_WHITESPACE_6,
-                     PS_CALL_FUNCTION_NEXT_PARAM,
-                     PS_CALL_FUNCTION_END,
-                     PS_IF_START,
-                     PS_IF_VARIABLE_1_START,
-                     PS_IF_VARIABLE_1_CONTINUE_IDENTIFICATOR,
-                     PS_IF_AFTER_FIRST_VARIABLE,
-                     PS_IF_COMPARAISON,
-                     PS_IF_VARIABLE_2_START,
-                     PS_IF_VARIABLE_2_CONTINUE_IDENTIFICATOR,
-                     PS_IF_AFTER_SECOND_VARIABLE,
                      PS_STRING,
                      PS_STRING_BACKSLASH,
                      PS_STRING_EXCAPE_SEQUENCE_1,
-                     PS_STRING_EXCAPE_SEQUENCE_2
+                     PS_STRING_EXCAPE_SEQUENCE_2,
+                     PS_LESS_THEN,
+                     PS_GREATER_THEN,
+                     PS_OPERATOR_OF_ASSIGNEMENT
                     };
 
 
@@ -146,10 +111,7 @@ token_t parser_next_token(parser * p)
             {
                 //send operator
 
-                tok.type = TT_ASSIGNMENT;
-                return tok;
-
-                state = PS_DEFAULT;
+                state = PS_OPERATOR_OF_ASSIGNEMENT;
             }
             else if(c == '*')
             {
@@ -164,6 +126,7 @@ token_t parser_next_token(parser * p)
             else if (c == '{')
             {
                 tok.type = TT_BLOCK_START;
+
                 return tok;
 
                 //send start of block
@@ -192,8 +155,32 @@ token_t parser_next_token(parser * p)
                 tok.op.type = OP_SUBTRACT;
                 return tok;
             }
+            else if (c == '+')
+            {
+                tok.type = TT_OPERATOR;
+                tok.op.type = OP_ADD;
+                return tok;
+            }
+            else if(c == '(')
+            {
+                //TOKEN DEFINE TYPE OF TOKEN
+                //SEND TOKEN
+            }
+            else if(c == ')')
+            {
+                //TOKEN DEFINE TYPE OF TOKEN
+                //SEND TOKEN
+            }
+            else if(c == '<')
+            {
+                state = PS_LESS_THEN;
+            }
+            else if(c == '>')
+            {
+                state = PS_GREATER_THEN;
+            }
             else
-                error("KOKOTINA NEVYRIESENA ESTE.", ERROR_LEX);
+                error("KOKOTINA, ktoru jazyk nezvlada.", ERROR_LEX);
 
             break;
 
@@ -445,11 +432,6 @@ token_t parser_next_token(parser * p)
 
 
 
-
-
-
-
-
         case PS_STRING:
 
             if(c == '\\' )
@@ -460,7 +442,7 @@ token_t parser_next_token(parser * p)
             {
                 //TOKEN SEND, end of string
             }
-            else if (c > '31')
+            else if (c > 31)
             {
                 str_append_char(p->s, c);
                 //save char
@@ -520,6 +502,64 @@ token_t parser_next_token(parser * p)
 
 
             break;
+
+        case PS_LESS_THEN:
+
+            if(c == '<'){
+                //TOKEN SEND OPERATOR <<
+            }
+            else if( c == '=' )
+            {
+                //TOKEN SEND OPERATOR <=
+            }
+            else{
+                //SEND TOKEN <
+
+                ungetc(c, p->file);
+            }
+            state = PS_DEFAULT;
+
+            break;
+
+        case PS_GREATER_THEN:
+
+            if(c == '>')
+            {
+                //TOKEND SEND OPERATOR >>
+
+            }
+            else if(c == '=')
+            {
+                //TOKEN SEND OPERATOR >=
+
+            }
+            else
+            {
+                //SEND TOKEN >
+                ungetc(c, p->file);
+            }
+            state = PS_DEFAULT;
+
+            break;
+
+        case PS_OPERATOR_OF_ASSIGNEMENT:
+
+            if(c == '=')
+            {
+                //SEND TOKEN OPERATOR ==
+            }
+            else
+            {
+                tok.type = TT_ASSIGNMENT;
+                return tok;
+            }
+            state = PS_DEFAULT;
+
+
+
+
+
+
         }
 
     }
