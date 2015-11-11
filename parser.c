@@ -286,15 +286,11 @@ token_t parser_next_token(parser * p)
 
         case PS_INT_PART_1:
 
-            if( str_last_char(p->s) == '0')
-            {
-                if (c == '.')
-                {
-                    state = PS_FRACTIONAL_PART;
-                }
-                else if (is_digit(c))
-                    error("Incorrect representation of number", ERROR_LEX);
-            }
+            if( str_last_char(p->s) == '0' && c == '.')
+                state = PS_FRACTIONAL_PART;
+
+            else if( str_last_char(p->s) == '0' && is_digit(c))
+                error("Incorrect representation of number", ERROR_LEX);
 
             else if (c >= '1' && c <= '9')
             {
