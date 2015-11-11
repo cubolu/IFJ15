@@ -4,89 +4,67 @@
 #include "str.h"
 
 enum e_token_type {
-    TT_VARIABLE_DECLARATION,
-    TT_SEMICOLON,
-    TT_ASSIGNMENT,
+    TT_NONE = 0,
+    TT_KW_CIN,
+    TT_KW_COUT,
+    TT_KW_RETURN,
+    TT_KW_FOR,
+    TT_KW_IF,
+    TT_KW_ELSE,
 
-    TT_DOUBLE,
-    TT_INTEGER,
-    TT_STRING,
+    TT_IDENTIFICATOR,
+
+    TT_OP_ASSIGNMENT,
+    TT_OP_RELATIONAL,
+    TT_OP_ARITHEMTIC,
+    TT_OP_STREAM_IN,  // >>
+    TT_OP_STREAM_OUT, // <<
+
+    TT_TYPE_DOUBLE,
+    TT_TYPE_INT,
+    TT_TYPE_STRING,
+    TT_TYPE_AUTO,
 
     TT_BLOCK_START,
     TT_BLOCK_END,
 
-    TT_IF,
-    TT_ELSE,
-    TT_FOR,
+    TT_PARENTHESES_OPEN,
+    TT_PARENTHESES_CLOSE,
 
-    TT_FUNCTION_CALL,
-    TT_FUNCTION_DECLARATION,
+    TT_LIT_INT,
+    TT_LIT_DOUBLE,
+    TT_LIT_STRING,
 
-    TT_OPERATOR,
-
-    TT_RETURN,
-
+    TT_SEMICOLON,
     TT_EOF,
 };
 
-enum e_operator {
-    OP_MULTIPLY,
-    OP_DIVIDE,
-    OP_ADD,
-    OP_SUBTRACT,
-    OP_LESS,
-    OP_GREATER,
-    OP_LESS_OR_EQ,
-    OP_GREATER_OR_EQ,
-    OP_EQUAL,
-    OP_NOT_EQUAL
+enum e_op_arithmetic {
+    OP_ARITH_MULTIPLY,
+    OP_ARITH_DIVIDE,
+    OP_ARITH_ADD,
+    OP_ARITH_SUBTRACT,
 };
 
-enum e_variable_type {VT_NOT_A_TYPE = 0,
-                      VT_INT,
-                      VT_STRING,
-                      VT_DOUBLE,
-                      VT_AUTO};
+enum e_op_relational {
+    OP_REL_LESS,
+    OP_REL_GREATER,
+    OP_REL_LESS_OR_EQ,
+    OP_REL_GREATER_OR_EQ,
+    OP_REL_EQUAL,
+    OP_REL_NOT_EQUAL
+};
 
-enum e_keyword {KW_CIN,
-                KW_RETURN,
-                KW_FOR,
-                KW_IF,
-                KW_ELSE,
-                KW_COUT,
-                KW_NOT_A_KEYWORD};
-
-
-typedef struct {
-    enum e_variable_type t;
-    str * name;
-} token_var_declaration_t;
 
 typedef struct {
     enum e_token_type type;
     union {
-        token_var_declaration_t var_or_func_declaration;
+        enum e_op_arithmetic op_arith;
+        enum e_op_relational op_rel;
+        str * s;
 
-        struct {
-            double value;
-        } double_num;
-
-        struct {
-            int value;
-        } integer;
-
-        struct {
-            str * text;
-        } string;
-
-        struct {
-            enum e_operator type;
-        } op;
-
-
-        //if, else, for
-        //deklarace funkce
-        //volani funkce
+        int int_val;
+        double double_val;
     };
 
 } token_t;
