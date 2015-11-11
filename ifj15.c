@@ -24,8 +24,11 @@ int main(int argc, const char *argv[]) {
     str_append_char(s, '1');
     str_append_char(s, '4');
 
-    printf("%g\n", str_to_double(s));*/
+    printf("%g\n", str_to_double(s));
 
+    str_clear(s);
+
+    printf("str last char: %d\n", str_last_char(s));*/
 
     parser * p = parser_init("test1");
 

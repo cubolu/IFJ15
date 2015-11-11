@@ -9,6 +9,7 @@ enum e_parser_state {PS_DEFAULT,
                      PS_COMMENT,
                      PS_SLASH,
                      PS_BLOCK_COMMENT,
+                     PS_BLOCK_COMMENT_ASTERISK,
                      PS_IDENTIFICATOR,
                      PS_INT_PART_1,
                      PS_INT_PART_2,
@@ -20,7 +21,8 @@ enum e_parser_state {PS_DEFAULT,
                      PS_STRING_ESCAPE_HEX_2,
                      PS_LESS_THEN,
                      PS_GREATER_THEN,
-                     PS_OPERATOR_OF_ASSIGNEMENT
+                     PS_OPERATOR_OF_ASSIGNEMENT,
+                     PS_EXCLAMATION,
                     };
 
 
@@ -37,6 +39,8 @@ parser * parser_init(char * filename)
     //TODO overit otevreni
 
     p->s = str_init();
+
+    p->line = 1;
 
     return p;
 }
@@ -59,7 +63,7 @@ parser * parser_init(char * filename)
 token_t parser_next_token(parser * p)
 {
     token_t tok;
-    int c = 0, c_prev = 0;
+    int c = 0;
 
     char hex_char;
 
@@ -69,7 +73,6 @@ token_t parser_next_token(parser * p)
 
     while(1)
     {
-        c_prev = c;
         c = getc(p->file);
         printf("%c", c);
 
@@ -78,6 +81,10 @@ token_t parser_next_token(parser * p)
             tok.type = TT_EOF;
             return tok;
         }
+
+        else if (c == '\n')
+            p->line++;
+
 
         switch(state)
         {
@@ -181,6 +188,9 @@ token_t parser_next_token(parser * p)
             else if(c == '>')
                 state = PS_GREATER_THEN;
 
+            else if(c == '!')
+                state = PS_EXCLAMATION;
+
             else
                 error("KOKOTINA, ktoru jazyk nezvlada.", ERROR_LEX);
 
@@ -228,11 +238,18 @@ token_t parser_next_token(parser * p)
 
         case PS_BLOCK_COMMENT:
 
+            if (c == '*')
+                state = PS_BLOCK_COMMENT_ASTERISK;
+
+            else
+                state = PS_BLOCK_COMMENT;
+
+            break;
+
+        case PS_BLOCK_COMMENT_ASTERISK:
+
             if (c == '/')
-            {
-                if (c_prev == '*')
-                    state = PS_DEFAULT;
-            }
+                state = PS_DEFAULT;
 
             else
                 state = PS_BLOCK_COMMENT;
@@ -269,27 +286,29 @@ token_t parser_next_token(parser * p)
 
         case PS_INT_PART_1:
 
-            if(c_prev == '0')
+            if( str_last_char(p->s) == '0')
             {
                 if (c == '.')
                 {
-                    str_append_char(p->s, '0');
-                    str_append_char(p->s, c);
                     state = PS_FRACTIONAL_PART;
                 }
-                else
+                else if (is_digit(c))
                     error("Incorrect representation of number", ERROR_LEX);
             }
 
             else if (c >= '1' && c <= '9')
             {
-                str_append_char(p->s, c);
                 state = PS_INT_PART_2;
+            }
+
+            else if (c == '0')
+            {
+                state = PS_INT_PART_1;
             }
 
             else if (c == '.')
             {
-                str_append_char(p->s, c);
+
                 state = PS_FRACTIONAL_PART;
             }
 
@@ -301,6 +320,8 @@ token_t parser_next_token(parser * p)
                 tok.int_val = str_to_int(p->s);
                 return tok;
             }
+
+            str_append_char(p->s, c);
             break;
 
         case PS_INT_PART_2:
@@ -365,7 +386,7 @@ token_t parser_next_token(parser * p)
 
         case PS_EXPONENCIAL_PART:
 
-            if (c_prev == 'E' || c_prev == 'e' )
+            if (str_last_char(p->s) == 'E' || str_last_char(p->s) == 'e' )
                 //first time in this state
             {
                 if(c == '+' || c == '-')
@@ -521,6 +542,20 @@ token_t parser_next_token(parser * p)
                 tok.op_rel = OP_REL_GREATER;
                 return tok;
             }
+
+            break;
+
+        case PS_EXCLAMATION:
+
+            if(c == '=')
+            {
+                tok.type = TT_OP_RELATIONAL;
+                tok.op_arith = OP_REL_NOT_EQUAL;
+                return tok;
+            }
+
+            else
+                error("Uncomplete non-equal operator.", ERROR_LEX);
 
             break;
 
