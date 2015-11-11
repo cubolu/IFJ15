@@ -74,7 +74,7 @@ token_t parser_next_token(parser * p)
     while(1)
     {
         c = getc(p->file);
-        printf("%c", c);
+        //printf("%c", c);
 
         if (c == EOF)
         {
