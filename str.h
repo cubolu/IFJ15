@@ -25,5 +25,7 @@ int str_to_int(str *s);
 
 void str_clear(str *s);
 
+char str_last_char(str *s);
+
 #endif // STR_H
 
