@@ -143,6 +143,12 @@ token_t parser_next_token(parser * p)
                 return tok;
             }
 
+            else if (c == ',')
+            {
+                tok.type = TT_COMMA;
+                return tok;
+            }
+
             else if (c == '-')
             {
                 tok.type = TT_OP_ARITHEMTIC;

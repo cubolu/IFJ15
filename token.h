@@ -36,6 +36,7 @@ enum e_token_type {
     TT_LIT_STRING,
 
     TT_SEMICOLON,
+    TT_COMMA,
     TT_EOF,
 };
 
