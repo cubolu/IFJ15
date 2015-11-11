@@ -37,16 +37,20 @@ int main(int argc, const char *argv[]) {
 
         switch(tok.type)
         {
-        case TT_VARIABLE_DECLARATION:
-            printf(" VARIABLE_DECLARATION type: %d name: %s", tok.var_or_func_declaration.t, tok.var_or_func_declaration.name->str);
+        case TT_IDENTIFICATOR:
+            printf(" IDENTIFICATOR name: %s", tok.s->str);
             break;
 
-        case TT_INTEGER:
-            printf(" INTEGER value: %d", tok.integer.value);
+        case TT_LIT_INT:
+            printf(" INTEGER value: %d", tok.int_val);
             break;
 
-        case TT_DOUBLE:
-            printf(" DOUBLE value: %g", tok.double_num.value);
+        case TT_LIT_DOUBLE:
+            printf(" DOUBLE value: %g", tok.double_val);
+            break;
+
+        case TT_LIT_STRING:
+            printf(" STRING value: %s", tok.s->str);
             break;
 
         default:
