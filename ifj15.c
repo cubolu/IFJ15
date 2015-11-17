@@ -1,40 +1,16 @@
 #include "common.h"
 #include "memory.h"
 #include "str.h"
-#include "parser.h"
+#include "scanner.h"
 
 int main(int argc, const char *argv[]) {
     ifj15_memory_init();
 
-    /*str * s = str_init();
-
-    str_append_char(s, 'a');
-
-    str_append_char(s, 'b');
-
-    str_append_char(s, 'c');
-
-    if (str_equals(s, "abc"))
-        printf("%s\n", s->str);
-
-    str_clear(s);
-
-    str_append_char(s, '3');
-    str_append_char(s, '.');
-    str_append_char(s, '1');
-    str_append_char(s, '4');
-
-    printf("%g\n", str_to_double(s));
-
-    str_clear(s);
-
-    printf("str last char: %d\n", str_last_char(s));*/
-
-    parser * p = parser_init("test1");
+    scanner_t * p = scanner_init("test1");
 
     while(1)
     {
-        token_t tok = parser_next_token(p);
+        token_t tok = next_token(p);
 
         printf("\nToken type: %d", tok.type);
 

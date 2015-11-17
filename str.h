@@ -2,30 +2,28 @@
 #define STR_H
 
 #include "common.h"
+#include "memory.h"
 
-#define STRING_SIZE_INC 8
-
-typedef struct {
+struct _str_t {
     char * str;
-    size_t curr_len;
-    size_t mem_size;
-} str;
+    size_t length;
+    size_t capacity;
+};
 
-str * str_init(void);
+str_t * str_init(void);
 
-void str_free(str * s);
+void str_free(str_t * s);
 
-void str_append_char(str * s, char c);
+void str_append_char(str_t * s, char c);
 
-bool str_equals(str * s, char * s2);
+bool str_equals(str_t * s, char * s2);
 
-double str_to_double(str *s);
+double str_to_double(str_t *s);
 
-int str_to_int(str *s);
+int str_to_int(str_t *s);
 
-void str_clear(str *s);
+void str_clear(str_t *s);
 
-char str_last_char(str *s);
+char str_last_char(str_t *s);
 
 #endif // STR_H
-

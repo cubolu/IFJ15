@@ -62,7 +62,7 @@ typedef struct {
     union {
         enum e_op_arithmetic op_arith;
         enum e_op_relational op_rel;
-        str * s;
+        str_t * s;
 
         int int_val;
         double double_val;
@@ -71,4 +71,3 @@ typedef struct {
 } token_t;
 
 #endif // TOKEN_H
-

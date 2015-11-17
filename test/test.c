@@ -103,6 +103,27 @@ START_TEST(test_ptable)
 }
 END_TEST
 
+START_TEST(test_str)
+{
+    char msg_str_equals[256] = "Str equals returned bad result";
+    char msg_str_to_double[256] = "Str to double returned bad result";
+    ifj15_memory_init();
+    str_t * s = str_init();
+    str_append_char(s, 'a');
+    str_append_char(s, 'b');
+    str_append_char(s, 'c');
+    ck_assert_msg(str_equals(s, "abc"), msg_str_equals);
+    str_clear(s);
+
+    str_append_char(s, '3');
+    str_append_char(s, '.');
+    str_append_char(s, '1');
+    str_append_char(s, '4');
+    ck_assert_msg(str_to_double(s) - 3.14 < 0.001, msg_str_to_double);
+    str_clear(s);
+}
+END_TEST
+
 Suite* core_suite(void)
 {
     Suite* s;
@@ -117,6 +138,7 @@ Suite* core_suite(void)
     tcase_add_test(tc_core, test_htable);
     tcase_add_test(tc_core, test_ptable);
     tcase_add_test(tc_core, test_vector);
+    tcase_add_test(tc_core, test_str);
     suite_add_tcase(s, tc_core);
 
     return s;

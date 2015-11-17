@@ -2,10 +2,10 @@
 #include <ctype.h>
 #include "str.h"
 #include "error.h"
-#include "parser.h"
+#include "scanner.h"
 #include "token.h"
 
-enum e_parser_state {PS_DEFAULT,
+enum e_scanner_state {PS_DEFAULT,
                      PS_COMMENT,
                      PS_SLASH,
                      PS_BLOCK_COMMENT,
@@ -27,22 +27,22 @@ enum e_parser_state {PS_DEFAULT,
 
 
 
-enum e_token_type parser_control_type(str *s);
-enum e_token_type parser_check_keyword(str *s);
+enum e_token_type scanner_control_type(str_t *s);
+enum e_token_type scanner_check_keyword(str_t *s);
 
-parser * parser_init(char * filename)
+scanner_t * scanner_init(char * filename)
 {
     // TODO alokovat systematicky
-    parser * p = malloc(sizeof(parser));
+    scanner_t * s = malloc(sizeof(scanner_t));
 
-    p->file = fopen(filename, "r");
+    s->file = fopen(filename, "r");
     //TODO overit otevreni
 
-    p->s = str_init();
+    s->str = str_init();
 
-    p->line = 1;
+    s->line = 1;
 
-    return p;
+    return s;
 }
 
 #define next_state(s)   ( prev_state = state, state = s )
@@ -60,20 +60,20 @@ parser * parser_init(char * filename)
                                                   (c-'a' + 10 ) ) ) )
 
 
-token_t parser_next_token(parser * p)
+token_t next_token(scanner_t * s)
 {
     token_t tok;
     int c = 0;
 
     char hex_char;
 
-    enum e_parser_state state = PS_DEFAULT;
+    enum e_scanner_state state = PS_DEFAULT;
 
-    str_clear(p->s);
+    str_clear(s->str);
 
     while(1)
     {
-        c = getc(p->file);
+        c = getc(s->file);
         //printf("%c", c);
 
         if (c == EOF)
@@ -83,7 +83,7 @@ token_t parser_next_token(parser * p)
         }
 
         else if (c == '\n')
-            p->line++;
+            s->line++;
 
 
         switch(state)
@@ -103,14 +103,14 @@ token_t parser_next_token(parser * p)
             //start of identificator
             else if( is_identificator_start(c) )
             {
-                ungetc(c, p->file);
+                ungetc(c, s->file);
                 state = PS_IDENTIFICATOR;
             }
 
             //start of non negative number
             else if ( is_digit(c) )
             {
-                ungetc(c, p->file);
+                ungetc(c, s->file);
                 state = PS_INT_PART_1;
             }
 
@@ -209,7 +209,7 @@ token_t parser_next_token(parser * p)
                      || is_whitespace(c)
                      || ( c >= '0' && c < '9' ) )
             {
-                ungetc(c, p->file);
+                ungetc(c, s->file);
 
                 tok.type = TT_OP_ARITHEMTIC;
                 tok.op_arith = OP_ARITH_DIVIDE;
@@ -219,7 +219,7 @@ token_t parser_next_token(parser * p)
 
             else
             {
-                ungetc(c, p->file);
+                ungetc(c, s->file);
                 state = PS_DEFAULT;
             }
 
@@ -260,23 +260,23 @@ token_t parser_next_token(parser * p)
 
             if ( is_identificator(c) )
             {
-                str_append_char(p->s, c);
+                str_append_char(s->str, c);
 
                 state = PS_IDENTIFICATOR;
             }
 
             else
             {
-                ungetc(c, p->file);
+                ungetc(c, s->file);
 
-                tok.type = parser_check_keyword(p->s);
+                tok.type = scanner_check_keyword(s->str);
 
                 if (tok.type == TT_NONE)
                 {
                     tok.type = TT_IDENTIFICATOR;
-                    tok.s = p->s;
+                    tok.s = s->str;
 
-                    p->s = str_init(); //initialize new string
+                    s->str = str_init(); //initialize new string
                 }
 
                 return tok;
@@ -286,10 +286,10 @@ token_t parser_next_token(parser * p)
 
         case PS_INT_PART_1:
 
-            if( str_last_char(p->s) == '0' && c == '.')
+            if( str_last_char(s->str) == '0' && c == '.')
                 state = PS_FRACTIONAL_PART;
 
-            else if( str_last_char(p->s) == '0' && is_digit(c))
+            else if( str_last_char(s->str) == '0' && is_digit(c))
                 error("Incorrect representation of number", ERROR_LEX);
 
             else if (c >= '1' && c <= '9')
@@ -310,42 +310,42 @@ token_t parser_next_token(parser * p)
 
             else
             {
-                ungetc(c, p->file);
+                ungetc(c, s->file);
 
                 tok.type = TT_LIT_INT;
-                tok.int_val = str_to_int(p->s);
+                tok.int_val = str_to_int(s->str);
                 return tok;
             }
 
-            str_append_char(p->s, c);
+            str_append_char(s->str, c);
             break;
 
         case PS_INT_PART_2:
 
             if (c >= '0' && c <= '9')
             {
-                str_append_char(p->s, c);
+                str_append_char(s->str, c);
                 state = PS_INT_PART_2;
             }
 
             else if (c == '.')
             {
-                str_append_char(p->s, c);
+                str_append_char(s->str, c);
                 state = PS_FRACTIONAL_PART;
             }
 
             else if (c == 'E' || c == 'e')
             {
-                str_append_char(p->s, c);
+                str_append_char(s->str, c);
                 state = PS_EXPONENCIAL_PART;
             }
 
             else
             {
-                ungetc(c, p->file);
+                ungetc(c, s->file);
 
                 tok.type = TT_LIT_INT;
-                tok.int_val = str_to_int(p->s);
+                tok.int_val = str_to_int(s->str);
                 return tok;
             }
 
@@ -355,14 +355,14 @@ token_t parser_next_token(parser * p)
 
             if( c >= '0' && c <= '9' )
             {
-                str_append_char(p->s, c);
+                str_append_char(s->str, c);
 
                 state = PS_FRACTIONAL_PART;
             }
 
             else if (c == 'E' || c == 'e')
             {
-                str_append_char(p->s, c);
+                str_append_char(s->str, c);
                 state = PS_EXPONENCIAL_PART;
             }
 
@@ -371,10 +371,10 @@ token_t parser_next_token(parser * p)
 
             else
             {
-                ungetc(c, p->file);
+                ungetc(c, s->file);
 
                 tok.type = TT_LIT_DOUBLE;
-                tok.double_val = str_to_double(p->s);
+                tok.double_val = str_to_double(s->str);
                 return tok;
             }
 
@@ -382,17 +382,17 @@ token_t parser_next_token(parser * p)
 
         case PS_EXPONENCIAL_PART:
 
-            if (str_last_char(p->s) == 'E' || str_last_char(p->s) == 'e' )
+            if (str_last_char(s->str) == 'E' || str_last_char(s->str) == 'e' )
                 //first time in this state
             {
                 if(c == '+' || c == '-')
                 {
-                    str_append_char(p->s, c);
+                    str_append_char(s->str, c);
                     state = PS_EXPONENCIAL_PART;
                 }
 
                 else if(c >= '0' && c <= '9')
-                    str_append_char(p->s, c);
+                    str_append_char(s->str, c);
 
                 else
                     error("Incorect representation of number", ERROR_LEX);
@@ -400,7 +400,7 @@ token_t parser_next_token(parser * p)
 
             else if(c >= '0' && c <= '9')
             {
-                str_append_char(p->s, c);
+                str_append_char(s->str, c);
                 state = PS_EXPONENCIAL_PART;
             }
 
@@ -409,10 +409,10 @@ token_t parser_next_token(parser * p)
 
             else
             {
-                ungetc(c, p->file);
+                ungetc(c, s->file);
 
                 tok.type = TT_LIT_DOUBLE;
-                tok.double_val = str_to_double(p->s);
+                tok.double_val = str_to_double(s->str);
                 return tok;
             }
 
@@ -426,30 +426,30 @@ token_t parser_next_token(parser * p)
             else if(c == '"')
             {
                 tok.type = TT_LIT_STRING;
-                tok.s = p->s;
-                p->s = str_init(); //initialize new string
+                tok.s = s->str;
+                s->str = str_init(); //initialize new string
                 return tok;
 
             }
 
             else if (c > 31)
-                str_append_char(p->s, c);
+                str_append_char(s->str, c);
 
             break;
 
         case PS_STRING_BACKSLASH:
 
             if (c == '"' )
-                str_append_char(p->s, '\"');
+                str_append_char(s->str, '\"');
 
             else if(c == 'n')
-                str_append_char(p->s, '\n');
+                str_append_char(s->str, '\n');
 
             else if(c == 't')
-                str_append_char(p->s, '\t');
+                str_append_char(s->str, '\t');
 
             else if( c == '\\')
-                str_append_char(p->s, '\\');
+                str_append_char(s->str, '\\');
 
             else if(c == 'x')
             {
@@ -479,7 +479,7 @@ token_t parser_next_token(parser * p)
             {
                 hex_char |= hex_decode(c);
 
-                str_append_char(p->s, hex_char);
+                str_append_char(s->str, hex_char);
 
                 state = PS_STRING;
             }
@@ -505,7 +505,7 @@ token_t parser_next_token(parser * p)
 
             else
             {
-                ungetc(c, p->file);
+                ungetc(c, s->file);
 
                 tok.type = TT_OP_RELATIONAL;
                 tok.op_rel = OP_REL_LESS;
@@ -532,7 +532,7 @@ token_t parser_next_token(parser * p)
 
             else
             {
-                ungetc(c, p->file);
+                ungetc(c, s->file);
 
                 tok.type = TT_OP_RELATIONAL;
                 tok.op_rel = OP_REL_GREATER;
@@ -566,7 +566,7 @@ token_t parser_next_token(parser * p)
 
             else
             {
-                ungetc(c, p->file);
+                ungetc(c, s->file);
                 tok.type = TT_OP_ASSIGNMENT;
                 return tok;
             }
@@ -580,7 +580,7 @@ token_t parser_next_token(parser * p)
 /************************************
  * check for keywords of language
  ************************************/
-enum e_token_type parser_check_keyword(str *s)
+enum e_token_type scanner_check_keyword(str_t *s)
 {
 
     if (str_equals(s, "double"))
@@ -616,10 +616,3 @@ enum e_token_type parser_check_keyword(str *s)
     else
         return TT_NONE;
 }
-
-
-
-
-
-
-
