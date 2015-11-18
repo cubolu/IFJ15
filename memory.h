@@ -8,8 +8,9 @@
 #include "ptable.h"
 #include "htable.h"
 #include "str.h"
+#include "scanner.h"
 
-enum _ptr_t {PTABLE, HTABLE, ULIST, VECTOR, ARRAY, SIMPLE, STRING};
+enum _ptr_t {PTABLE, HTABLE, ULIST, VECTOR, ARRAY, SIMPLE, STRING, SCANNER, FILEP};
 
 // Global program pointer table
 ptable_t* ifj15_ptable;
@@ -32,4 +33,8 @@ void* _ifj15_realloc(void* ptr, size_t size, bool ptable_insert_b);
 void* _ifj15_calloc(ptr_t type, size_t size, bool ptable_insert_b);
 void ifj15_free(void* ptr);
 void ifj15_free_all();
+
+FILE* ifj15_fopen(char* filename, char* mod);
+void ifj15_fclose(FILE* fp);
+
 #endif

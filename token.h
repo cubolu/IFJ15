@@ -3,7 +3,7 @@
 
 #include "str.h"
 
-enum e_token_type {
+enum e_token_t {
     TT_NONE = 0,
     TT_KW_CIN,
     TT_KW_COUT,
@@ -56,18 +56,17 @@ enum e_op_relational {
     OP_REL_NOT_EQUAL
 };
 
-
-typedef struct {
-    enum e_token_type type;
+struct _token_t {
+    enum e_token_t type;
     union {
         enum e_op_arithmetic op_arith;
         enum e_op_relational op_rel;
-        str_t * s;
+        str_t * str;
 
         int int_val;
         double double_val;
     };
 
-} token_t;
+};
 
 #endif // TOKEN_H

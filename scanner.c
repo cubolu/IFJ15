@@ -5,44 +5,44 @@
 #include "scanner.h"
 #include "token.h"
 
-enum e_scanner_state {PS_DEFAULT,
-                     PS_COMMENT,
-                     PS_SLASH,
-                     PS_BLOCK_COMMENT,
-                     PS_BLOCK_COMMENT_ASTERISK,
-                     PS_IDENTIFICATOR,
-                     PS_INT_PART_1,
-                     PS_INT_PART_2,
-                     PS_FRACTIONAL_PART,
-                     PS_EXPONENCIAL_PART,
-                     PS_STRING,
-                     PS_STRING_BACKSLASH,
-                     PS_STRING_ESCAPE_HEX_1,
-                     PS_STRING_ESCAPE_HEX_2,
-                     PS_LESS_THEN,
-                     PS_GREATER_THEN,
-                     PS_OPERATOR_OF_ASSIGNEMENT,
-                     PS_EXCLAMATION,
+enum e_scanner_state {SS_DEFAULT,
+                     SS_COMMENT,
+                     SS_SLASH,
+                     SS_BLOCK_COMMENT,
+                     SS_BLOCK_COMMENT_ASTERISK,
+                     SS_IDENTIFICATOR,
+                     SS_INT_PART_1,
+                     SS_INT_PART_2,
+                     SS_FRACTIONAL_PART,
+                     SS_EXPONENCIAL_PART,
+                     SS_STRING,
+                     SS_STRING_BACKSLASH,
+                     SS_STRING_ESCAPE_HEX_1,
+                     SS_STRING_ESCAPE_HEX_2,
+                     SS_LESS_THEN,
+                     SS_GREATER_THEN,
+                     SS_OPERATOR_OF_ASSIGNEMENT,
+                     SS_EXCLAMATION,
                     };
 
 
 
-enum e_token_type scanner_control_type(str_t *s);
-enum e_token_type scanner_check_keyword(str_t *s);
+enum e_token_t scanner_control_type(str_t *s);
+enum e_token_t scanner_check_keyword(str_t *s);
 
-scanner_t * scanner_init(char * filename)
+scanner_t * scanner_init(FILE* fp)
 {
-    // TODO alokovat systematicky
-    scanner_t * s = malloc(sizeof(scanner_t));
+    scanner_t * s = ifj15_malloc(SCANNER, sizeof(scanner_t));
 
-    s->file = fopen(filename, "r");
-    //TODO overit otevreni
-
+    s->file = fp;
     s->str = str_init();
-
     s->line = 1;
 
     return s;
+}
+
+void _scanner_free(scanner_t* s) {
+    free(s);
 }
 
 #define next_state(s)   ( prev_state = state, state = s )
@@ -60,14 +60,14 @@ scanner_t * scanner_init(char * filename)
                                                   (c-'a' + 10 ) ) ) )
 
 
-token_t next_token(scanner_t * s)
+token_t get_next_token(scanner_t * s)
 {
     token_t tok;
     int c = 0;
 
     char hex_char;
 
-    enum e_scanner_state state = PS_DEFAULT;
+    enum e_scanner_state state = SS_DEFAULT;
 
     str_clear(s->str);
 
@@ -88,40 +88,40 @@ token_t next_token(scanner_t * s)
 
         switch(state)
         {
-        case PS_DEFAULT:
+        case SS_DEFAULT:
 
             //default state
             //Implement SWITCH
 
             //eats whitespace
             if ( is_whitespace(c) )
-                state = PS_DEFAULT;
+                state = SS_DEFAULT;
 
             else if(c== '/')
-                state = PS_SLASH;
+                state = SS_SLASH;
 
             //start of identificator
             else if( is_identificator_start(c) )
             {
                 ungetc(c, s->file);
-                state = PS_IDENTIFICATOR;
+                state = SS_IDENTIFICATOR;
             }
 
             //start of non negative number
             else if ( is_digit(c) )
             {
                 ungetc(c, s->file);
-                state = PS_INT_PART_1;
+                state = SS_INT_PART_1;
             }
 
             else if(c == '"')
             {
-                state = PS_STRING;
+                state = SS_STRING;
             }
 
             else if (c == '=')
             {
-                state = PS_OPERATOR_OF_ASSIGNEMENT;
+                state = SS_OPERATOR_OF_ASSIGNEMENT;
             }
 
             else if(c == '*')
@@ -183,13 +183,13 @@ token_t next_token(scanner_t * s)
             }
 
             else if(c == '<')
-                state = PS_LESS_THEN;
+                state = SS_LESS_THEN;
 
             else if(c == '>')
-                state = PS_GREATER_THEN;
+                state = SS_GREATER_THEN;
 
             else if(c == '!')
-                state = PS_EXCLAMATION;
+                state = SS_EXCLAMATION;
 
             else
                 error("KOKOTINA, ktoru jazyk nezvlada.", ERROR_LEX);
@@ -197,13 +197,13 @@ token_t next_token(scanner_t * s)
             break;
 
 
-        case PS_SLASH:
+        case SS_SLASH:
 
             if ( c == '/')
-                state = PS_COMMENT;
+                state = SS_COMMENT;
 
             else if ( c == '*')
-                state = PS_BLOCK_COMMENT;
+                state = SS_BLOCK_COMMENT;
 
             else if( c == '_' || ( c >= 'A' && c <= 'Z') || ( c > 'a' && c < 'z')
                      || is_whitespace(c)
@@ -220,49 +220,49 @@ token_t next_token(scanner_t * s)
             else
             {
                 ungetc(c, s->file);
-                state = PS_DEFAULT;
+                state = SS_DEFAULT;
             }
 
             break;
 
 
-        case PS_COMMENT:
+        case SS_COMMENT:
 
             if (c == '\n')
-                state = PS_DEFAULT;
+                state = SS_DEFAULT;
 
             else
-                state = PS_COMMENT;
+                state = SS_COMMENT;
 
             break;
 
-        case PS_BLOCK_COMMENT:
+        case SS_BLOCK_COMMENT:
 
             if (c == '*')
-                state = PS_BLOCK_COMMENT_ASTERISK;
+                state = SS_BLOCK_COMMENT_ASTERISK;
 
             else
-                state = PS_BLOCK_COMMENT;
+                state = SS_BLOCK_COMMENT;
 
             break;
 
-        case PS_BLOCK_COMMENT_ASTERISK:
+        case SS_BLOCK_COMMENT_ASTERISK:
 
             if (c == '/')
-                state = PS_DEFAULT;
+                state = SS_DEFAULT;
 
             else
-                state = PS_BLOCK_COMMENT;
+                state = SS_BLOCK_COMMENT;
 
             break;
 
-        case PS_IDENTIFICATOR:
+        case SS_IDENTIFICATOR:
 
             if ( is_identificator(c) )
             {
                 str_append_char(s->str, c);
 
-                state = PS_IDENTIFICATOR;
+                state = SS_IDENTIFICATOR;
             }
 
             else
@@ -274,7 +274,7 @@ token_t next_token(scanner_t * s)
                 if (tok.type == TT_NONE)
                 {
                     tok.type = TT_IDENTIFICATOR;
-                    tok.s = s->str;
+                    tok.str = s->str;
 
                     s->str = str_init(); //initialize new string
                 }
@@ -284,28 +284,28 @@ token_t next_token(scanner_t * s)
 
             break;
 
-        case PS_INT_PART_1:
+        case SS_INT_PART_1:
 
             if( str_last_char(s->str) == '0' && c == '.')
-                state = PS_FRACTIONAL_PART;
+                state = SS_FRACTIONAL_PART;
 
             else if( str_last_char(s->str) == '0' && is_digit(c))
                 error("Incorrect representation of number", ERROR_LEX);
 
             else if (c >= '1' && c <= '9')
             {
-                state = PS_INT_PART_2;
+                state = SS_INT_PART_2;
             }
 
             else if (c == '0')
             {
-                state = PS_INT_PART_1;
+                state = SS_INT_PART_1;
             }
 
             else if (c == '.')
             {
 
-                state = PS_FRACTIONAL_PART;
+                state = SS_FRACTIONAL_PART;
             }
 
             else
@@ -320,24 +320,24 @@ token_t next_token(scanner_t * s)
             str_append_char(s->str, c);
             break;
 
-        case PS_INT_PART_2:
+        case SS_INT_PART_2:
 
             if (c >= '0' && c <= '9')
             {
                 str_append_char(s->str, c);
-                state = PS_INT_PART_2;
+                state = SS_INT_PART_2;
             }
 
             else if (c == '.')
             {
                 str_append_char(s->str, c);
-                state = PS_FRACTIONAL_PART;
+                state = SS_FRACTIONAL_PART;
             }
 
             else if (c == 'E' || c == 'e')
             {
                 str_append_char(s->str, c);
-                state = PS_EXPONENCIAL_PART;
+                state = SS_EXPONENCIAL_PART;
             }
 
             else
@@ -351,19 +351,19 @@ token_t next_token(scanner_t * s)
 
             break;
 
-        case PS_FRACTIONAL_PART:
+        case SS_FRACTIONAL_PART:
 
             if( c >= '0' && c <= '9' )
             {
                 str_append_char(s->str, c);
 
-                state = PS_FRACTIONAL_PART;
+                state = SS_FRACTIONAL_PART;
             }
 
             else if (c == 'E' || c == 'e')
             {
                 str_append_char(s->str, c);
-                state = PS_EXPONENCIAL_PART;
+                state = SS_EXPONENCIAL_PART;
             }
 
             else if (c == '.')
@@ -380,7 +380,7 @@ token_t next_token(scanner_t * s)
 
             break;
 
-        case PS_EXPONENCIAL_PART:
+        case SS_EXPONENCIAL_PART:
 
             if (str_last_char(s->str) == 'E' || str_last_char(s->str) == 'e' )
                 //first time in this state
@@ -388,7 +388,7 @@ token_t next_token(scanner_t * s)
                 if(c == '+' || c == '-')
                 {
                     str_append_char(s->str, c);
-                    state = PS_EXPONENCIAL_PART;
+                    state = SS_EXPONENCIAL_PART;
                 }
 
                 else if(c >= '0' && c <= '9')
@@ -401,7 +401,7 @@ token_t next_token(scanner_t * s)
             else if(c >= '0' && c <= '9')
             {
                 str_append_char(s->str, c);
-                state = PS_EXPONENCIAL_PART;
+                state = SS_EXPONENCIAL_PART;
             }
 
             else if(c == '.')
@@ -418,15 +418,15 @@ token_t next_token(scanner_t * s)
 
             break;
 
-        case PS_STRING:
+        case SS_STRING:
 
             if(c == '\\' )
-                state = PS_STRING_BACKSLASH;
+                state = SS_STRING_BACKSLASH;
 
             else if(c == '"')
             {
                 tok.type = TT_LIT_STRING;
-                tok.s = s->str;
+                tok.str = s->str;
                 s->str = str_init(); //initialize new string
                 return tok;
 
@@ -437,7 +437,7 @@ token_t next_token(scanner_t * s)
 
             break;
 
-        case PS_STRING_BACKSLASH:
+        case SS_STRING_BACKSLASH:
 
             if (c == '"' )
                 str_append_char(s->str, '\"');
@@ -453,19 +453,19 @@ token_t next_token(scanner_t * s)
 
             else if(c == 'x')
             {
-                state = PS_STRING_ESCAPE_HEX_1;
+                state = SS_STRING_ESCAPE_HEX_1;
                 break;
             }
 
-            state = PS_STRING;
+            state = SS_STRING;
             break;
 
-        case PS_STRING_ESCAPE_HEX_1:
+        case SS_STRING_ESCAPE_HEX_1:
 
             if( is_hex(c) )
             {
                 hex_char = hex_decode(c) << 4;
-                state = PS_STRING_ESCAPE_HEX_2;
+                state = SS_STRING_ESCAPE_HEX_2;
             }
 
             else
@@ -473,7 +473,7 @@ token_t next_token(scanner_t * s)
 
             break;
 
-        case PS_STRING_ESCAPE_HEX_2:
+        case SS_STRING_ESCAPE_HEX_2:
 
             if( is_hex(c) )
             {
@@ -481,14 +481,14 @@ token_t next_token(scanner_t * s)
 
                 str_append_char(s->str, hex_char);
 
-                state = PS_STRING;
+                state = SS_STRING;
             }
             else
                 error("Invalid representation of char in escape sequence.", ERROR_LEX);
 
             break;
 
-        case PS_LESS_THEN:
+        case SS_LESS_THEN:
 
             if(c == '<')
             {
@@ -514,7 +514,7 @@ token_t next_token(scanner_t * s)
 
             break;
 
-        case PS_GREATER_THEN:
+        case SS_GREATER_THEN:
 
             if(c == '>')
             {
@@ -541,7 +541,7 @@ token_t next_token(scanner_t * s)
 
             break;
 
-        case PS_EXCLAMATION:
+        case SS_EXCLAMATION:
 
             if(c == '=')
             {
@@ -555,7 +555,7 @@ token_t next_token(scanner_t * s)
 
             break;
 
-        case PS_OPERATOR_OF_ASSIGNEMENT:
+        case SS_OPERATOR_OF_ASSIGNEMENT:
 
             if(c == '=')
             {
@@ -580,7 +580,7 @@ token_t next_token(scanner_t * s)
 /************************************
  * check for keywords of language
  ************************************/
-enum e_token_type scanner_check_keyword(str_t *s)
+enum e_token_t scanner_check_keyword(str_t *s)
 {
 
     if (str_equals(s, "double"))
