@@ -1,7 +1,46 @@
 #include "parser.h"
 
 token_t next_token;
+
+//for parse_asgnFollow to pass into parse_expr
+token_t cached_identificator;
+
 scanner_t* token_stream;
+
+/* Precedence table for expression parsing:
+ *
+ * < - push separator and actual token (TAB_SP)
+ * = - push only actual token (TAB_P)
+ * > - reduce the top of stack (TAB_R)
+ * E - syntax error (TAB_E)
+ *  _______ _______ _____ _____ ___ ___ ____ ___
+ * |       | <,>,= | +,- | *,/ | ( | ) | id | $ |
+ * |_______|_______|_____|_____|___|___|____|___|
+ * | <,>,= |   >   |  <  |  <  | < | > | <  | > |
+ * |_______|_______|_____|_____|___|___|____|___|
+ * | +,-   |   >   |  >  |  <  | < | > | <  | > |
+ * |_______|_______|_____|_____|___|___|____|___|
+ * | *,/   |   >   |  >  |  >  | < | > | <  | > |
+ * |_______|_______|_____|_____|___|___|____|___|
+ * | (     |   <   |  <  |  <  | < | = | <  | E |
+ * |_______|_______|_____|_____|___|___|____|___|
+ * | )     |   >   |  >  |  >  | E | > | E  | > |
+ * |_______|_______|_____|_____|___|___|____|___|
+ * | id    |   >   |  >  |  >  | E | > | E  | > |
+ * |_______|_______|_____|_____|___|___|____|___|
+ * | $     |   <   |  <  |  <  | < | E | <  | & |
+ * |_______|_______|_____|_____|___|___|____|___|
+ *
+ */
+tab_op_t prec_table[][7] = {
+    { TAB_R,  TAB_SP, TAB_SP, TAB_SP,  TAB_R,   TAB_SP,   TAB_R   },
+    { TAB_R,  TAB_R,  TAB_SP, TAB_SP,  TAB_R,   TAB_SP,   TAB_R   },
+    { TAB_R,  TAB_R,  TAB_R,  TAB_SP,  TAB_R,   TAB_SP,   TAB_R   },
+    { TAB_SP, TAB_SP, TAB_SP, TAB_SP,  TAB_P,   TAB_SP,   TAB_ERR },
+    { TAB_R,  TAB_R,  TAB_R,  TAB_ERR, TAB_R,   TAB_ERR,  TAB_R   },
+    { TAB_R,  TAB_R,  TAB_R,  TAB_ERR, TAB_R,   TAB_ERR,  TAB_R   },
+    { TAB_SP, TAB_SP, TAB_SP, TAB_SP,  TAB_ERR, TAB_SP,   TAB_END }
+};
 
 void parse_asgn();
 void parse_asgnFollow();
@@ -10,6 +49,7 @@ void parse_cinStmt();
 void parse_cinStmtFollow();
 void parse_coutStmt();
 void parse_coutStmtFollow();
+void parse_expr();
 void parse_forClause();
 void parse_funcBody();
 void parse_funcHead();
@@ -30,6 +70,7 @@ void parse_varDefFollow();
 void parse_program(scanner_t* s) {
     token_stream = s;
     next_token = get_next_token(token_stream);
+    cached_identificator.type = TT_NONE;
     parse_funcs();
 }
 
@@ -37,6 +78,54 @@ void match(enum e_token_t token) {
     if (next_token.type != token)
         error("Syntactic error: Failed to parse the program", ERROR_SYN);
     next_token = get_next_token(token_stream);
+}
+
+stack_sym_t token_to_sym(token_t *tok) {
+    //count an open parentheses in expression
+    static int parentheses_pairs = 0;
+
+    switch(tok->type) {
+        case TT_OP_RELATIONAL:
+            return S_REL;
+        case TT_OP_ARITHMETIC:
+            switch (tok->op_arith) {
+                case OP_ARITH_ADD:
+                case OP_ARITH_SUBTRACT:
+                    return S_ADDSUB;
+                case OP_ARITH_MULTIPLY:
+                case OP_ARITH_DIVIDE:
+                    return S_MULDIV;
+            }
+        case TT_PARENTHESES_OPEN:
+            parentheses_pairs++;
+            return S_PAR_O;
+        case TT_PARENTHESES_CLOSE:
+            if (parentheses_pairs == 0) {
+                //not an expression close parenthesis
+                return S_END;
+            } else {
+                parentheses_pairs--;
+                return S_PAR_C;
+            }
+        case TT_IDENTIFICATOR:
+        case TT_LIT_INT:
+        case TT_LIT_DOUBLE:
+        case TT_LIT_STRING:
+            return S_ID;
+        default:
+            return S_END;
+
+    }
+}
+
+int top_sequence(stack_t *stack) {
+    stack_sym_t sym;
+    int seq = 0;
+    while ((sym = stack_pop(stack)) != S_SEP) {
+        seq |= sym;
+        seq <<= 8;
+    }
+    return seq >> 8;
 }
 
 void parse_asgn() {
@@ -54,6 +143,7 @@ void parse_asgn() {
 void parse_asgnFollow() {
     switch(next_token.type) {
         case TT_IDENTIFICATOR:
+            cached_identificator = next_token;
             match(TT_IDENTIFICATOR);
             // TO REMOVE IF FUNEXP
             if (next_token.type == TT_PARENTHESES_OPEN) {
@@ -61,14 +151,14 @@ void parse_asgnFollow() {
                 parse_paramList();
                 match(TT_PARENTHESES_CLOSE);
             } else {
-                //parse_expr();
+                parse_expr();
             }
             break;
         case TT_LIT_INT:
         case TT_LIT_DOUBLE:
         case TT_LIT_STRING:
         case TT_PARENTHESES_OPEN:
-            //parse_expr();
+            parse_expr();
             break;
         default:
             error("Syntactic error: Failed to parse the program", ERROR_SYN);
@@ -144,7 +234,7 @@ void parse_forClause() {
             match(TT_PARENTHESES_OPEN);
             parse_varDef();
             match(TT_SEMICOLON);
-            //parse_expr();
+            parse_expr();
             match(TT_SEMICOLON);
             parse_asgn();
             match(TT_PARENTHESES_CLOSE);
@@ -206,7 +296,7 @@ void parse_ifClause() {
         case TT_KW_IF:
             match(TT_KW_IF);
             match(TT_PARENTHESES_OPEN);
-            //parse_expr();
+            parse_expr();
             match(TT_PARENTHESES_CLOSE);
             parse_block();
             match(TT_KW_ELSE);
@@ -285,7 +375,7 @@ void parse_stmt() {
             break;
         case TT_KW_RETURN:
             match(TT_KW_RETURN);
-            //parse_expr();
+            parse_expr();
             match(TT_SEMICOLON);
             break;
         case TT_KW_COUT:
@@ -379,7 +469,7 @@ void parse_varDef() {
             match(TT_TYPE_AUTO);
             match(TT_IDENTIFICATOR);
             match(TT_OP_ASSIGNMENT);
-            //parse_expr();
+            parse_expr();
             break;
         default:
             error("Syntactic error: Failed to parse the program", ERROR_SYN);
@@ -390,8 +480,65 @@ void parse_varDefFollow() {
     switch(next_token.type) {
         case TT_OP_ASSIGNMENT:
             match(TT_OP_ASSIGNMENT);
-            //parse_expr();
+            parse_expr();
         default:
             return;
     }
+}
+
+bool top_term_cmp(char stack_item) { return stack_item != S_EXPR; }
+
+void parse_expr() {
+    stack_sym_t top;
+    stack_sym_t next;
+    stack_t* stack = stack_init();
+    stack_push(stack, S_END);
+
+    bool use_cached = cached_identificator.type != TT_NONE;
+    token_t expr_token = use_cached ? cached_identificator : next_token ;
+    next = token_to_sym(&expr_token);
+
+    do {
+        top = stack_find(stack, top_term_cmp);
+        switch (prec_table[top][next]) {
+            case TAB_SP:
+                stack_insert_after(stack, S_SEP, top_term_cmp);
+            case TAB_P:
+                stack_push(stack, next);
+                //choose between cached_identificator and next_token
+                if (use_cached) {
+                    use_cached = false;
+                    cached_identificator.type = TT_NONE;
+                    expr_token = next_token;
+                } else {
+                    expr_token = next_token = get_next_token(token_stream);
+                }
+                //convert next token to table symbol
+                next = token_to_sym(&expr_token);
+                break;
+            case TAB_R:
+                switch (top_sequence(stack)) {
+                    case RULE_1:
+                    case RULE_2:
+                    case RULE_3:
+                    case RULE_4:
+                    case RULE_5:
+                        stack_push(stack, S_EXPR);
+                        break;
+                    default:
+                        error("Syntactic error: Failed to parse the expression", ERROR_SYN);
+                }
+                break;
+            case TAB_END:
+                if (stack_pop(stack) != S_EXPR) {
+                    error("Syntactic error: Failed to parse the expression", ERROR_SYN);
+                }
+                break;
+            case TAB_ERR:
+            default:
+                error("Syntactic error: Failed to parse the expression", ERROR_SYN);
+        }
+    } while (top != S_END || next != S_END);
+
+    ifj15_free(stack);
 }
