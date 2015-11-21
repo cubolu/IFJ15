@@ -6,7 +6,8 @@
 
 int main(int argc, const char *argv[]) {
     ifj15_memory_init();
-    FILE* input_file = ifj15_fopen("test1", "r");
+
+    FILE* input_file = ifj15_fopen(argv[1], "r");
 
     scanner_t* s = scanner_init(input_file);
     parse_program(s);

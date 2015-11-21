@@ -126,7 +126,7 @@ token_t get_next_token(scanner_t * s)
 
             else if(c == '*')
             {
-                tok.type = TT_OP_ARITHEMTIC;
+                tok.type = TT_OP_ARITHMETIC;
                 tok.op_arith = OP_ARITH_MULTIPLY;
                 return tok;
             }
@@ -158,14 +158,14 @@ token_t get_next_token(scanner_t * s)
 
             else if (c == '-')
             {
-                tok.type = TT_OP_ARITHEMTIC;
+                tok.type = TT_OP_ARITHMETIC;
                 tok.op_arith = OP_ARITH_SUBTRACT;
                 return tok;
             }
 
             else if (c == '+')
             {
-                tok.type = TT_OP_ARITHEMTIC;
+                tok.type = TT_OP_ARITHMETIC;
                 tok.op_arith = OP_ARITH_ADD;
                 return tok;
             }
@@ -211,7 +211,7 @@ token_t get_next_token(scanner_t * s)
             {
                 ungetc(c, s->file);
 
-                tok.type = TT_OP_ARITHEMTIC;
+                tok.type = TT_OP_ARITHMETIC;
                 tok.op_arith = OP_ARITH_DIVIDE;
                 return tok;
 

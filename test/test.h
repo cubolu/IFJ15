@@ -6,4 +6,5 @@
 #include "memory.h"
 #include "ptable.h"
 #include "htable.h"
+#include "stack.h"
 #endif

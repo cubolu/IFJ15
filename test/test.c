@@ -124,6 +124,51 @@ START_TEST(test_str)
 }
 END_TEST
 
+bool test_cmp_true(char c){ return true; }
+bool test_cmp_false(char c){ return false; }
+bool test_cmp(char c){ return c < 'm'; }
+
+START_TEST(test_stack)
+{
+
+    char msg_pop[256] = "Stack pop returned bad item";
+    char msg_get[256] = "Stack get returned bad item";
+    char msg_fnd[256] = "Stack find returned bad item";
+    char msg_ins[256] = "Stack insert returned bad item";
+    ifj15_memory_init();
+    stack_t* test_stack = stack_init();
+    stack_push(test_stack, 'a');
+    ck_assert_msg(stack_pop(test_stack) == 'a', msg_get);
+
+    for (char c = 'a'; c <= 'z'; ++c)
+        stack_push(test_stack, c);
+    ck_assert_msg(stack_get(test_stack) == 'z', msg_get);
+    for (char c = 'z'; c >= 'a'; --c)
+        ck_assert_int_eq(stack_pop(test_stack), c);
+    //ck_assert_msg(stack_get(test_stack) == -1, msg_get);
+
+    for (char c = 'a'; c <= 'z'; ++c)
+        stack_push(test_stack, c);
+    ck_assert_msg(stack_find(test_stack, test_cmp_false) == -1, msg_fnd);
+    ck_assert_msg(stack_find(test_stack, test_cmp_true) == stack_get(test_stack), msg_fnd);
+    ck_assert_msg(stack_find(test_stack, test_cmp) == 'l', msg_fnd);
+
+    stack_insert_after(test_stack, 'z', test_cmp_true);
+    ck_assert_msg(stack_pop(test_stack) == 'z', msg_pop);
+    ck_assert_msg(stack_get(test_stack) == 'z', msg_get);
+    stack_insert_after(test_stack, 'a', test_cmp_false);
+    stack_insert_after(test_stack, 'a', test_cmp);
+    for (char c = 'z'; c >= 'm'; --c)
+        ck_assert_int_eq(stack_pop(test_stack), c);
+    ck_assert_msg(stack_pop(test_stack) == 'a', msg_pop);
+    for (char c = 'l'; c >= 'a'; --c)
+        ck_assert_int_eq(stack_pop(test_stack), c);
+    //ck_assert_msg(stack_pop(test_stack) == -1, msg_pop);
+
+    ifj15_free_all();
+}
+END_TEST
+
 Suite* core_suite(void)
 {
     Suite* s;
@@ -138,7 +183,8 @@ Suite* core_suite(void)
     tcase_add_test(tc_core, test_htable);
     tcase_add_test(tc_core, test_ptable);
     tcase_add_test(tc_core, test_vector);
-    tcase_add_test(tc_core, test_str);
+//    tcase_add_test(tc_core, test_str);
+    tcase_add_test(tc_core, test_stack);
     suite_add_tcase(s, tc_core);
 
     return s;

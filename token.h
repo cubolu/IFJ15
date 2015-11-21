@@ -16,7 +16,7 @@ enum e_token_t {
 
     TT_OP_ASSIGNMENT,
     TT_OP_RELATIONAL,
-    TT_OP_ARITHEMTIC,
+    TT_OP_ARITHMETIC,
     TT_OP_STREAM_IN,  // >>
     TT_OP_STREAM_OUT, // <<
 

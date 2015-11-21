@@ -56,6 +56,9 @@ void _ifj15_free(void* ptr, ptr_t ptr_type) {
         case VECTOR:
             _vector_free(ptr);
             break;
+        case STACK:
+            _stack_free(ptr);
+            break;
         case STRING:
             _str_free(ptr);
             break;
@@ -86,7 +89,7 @@ void ifj15_free_all() {
     free(ifj15_ptable);
 }
 
-FILE* ifj15_fopen(char* filename, char* mod) {
+FILE* ifj15_fopen(const char* filename, const char* mod) {
     FILE* fp;
     fp = fopen(filename, mod);
     if (fp == NULL)
