@@ -7,6 +7,18 @@ token_t cached_identificator;
 
 scanner_t* token_stream;
 
+//precedence table operators
+typedef enum _tab_op_t {TAB_SP, TAB_P, TAB_R, TAB_END, TAB_ERR} tab_op_t;
+//symbols for pushdown automata
+typedef enum _stack_sym {S_REL=0, S_ADDSUB, S_MULDIV, S_PAR_O, S_PAR_C,
+                         S_ID, S_END, S_SEP, S_EXPR} stack_sym_t;
+//rules to parse an expression, note: rules are used contrariwise
+#define RULE_REL        ((S_EXPR << 16) | (S_REL << 8) | S_EXPR)    //E -> E <>= E
+#define RULE_ADDSUB     ((S_EXPR << 16) | (S_ADDSUB << 8) | S_EXPR) //E -> E +(-) E
+#define RULE_MULDIV     ((S_EXPR << 16) | (S_MULDIV << 8) | S_EXPR) //E -> E *(/) E
+#define RULE_PAR        ((S_PAR_C << 16) | (S_EXPR << 8) | S_PAR_O) //E -> ( E )
+#define RULE_ID         (S_ID) //E -> id
+
 /* Precedence table for expression parsing:
  *
  * < - push separator and actual token (TAB_SP)
@@ -118,7 +130,7 @@ stack_sym_t token_to_sym(token_t *tok) {
     }
 }
 
-int top_sequence(stack_t *stack) {
+int reduce_sequence(stack_t *stack) {
     stack_sym_t sym;
     int seq = 0;
     while ((sym = stack_pop(stack)) != S_SEP) {
@@ -517,17 +529,17 @@ void parse_expr() {
                 next = token_to_sym(&expr_token);
                 break;
             case TAB_R:
-                switch (top_sequence(stack)) {
-                    case RULE_1:
-                    case RULE_2:
-                    case RULE_3:
-                    case RULE_4:
-                    case RULE_5:
-                        stack_push(stack, S_EXPR);
+                switch (reduce_sequence(stack)) {
+                    case RULE_REL:
+                    case RULE_ADDSUB:
+                    case RULE_MULDIV:
+                    case RULE_PAR:
+                    case RULE_ID:
                         break;
                     default:
                         error("Syntactic error: Failed to parse the expression", ERROR_SYN);
                 }
+                stack_push(stack, S_EXPR);
                 break;
             case TAB_END:
                 if (stack_pop(stack) != S_EXPR) {
