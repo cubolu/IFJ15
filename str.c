@@ -58,9 +58,21 @@ int str_to_int(str *s)
 
 void str_clear(str *s)
 {
+    if (s->curr_len == 0 && s->mem_size == STRING_SIZE_INC)
+        return;
+
     //TODO osetrit selhani reallocu
     s->str = realloc(s->str, STRING_SIZE_INC);
     s->mem_size = STRING_SIZE_INC;
     s->curr_len = 0;
     s->str[0] = '\0';
+}
+
+char str_last_char(str *s)
+{
+    if (s->curr_len == 0)
+        return 0;
+
+    else
+        return s->str[s->curr_len-1];
 }

@@ -6,6 +6,7 @@
 typedef struct {
     FILE * file;
     str * s;
+    size_t line;
 } parser;
 
 
