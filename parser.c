@@ -503,7 +503,7 @@ bool top_term_cmp(char stack_item) { return stack_item != S_EXPR; }
 void parse_expr() {
     stack_sym_t top;
     stack_sym_t next;
-    stack_char_t* stack = stack_init(CHAR);
+    stack_char_t* stack = stack_init(SI_CHAR);
     stack_push(stack, S_END);
 
     bool use_cached = cached_identificator.type != TT_NONE;
