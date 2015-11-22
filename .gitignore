@@ -41,3 +41,6 @@
 
 ifj15
 test/test
+
+# IFJ15 Language source files
+*.ifj15

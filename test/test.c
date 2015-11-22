@@ -136,7 +136,7 @@ START_TEST(test_stack)
     char msg_fnd[256] = "Stack find returned bad item";
     char msg_ins[256] = "Stack insert returned bad item";
     ifj15_memory_init();
-    stack_t* test_stack = stack_init();
+    stack_char_t* test_stack = stack_init(CHAR);
     stack_push(test_stack, 'a');
     ck_assert_msg(stack_pop(test_stack) == 'a', msg_get);
 
