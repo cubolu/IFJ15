@@ -1,17 +1,23 @@
 #ifndef ULIST_H
 #define ULIST_H
 
-#include "common.h"
 #include "error.h"
 #include "memory.h"
-
-typedef enum {POINTER, CHARARRAY} key_t;
+#include "symbol.h"
+#include "common.h"
 
 struct _unode_t {
     void* key;
-    void* item;
+    ptr_t item;
     unode_t* next;
     unode_t* prev;
+};
+
+struct _unode_str_t {
+    str_t* key;
+    symbol_t item;
+    unode_str_t* next;
+    unode_str_t* prev;
 };
 
 struct _ulist_t {
@@ -19,24 +25,33 @@ struct _ulist_t {
     unode_t* back;
 };
 
+struct _ulist_str_t {
+    unode_str_t* front;
+    unode_str_t* back;
+};
+
 #define ulist_set(ulist, key, item) _Generic((key), \
-    char* : _ulist_set(ulist, key, item, CHARARRAY), \
-    default: _ulist_set(ulist, key, item, POINTER))
+    str_t* : _ulist_str_set, \
+    void*: _ulist_set)(ulist,key,item)
 
 #define ulist_pop(ulist, key) _Generic((key), \
-    char* : _ulist_get(ulist, key, CHARARRAY, true), \
-    default: _ulist_get(ulist, key, POINTER, true))
+    str_t* : _ulist_str_pop, \
+    void*: _ulist_pop)(ulist, key)
 
 #define ulist_get(ulist, key) _Generic((key), \
-    char* : _ulist_get(ulist, key, CHARARRAY, false), \
-    default: _ulist_get(ulist, key, POINTER, false))
+    str_t* : _ulist_str_get, \
+    default: _ulist_get)(ulist, key)
 
-#define ulist_init() _ulist_init(true)
-
-ulist_t* _ulist_init(bool ptable_insert);
+ulist_t* _ulist_init();
+ulist_str_t* _ulist_str_init();
 void _ulist_free(ulist_t* ulist);
+void _ulist_str_free(ulist_str_t* ulist);
 
-void _ulist_set(ulist_t* ulist, void* key, void* item, key_t key_type);
-void* _ulist_get(ulist_t* ulist, void* key, key_t key_type, bool remove_item);
+void _ulist_set(ulist_t* ulist, void* key, ptr_t item);
+void _ulist_str_set(ulist_str_t* ulist, str_t* key, symbol_t item);
+ptr_t _ulist_get(ulist_t* ulist, void* key);
+ptr_t _ulist_pop(ulist_t* ulist, void* key);
+symbol_t* _ulist_str_get(ulist_str_t* ulist, str_t* key);
+symbol_t _ulist_str_pop(ulist_str_t* ulist, str_t* key);
 
 #endif

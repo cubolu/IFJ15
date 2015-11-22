@@ -7,4 +7,7 @@
 #include "ptable.h"
 #include "htable.h"
 #include "stack.h"
+#include "str.h"
+#include "symbol.h"
+
 #endif

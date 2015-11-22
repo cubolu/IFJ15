@@ -33,7 +33,7 @@ void ptable_insert(ptable_t* ptable, void* ptr, ptr_t type) {
     size_t hash_code = hash(ptr, ptable->capacity_pow);
     if (ptable->array[hash_code] == NULL)
         ptable->array[hash_code] = _ulist_init(false);
-    ulist_set(ptable->array[hash_code], ptr, (void*)type);
+    ulist_set(ptable->array[hash_code], ptr, type);
 }
 
 ptr_t ptable_pop(ptable_t* ptable, void* ptr) {
@@ -44,7 +44,7 @@ ptr_t ptable_pop(ptable_t* ptable, void* ptr) {
     size_t hash_code = hash(ptr, ptable->capacity_pow);
     if (ptable->array[hash_code] == NULL)
         error("ptable_pop: Failed to find searched for item", ERROR_INTERNAL);
-    return (ptr_t) ulist_pop(ptable->array[hash_code], ptr);
+    return ulist_pop(ptable->array[hash_code], ptr);
 }
 
 void ptable_resize(ptable_t* ptable, resize_t resize) {
@@ -55,12 +55,12 @@ void ptable_resize(ptable_t* ptable, resize_t resize) {
         ptable->capacity_pow -= 1;
 
     ulist_t** old_array = ptable->array;
-    ptable->array = _ifj15_malloc(ULIST, sizeof(ulist_t*)*pow2(ptable->capacity_pow), false);
+    ptable->array = _ifj15_malloc(ARRAY, sizeof(ulist_t*)*pow2(ptable->capacity_pow), false);
     for (size_t i = 0; i < old_capacity; ++i) {
         if (old_array[i] != NULL) {
             unode_t* unode = old_array[i]->front;
             while (unode != NULL) {
-                ptable_insert(ptable, unode->key, (ptr_t)unode->item);
+                ptable_insert(ptable, unode->key, unode->item);
                 unode = unode->next;
             }
             _ulist_free(old_array[i]);

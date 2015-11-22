@@ -11,8 +11,6 @@
 #include "scanner.h"
 #include "stack.h"
 
-enum _ptr_t {PTABLE, HTABLE, ULIST, VECTOR, ARRAY, SIMPLE, STACK, STRING, SCANNER, FILEP};
-
 // Global program pointer table
 ptable_t* ifj15_ptable;
 

@@ -50,9 +50,6 @@ void _ifj15_free(void* ptr, ptr_t ptr_type) {
         case HTABLE:
             _htable_free(ptr);
             break;
-        case ULIST:
-            _ulist_free(ptr);
-            break;
         case VECTOR:
             _vector_free(ptr);
             break;

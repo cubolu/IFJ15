@@ -3,6 +3,7 @@
 
 #include "test.h"
 
+/*
 START_TEST(test_ulist)
 {
     char msg_pop[256] = "List pop returned bad item";
@@ -24,15 +25,20 @@ START_TEST(test_ulist)
     _ulist_free(test_ulist);
 }
 END_TEST
+*/
+
+symbol_t create_sym(str_t* name) {
+    symbol_t res;
+    res.name = name;
+    return res;
+}
 
 START_TEST(test_memory)
 {
     ifj15_memory_init();
-    ulist_t* test_ulist = ulist_init();
     ptable_t* test_ptable = ptable_init();
     htable_t* test_htable = htable_init();
     vector_t* test_vector = vector_init();
-    ifj15_free(test_ulist);
     ifj15_free(test_ptable);
     ifj15_free(test_htable);
     ifj15_free(test_vector);
@@ -69,19 +75,42 @@ START_TEST(test_htable)
     char msg_pop[256] = "Htable pop returned bad item";
     char msg_get[256] = "Htable get returned bad item";
     ifj15_memory_init();
+
+    str_t* str1 = str_init();
+    str_t* str2 = str_init();
+    str_t* str3 = str_init();
+    str_t* str4 = str_init();
+    str_copy(str1, "str1");
+    str_copy(str2, "str2");
+    str_copy(str3, "str3");
+    str_copy(str4, "str4");
+    symbol_t sym1 = create_sym(str1);
+    symbol_t sym2 = create_sym(str2);
+    symbol_t sym3 = create_sym(str3);
+    symbol_t sym4 = create_sym(str4);
+
     htable_t* test_htable = htable_init();
-    htable_set(test_htable, "1", 10);
-    htable_set(test_htable, "2", 20);
-    htable_set(test_htable, "3", 30);
-    htable_set(test_htable, "4", 40);
-    ck_assert_msg(htable_get(test_htable, "1") == (void*)10, msg_get);
-    ck_assert_msg(htable_get(test_htable, "2") == (void*)20, msg_get);
-    ck_assert_msg(htable_get(test_htable, "3") == (void*)30, msg_get);
-    ck_assert_msg(htable_get(test_htable, "4") == (void*)40, msg_get);
-    ck_assert_msg(htable_pop(test_htable, "1") == (void*)10, msg_pop);
-    ck_assert_msg(htable_pop(test_htable, "2") == (void*)20, msg_pop);
-    ck_assert_msg(htable_pop(test_htable, "3") == (void*)30, msg_pop);
-    ck_assert_msg(htable_pop(test_htable, "4") == (void*)40, msg_pop);
+    htable_set(test_htable, str1, sym1);
+    htable_set(test_htable, str2, sym2);
+    htable_set(test_htable, str3, sym3);
+    htable_set(test_htable, str4, sym4);
+
+    symbol_t* cmpsym1 = htable_get(test_htable, str1);
+    symbol_t* cmpsym2 = htable_get(test_htable, str2);
+    symbol_t* cmpsym3 = htable_get(test_htable, str3);
+    symbol_t* cmpsym4 = htable_get(test_htable, str4);
+    ck_assert_msg(str_equals(str1, cmpsym1->name), msg_get);
+    ck_assert_msg(str_equals(str2, cmpsym2->name), msg_get);
+    ck_assert_msg(str_equals(str3, cmpsym3->name), msg_get);
+    ck_assert_msg(str_equals(str4, cmpsym4->name), msg_get);
+    symbol_t cmpsym5 = htable_pop(test_htable, str1);
+    symbol_t cmpsym6 = htable_pop(test_htable, str2);
+    symbol_t cmpsym7 = htable_pop(test_htable, str3);
+    symbol_t cmpsym8 = htable_pop(test_htable, str4);
+    ck_assert_msg(str_equals(str1, cmpsym5.name), msg_pop);
+    ck_assert_msg(str_equals(str2, cmpsym6.name), msg_pop);
+    ck_assert_msg(str_equals(str3, cmpsym7.name), msg_pop);
+    ck_assert_msg(str_equals(str4, cmpsym8.name), msg_pop);
     ifj15_free_all();
 }
 END_TEST
@@ -121,6 +150,7 @@ START_TEST(test_str)
     str_append_char(s, '4');
     ck_assert_msg(str_to_double(s) - 3.14 < 0.001, msg_str_to_double);
     str_clear(s);
+    ifj15_free_all();
 }
 END_TEST
 
@@ -136,7 +166,7 @@ START_TEST(test_stack)
     char msg_fnd[256] = "Stack find returned bad item";
     char msg_ins[256] = "Stack insert returned bad item";
     ifj15_memory_init();
-    stack_char_t* test_stack = stack_init(CHAR);
+    stack_char_t* test_stack = stack_init(SI_CHAR);
     stack_push(test_stack, 'a');
     ck_assert_msg(stack_pop(test_stack) == 'a', msg_get);
 
@@ -178,12 +208,12 @@ Suite* core_suite(void)
 
     tc_core = tcase_create("Core");
 
-    tcase_add_test(tc_core, test_ulist);
+    //tcase_add_test(tc_core, test_ulist);
     tcase_add_test(tc_core, test_memory);
     tcase_add_test(tc_core, test_htable);
     tcase_add_test(tc_core, test_ptable);
     tcase_add_test(tc_core, test_vector);
-//    tcase_add_test(tc_core, test_str);
+    tcase_add_test(tc_core, test_str);
     tcase_add_test(tc_core, test_stack);
     suite_add_tcase(s, tc_core);
 
