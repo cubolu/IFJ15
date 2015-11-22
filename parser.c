@@ -162,6 +162,7 @@ void parse_asgnFollow() {
                 match(TT_PARENTHESES_OPEN);
                 parse_paramList();
                 match(TT_PARENTHESES_CLOSE);
+                cached_identificator.type = TT_NONE;
             } else {
                 parse_expr();
             }
@@ -492,7 +493,7 @@ void parse_varDefFollow() {
     switch(next_token.type) {
         case TT_OP_ASSIGNMENT:
             match(TT_OP_ASSIGNMENT);
-            parse_expr();
+            parse_asgnFollow();
         default:
             return;
     }
