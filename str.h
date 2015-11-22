@@ -2,13 +2,14 @@
 #define STR_H
 
 #include "common.h"
-#include "memory.h"
 
 struct _str_t {
     char * c_str;
     size_t length;
     size_t capacity;
 };
+
+#include "memory.h"
 
 #define str_init() _str_init(true)
 

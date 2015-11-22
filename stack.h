@@ -2,8 +2,6 @@
 #define STACK_H
 
 #include "common.h"
-#include "error.h"
-#include "memory.h"
 
 typedef enum {SI_CHAR, SI_HTABLE, SI_TOKEN} stack_item_t;
 
@@ -25,6 +23,9 @@ struct _stack_token_t {
     token_t* data;
 };
 
+#include "memory.h"
+#include "error.h"
+
 #define stack_init(type) _stack_init(type, true)
 
 #define stack_push(stack, item) _Generic((stack), \
@@ -37,7 +38,7 @@ struct _stack_token_t {
       stack_htable_t* : _stack_top_htable, \
       stack_token_t* : _stack_top_token)(stack, true)
 
-#define stack_get(stack) _Generic((stack), \
+#define stack_top(stack) _Generic((stack), \
       stack_char_t* : _stack_top_char, \
       stack_htable_t* : _stack_top_htable, \
       stack_token_t* : _stack_top_token)(stack, false)

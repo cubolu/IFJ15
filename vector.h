@@ -2,8 +2,6 @@
 #define LIST_H
 
 #include "common.h"
-#include "error.h"
-#include "memory.h"
 
 struct _vector_t {
     void** array;
@@ -11,6 +9,9 @@ struct _vector_t {
     size_t capacity;
     int start;
 };
+
+#include "error.h"
+#include "memory.h"
 
 vector_t* vector_init();
 void _vector_free(vector_t* vector);

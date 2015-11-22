@@ -2,8 +2,6 @@
 #define PTABLE_H
 
 #include "common.h"
-#include "memory.h"
-#include "ulist.h"
 
 struct _ptable_t {
     ulist_t** array;
@@ -11,6 +9,9 @@ struct _ptable_t {
     size_t capacity_pow;
     size_t size;
 };
+
+#include "memory.h"
+#include "ulist.h"
 
 #define ptable_init() _ptable_init(true)
 

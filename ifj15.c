@@ -10,6 +10,7 @@ int main(int argc, const char *argv[]) {
     FILE* input_file = ifj15_fopen(argv[1], "r");
 
     scanner_t* s = scanner_init(input_file);
+    symbol_table_init();
     parse_program(s);
 
     ifj15_free_all();

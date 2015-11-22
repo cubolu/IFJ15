@@ -1,8 +1,7 @@
 #ifndef SCANNER_H
 #define SCANNER_H
 
-#include "str.h"
-#include "token.h"
+#include "common.h"
 
 typedef struct {
     FILE* file;
@@ -10,6 +9,8 @@ typedef struct {
     size_t line;
 } scanner_t;
 
+#include "str.h"
+#include "token.h"
 
 scanner_t* scanner_init(FILE* fp);
 void _scanner_free(scanner_t* s);

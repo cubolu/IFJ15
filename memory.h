@@ -2,6 +2,10 @@
 #define MEMORY_H
 
 #include "common.h"
+
+typedef enum {PTABLE, HTABLE, VECTOR, ARRAY, SIMPLE, STACK, STRING, SCANNER, FILEP} ptr_t;
+
+#include "symbol.h"
 #include "error.h"
 #include "ulist.h"
 #include "vector.h"

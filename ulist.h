@@ -1,24 +1,7 @@
 #ifndef ULIST_H
 #define ULIST_H
 
-#include "error.h"
-#include "memory.h"
-#include "symbol.h"
 #include "common.h"
-
-struct _unode_t {
-    void* key;
-    ptr_t item;
-    unode_t* next;
-    unode_t* prev;
-};
-
-struct _unode_str_t {
-    str_t* key;
-    symbol_t item;
-    unode_str_t* next;
-    unode_str_t* prev;
-};
 
 struct _ulist_t {
     unode_t* front;
@@ -29,6 +12,26 @@ struct _ulist_str_t {
     unode_str_t* front;
     unode_str_t* back;
 };
+
+#include "memory.h"
+
+struct _unode_t {
+    void* key;
+    ptr_t item;
+    unode_t* next;
+    unode_t* prev;
+};
+
+#include "symbol.h"
+
+struct _unode_str_t {
+    str_t* key;
+    symbol_t item;
+    unode_str_t* next;
+    unode_str_t* prev;
+};
+
+#include "error.h"
 
 #define ulist_set(ulist, key, item) _Generic((key), \
     str_t* : _ulist_str_set, \

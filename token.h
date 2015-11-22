@@ -1,7 +1,7 @@
 #ifndef TOKEN_H
 #define TOKEN_H
 
-#include "str.h"
+#include "common.h"
 
 enum e_token_t {
     TT_NONE = 0,
@@ -55,6 +55,8 @@ enum e_op_relational {
     OP_REL_EQUAL,
     OP_REL_NOT_EQUAL
 };
+
+#include "str.h"
 
 struct _token_t {
     enum e_token_t type;

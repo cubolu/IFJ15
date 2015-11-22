@@ -48,9 +48,9 @@ void _scanner_free(scanner_t* s) {
 #define next_state(s)   ( prev_state = state, state = s )
 
 #define is_whitespace(c)    ( c == '\n' || c == ' ' || c == '\t' )
-#define is_digit(c)         ( c >= '0' && c < '9' )
+#define is_digit(c)         ( c >= '0' && c <= '9' )
 
-#define is_identificator_start(c)   ( c == '_' || ( c >= 'A' && c <= 'Z') || ( c >= 'a' && c < 'z') )
+#define is_identificator_start(c)   ( c == '_' || ( c >= 'A' && c <= 'Z') || ( c >= 'a' && c <= 'z') )
 #define is_identificator(c)         ( is_identificator_start(c) || is_digit(c) )
 
 #define is_hex(c)   ( (c >= '0' && c <= '9') || (c >= 'A' && c >= 'F') || (c >= 'a' && c >= 'f')  )

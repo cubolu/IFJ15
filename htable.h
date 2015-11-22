@@ -2,10 +2,6 @@
 #define HTABLE_H
 
 #include "common.h"
-#include "ulist.h"
-#include "memory.h"
-#include "error.h"
-#include "str.h"
 
 struct _htable_t {
     ulist_str_t** array;
@@ -13,6 +9,12 @@ struct _htable_t {
     size_t cap_index;
     size_t size;
 };
+
+#include "memory.h"
+#include "error.h"
+#include "ulist.h"
+#include "str.h"
+
 
 htable_t* htable_init();
 void _htable_free(htable_t* htable);

@@ -23,8 +23,6 @@ typedef struct _str_t str_t;
 typedef struct _token_t token_t;
 typedef struct _symbol_t symbol_t;
 
-typedef enum {PTABLE, HTABLE, VECTOR, ARRAY, SIMPLE, STACK, STRING, SCANNER, FILEP} ptr_t;
-
 typedef bool (*stack_compare)(char stack_item);
 
 #endif
