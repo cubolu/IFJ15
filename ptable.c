@@ -4,7 +4,7 @@ typedef enum {UP, DOWN} resize_t;
 const size_t PTABLE_START_POW = 5;
 
 void ptable_resize(ptable_t* ptable, resize_t resize);
-static size_t hash(void* key, size_t capacity_pow);
+static size_t hash(const void* key, size_t capacity_pow);
 static unsigned int pow2(unsigned int pow);
 
 ptable_t* _ptable_init(bool ptable_insert) {
@@ -28,7 +28,7 @@ void _ptable_free(ptable_t* ptable) {
 
 void ptable_insert(ptable_t* ptable, void* ptr, ptr_t type) {
     ++(ptable->size);
-    if (ptable->size > 5*pow2(ptable->capacity_pow))
+    if (ptable->size > 10*pow2(ptable->capacity_pow))
         ptable_resize(ptable, UP);
     size_t hash_code = hash(ptr, ptable->capacity_pow);
     if (ptable->array[hash_code] == NULL)
@@ -38,7 +38,7 @@ void ptable_insert(ptable_t* ptable, void* ptr, ptr_t type) {
 
 ptr_t ptable_pop(ptable_t* ptable, void* ptr) {
     --(ptable->size);
-    if (ptable->size < pow2(ptable->capacity_pow)
+    if (ptable->size < 2*pow2(ptable->capacity_pow)
         && ptable->capacity_pow > PTABLE_START_POW)
         ptable_resize(ptable, DOWN);
     size_t hash_code = hash(ptr, ptable->capacity_pow);
@@ -69,7 +69,7 @@ void ptable_resize(ptable_t* ptable, resize_t resize) {
     free(old_array);
 }
 
-static size_t hash(void* key, size_t capacity_pow) {
+static size_t hash(const void* key, size_t capacity_pow) {
     size_t hash;
 #ifdef __x86_64__
     hash = ((unsigned long) key * 11400714819323199563UL) >> (64 - capacity_pow);

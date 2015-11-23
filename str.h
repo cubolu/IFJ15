@@ -13,7 +13,7 @@ struct _str_t {
 
 #define str_init() _str_init(true)
 
-#define str_equals(s1, s2) _Generic((s1),   \
+#define str_equal(s1, s2) _Generic((s1),   \
     char*: _Generic((s2),                   \
         char*: _str_eq_char_char,           \
         str_t*: _str_eq_char_str),          \

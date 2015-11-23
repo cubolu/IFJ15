@@ -1,6 +1,6 @@
 #include "parser.h"
 
-token_t next_token;
+token_t next_token, curr_token;
 
 //for parse_asgnFollow to pass into parse_expr
 token_t cached_identificator;
@@ -56,7 +56,7 @@ tab_op_t prec_table[][7] = {
 
 void parse_asgn();
 void parse_asgnFollow();
-void parse_block();
+void parse_block(bool new_scope);
 void parse_cinStmt();
 void parse_cinStmtFollow();
 void parse_coutStmt();
@@ -89,6 +89,7 @@ void parse_program(scanner_t* s) {
 void match(enum e_token_t token) {
     if (next_token.type != token)
         error("Syntactic error: Failed to parse the program", ERROR_SYN);
+    curr_token = next_token;
     next_token = get_next_token(token_stream);
 }
 
@@ -159,9 +160,19 @@ void parse_asgnFollow() {
             match(TT_IDENTIFICATOR);
             // TO REMOVE IF FUNEXP
             if (next_token.type == TT_PARENTHESES_OPEN) {
+                func_init();
+                func_set_name(curr_token.str);
                 match(TT_PARENTHESES_OPEN);
                 parse_paramList();
                 match(TT_PARENTHESES_CLOSE);
+                symbol_t* func_call = func_finish();
+                symbol_t* func_def = func_table_find(func_call->name);
+                if (func_def) {
+                    if (!is_equal_func(func_def, func_call))
+                        error("Bad function call parameters types/count", ERROR_SEM);
+                } else {
+                    error("Call to unknown function", ERROR_SEM);
+                }
                 cached_identificator.type = TT_NONE;
             } else {
                 parse_expr();
@@ -178,12 +189,15 @@ void parse_asgnFollow() {
     }
 }
 
-void parse_block() {
+void parse_block(bool new_scope) {
     switch(next_token.type) {
         case TT_BLOCK_START:
             match(TT_BLOCK_START);
+            if (new_scope)
+                var_table_scope_enter();
             parse_stmts();
             match(TT_BLOCK_END);
+            var_table_scope_exit();
             break;
         default:
             error("Syntactic error: Failed to parse the program", ERROR_SYN);
@@ -251,20 +265,28 @@ void parse_forClause() {
             match(TT_SEMICOLON);
             parse_asgn();
             match(TT_PARENTHESES_CLOSE);
-            parse_block();
+            parse_block(true);
             break;
         default:
             error("Syntactic error: Failed to parse the program", ERROR_SYN);
     }
 }
 
-void parse_funcBody() {
+void parse_funcBody(symbol_t* funcRef) {
     switch(next_token.type) {
         case TT_SEMICOLON:
             match(TT_SEMICOLON);
             break;
         case TT_BLOCK_START:
-            parse_block();
+            var_table_scope_enter();
+            if (funcRef->paramList) {
+                unode_str_t* paramIter = funcRef->paramList->front;
+                while (paramIter) {
+                    var_table_add(&(paramIter->item));
+                    paramIter = paramIter->next;
+                }
+            }
+            parse_block(false);
             break;
         default:
             error("Syntactic error: Failed to parse the program", ERROR_SYN);
@@ -276,12 +298,17 @@ void parse_funcHead() {
         case TT_TYPE_DOUBLE:
         case TT_TYPE_INT:
         case TT_TYPE_STRING:
+            func_init();
             match(next_token.type);
+            func_set_return_type(curr_token.type);
             match(TT_IDENTIFICATOR);
+            func_set_name(curr_token.str);
             match(TT_PARENTHESES_OPEN);
             parse_paramSpec();
             match(TT_PARENTHESES_CLOSE);
-            parse_funcBody();
+            symbol_t* funcRef = func_finish();
+            func_table_add(funcRef);
+            parse_funcBody(funcRef);
             break;
         default:
             error("Syntactic error: Failed to parse the program", ERROR_SYN);
@@ -311,9 +338,9 @@ void parse_ifClause() {
             match(TT_PARENTHESES_OPEN);
             parse_expr();
             match(TT_PARENTHESES_CLOSE);
-            parse_block();
+            parse_block(true);
             match(TT_KW_ELSE);
-            parse_block();
+            parse_block(true);
             break;
         default:
             error("Syntactic error: Failed to parse the program", ERROR_SYN);
@@ -327,6 +354,18 @@ void parse_paramList() {
         case TT_LIT_STRING:
         case TT_IDENTIFICATOR:
             parse_term();
+            var_init();
+            if (curr_token.type == TT_IDENTIFICATOR) {
+                symbol_t* var = var_table_find(curr_token.str);
+                if (!var)
+                    error("Reference to undefined variable", ERROR_SEM);
+                else {
+                    var_set_type(var->type);
+                }
+            } else {
+                var_set_type(curr_token.type);
+            }
+            func_add_param(var_finish());
             parse_paramListFollow();
             break;
         default:
@@ -352,7 +391,11 @@ void parse_paramSpec() {
         case TT_TYPE_INT:
         case TT_TYPE_STRING:
             match(next_token.type);
+            var_init();
+            var_set_type(curr_token.type);
             match(TT_IDENTIFICATOR);
+            var_set_name(curr_token.str);
+            func_add_param(var_finish());
             parse_paramSpecFollow();
             break;
         default:
@@ -364,8 +407,12 @@ void parse_paramSpecFollow() {
     switch(next_token.type) {
         case TT_COMMA:
             match(TT_COMMA);
+            var_init();
             parse_type();
+            var_set_type(curr_token.type);
             match(TT_IDENTIFICATOR);
+            var_set_name(curr_token.str);
+            func_add_param(var_finish());
             parse_paramSpecFollow();
             break;
         default:
@@ -400,7 +447,7 @@ void parse_stmt() {
             match(TT_SEMICOLON);
             break;
         case TT_BLOCK_START:
-            parse_block();
+            parse_block(true);
             break;
         case TT_KW_IF:
             parse_ifClause();
@@ -474,9 +521,13 @@ void parse_varDef() {
         case TT_TYPE_DOUBLE:
         case TT_TYPE_INT:
         case TT_TYPE_STRING:
+            var_init();
             parse_type();
+            var_set_type(curr_token.type);
             match(TT_IDENTIFICATOR);
+            var_set_name(curr_token.str);
             parse_varDefFollow();
+            var_table_add(var_finish());
             break;
         case TT_TYPE_AUTO:
             match(TT_TYPE_AUTO);

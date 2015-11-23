@@ -65,6 +65,12 @@ void _ifj15_free(void* ptr, ptr_t ptr_type) {
         case FILEP:
             ifj15_fclose(ptr);
             break;
+        case ULIST:
+            _ulist_free(ptr);
+            break;
+        case ULISTSTR:
+            _ulist_str_free(ptr);
+            break;
         default:
             free(ptr);
     }

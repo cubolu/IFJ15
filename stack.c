@@ -68,7 +68,7 @@ int _stack_top_char(stack_char_t* stack, bool remove_top) {
 }
 htable_t* _stack_top_htable(stack_htable_t* stack, bool remove_top) {
     if (stack->top == 0) {
-        warning("stack_pop/stack_get: Tried to pop/get item from an empty stack");
+        //warning("stack_pop/stack_get: Tried to pop/get item from an empty stack");
         return NULL;
     }
 

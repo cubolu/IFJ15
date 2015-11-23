@@ -45,8 +45,11 @@ struct _unode_str_t {
     str_t* : _ulist_str_get, \
     default: _ulist_get)(ulist, key)
 
-ulist_t* _ulist_init();
-ulist_str_t* _ulist_str_init();
+#define ulist_str_init() _ulist_str_init(true);
+#define ulist_init() _ulist_init(true);
+
+ulist_t* _ulist_init(bool ptable_insert);
+ulist_str_t* _ulist_str_init(bool ptable_insert);
 void _ulist_free(ulist_t* ulist);
 void _ulist_str_free(ulist_str_t* ulist);
 

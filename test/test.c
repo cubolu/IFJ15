@@ -99,18 +99,18 @@ START_TEST(test_htable)
     symbol_t* cmpsym2 = htable_get(test_htable, str2);
     symbol_t* cmpsym3 = htable_get(test_htable, str3);
     symbol_t* cmpsym4 = htable_get(test_htable, str4);
-    ck_assert_msg(str_equals(str1, cmpsym1->name), msg_get);
-    ck_assert_msg(str_equals(str2, cmpsym2->name), msg_get);
-    ck_assert_msg(str_equals(str3, cmpsym3->name), msg_get);
-    ck_assert_msg(str_equals(str4, cmpsym4->name), msg_get);
+    ck_assert_msg(str_equal(str1, cmpsym1->name), msg_get);
+    ck_assert_msg(str_equal(str2, cmpsym2->name), msg_get);
+    ck_assert_msg(str_equal(str3, cmpsym3->name), msg_get);
+    ck_assert_msg(str_equal(str4, cmpsym4->name), msg_get);
     symbol_t cmpsym5 = htable_pop(test_htable, str1);
     symbol_t cmpsym6 = htable_pop(test_htable, str2);
     symbol_t cmpsym7 = htable_pop(test_htable, str3);
     symbol_t cmpsym8 = htable_pop(test_htable, str4);
-    ck_assert_msg(str_equals(str1, cmpsym5.name), msg_pop);
-    ck_assert_msg(str_equals(str2, cmpsym6.name), msg_pop);
-    ck_assert_msg(str_equals(str3, cmpsym7.name), msg_pop);
-    ck_assert_msg(str_equals(str4, cmpsym8.name), msg_pop);
+    ck_assert_msg(str_equal(str1, cmpsym5.name), msg_pop);
+    ck_assert_msg(str_equal(str2, cmpsym6.name), msg_pop);
+    ck_assert_msg(str_equal(str3, cmpsym7.name), msg_pop);
+    ck_assert_msg(str_equal(str4, cmpsym8.name), msg_pop);
     ifj15_free_all();
 }
 END_TEST
@@ -134,14 +134,14 @@ END_TEST
 
 START_TEST(test_str)
 {
-    char msg_str_equals[256] = "Str equals returned bad result";
+    char msg_str_equal[256] = "Str equals returned bad result";
     char msg_str_to_double[256] = "Str to double returned bad result";
     ifj15_memory_init();
     str_t * s = str_init();
     str_append_char(s, 'a');
     str_append_char(s, 'b');
     str_append_char(s, 'c');
-    ck_assert_msg(str_equals(s, "abc"), msg_str_equals);
+    ck_assert_msg(str_equal(s, "abc"), msg_str_equal);
     str_clear(s);
 
     str_append_char(s, '3');
@@ -172,20 +172,20 @@ START_TEST(test_stack)
 
     for (char c = 'a'; c <= 'z'; ++c)
         stack_push(test_stack, c);
-    ck_assert_msg(stack_get(test_stack) == 'z', msg_get);
+    ck_assert_msg(stack_top(test_stack) == 'z', msg_get);
     for (char c = 'z'; c >= 'a'; --c)
         ck_assert_int_eq(stack_pop(test_stack), c);
-    //ck_assert_msg(stack_get(test_stack) == -1, msg_get);
+    //ck_assert_msg(stack_top(test_stack) == -1, msg_get);
 
     for (char c = 'a'; c <= 'z'; ++c)
         stack_push(test_stack, c);
     ck_assert_msg(stack_find(test_stack, test_cmp_false) == -1, msg_fnd);
-    ck_assert_msg(stack_find(test_stack, test_cmp_true) == stack_get(test_stack), msg_fnd);
+    ck_assert_msg(stack_find(test_stack, test_cmp_true) == stack_top(test_stack), msg_fnd);
     ck_assert_msg(stack_find(test_stack, test_cmp) == 'l', msg_fnd);
 
     stack_insert_after(test_stack, 'z', test_cmp_true);
     ck_assert_msg(stack_pop(test_stack) == 'z', msg_pop);
-    ck_assert_msg(stack_get(test_stack) == 'z', msg_get);
+    ck_assert_msg(stack_top(test_stack) == 'z', msg_get);
     stack_insert_after(test_stack, 'a', test_cmp_false);
     stack_insert_after(test_stack, 'a', test_cmp);
     for (char c = 'z'; c >= 'm'; --c)

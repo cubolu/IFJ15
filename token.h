@@ -20,9 +20,9 @@ enum e_token_t {
     TT_OP_STREAM_IN,  // >>
     TT_OP_STREAM_OUT, // <<
 
-    TT_TYPE_DOUBLE,
-    TT_TYPE_INT,
-    TT_TYPE_STRING,
+    TT_TYPE_DOUBLE = 13,
+    TT_TYPE_INT = 14,
+    TT_TYPE_STRING = 15,
     TT_TYPE_AUTO,
 
     TT_BLOCK_START,

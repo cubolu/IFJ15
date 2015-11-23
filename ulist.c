@@ -3,15 +3,16 @@
 unode_t* unode_init(void* key, ptr_t item);
 unode_str_t* unode_str_init(str_t* key, symbol_t item);
 
-ulist_t* _ulist_init() {
-    ulist_t* ulist = _ifj15_malloc(SIMPLE, sizeof(ulist_t), false);
+ulist_t* _ulist_init(bool ptable_insert) {
+    ulist_t* ulist = _ifj15_malloc(SIMPLE, sizeof(ulist_t), ptable_insert);
     ulist->front = NULL;
     ulist->back = NULL;
     return ulist;
 }
 
-ulist_str_t* _ulist_str_init() {
-    ulist_str_t* ulist = _ifj15_malloc(SIMPLE, sizeof(ulist_str_t), false);
+ulist_str_t* _ulist_str_init(bool ptable_insert) {
+    ulist_str_t* ulist = _ifj15_malloc(SIMPLE, sizeof(ulist_str_t),
+                                       ptable_insert);
     ulist->front = NULL;
     ulist->back = NULL;
     return ulist;
@@ -42,7 +43,6 @@ void _ulist_str_free(ulist_str_t* ulist) {
 void _ulist_set(ulist_t* ulist, void* key, ptr_t item) {
     if (ulist->front == NULL) {
         unode_t* new_unode = unode_init(key, item);
-        new_unode->next = ulist->front;
         ulist->front = ulist->back = new_unode;
     } else {
         unode_t* unode = ulist->front;
@@ -64,12 +64,11 @@ void _ulist_set(ulist_t* ulist, void* key, ptr_t item) {
 void _ulist_str_set(ulist_str_t* ulist, str_t* key, symbol_t item) {
     if (ulist->front == NULL) {
         unode_str_t* new_unode = unode_str_init(key, item);
-        new_unode->next = ulist->front;
         ulist->front = ulist->back = new_unode;
     } else {
         unode_str_t* unode = ulist->front;
         while (unode != NULL) {
-            if (str_equals(unode->key, key)) {
+            if (str_equal(unode->key, key)) {
                 unode->item = item;
                 return;
             }
@@ -93,7 +92,20 @@ ptr_t _ulist_get(ulist_t* ulist, void* key) {
         }
         unode = unode->next;
     }
-    return 0;
+    return -1;
+}
+
+symbol_t* _ulist_str_get(ulist_str_t* ulist, str_t* key) {
+    unode_str_t* unode = ulist->front;
+    symbol_t* item;
+    while (unode != NULL) {
+        if (str_equal(unode->key, key)) {
+            item = &(unode->item);
+            return item;
+        }
+        unode = unode->next;
+    }
+    return NULL;
 }
 
 ptr_t _ulist_pop(ulist_t* ulist, void* key) {
@@ -106,40 +118,31 @@ ptr_t _ulist_pop(ulist_t* ulist, void* key) {
                 unode->prev->next = unode->next;
             else // Front of the ulist
                 ulist->front = unode->next;
-            if (unode->next == NULL) //Back of the ulist
+            if (unode->next)
+                unode->next->prev = unode->prev;
+            else //Back of the ulist
                 ulist->back = unode->prev;
             free(unode);
             return item;
         }
         unode = unode->next;
     }
-    return 0;
-}
-
-symbol_t* _ulist_str_get(ulist_str_t* ulist, str_t* key) {
-    unode_str_t* unode = ulist->front;
-    symbol_t* item;
-    while (unode != NULL) {
-        if (str_equals(unode->key, key)) {
-            item = &(unode->item);
-            return item;
-        }
-        unode = unode->next;
-    }
-    return 0;
+    return -1;
 }
 
 symbol_t _ulist_str_pop(ulist_str_t* ulist, str_t* key) {
     unode_str_t* unode = ulist->front;
     symbol_t item;
     while (unode != NULL) {
-        if (str_equals(unode->key, key)) {
+        if (str_equal(unode->key, key)) {
             item = unode->item;
             if (unode->prev)
                 unode->prev->next = unode->next;
             else // Front of the ulist
                 ulist->front = unode->next;
-            if (unode->next == NULL) //Back of the ulist
+            if (unode->next)
+                unode->next->prev = unode->prev;
+            else //Back of the ulist
                 ulist->back = unode->prev;
             free(unode);
             return item;

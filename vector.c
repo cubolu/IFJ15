@@ -1,7 +1,7 @@
 #include "vector.h"
 
 typedef enum {UP, DOWN} resize_t;
-const size_t VECTOR_START_CAP = 16;
+const size_t VECTOR_START_CAP = 8;
 
 void vector_resize(vector_t* vector, resize_t resize);
 size_t real_pos(size_t capacity, int start, size_t pos);
@@ -11,6 +11,15 @@ vector_t* vector_init() {
     vector->array = _ifj15_malloc(ARRAY, sizeof(void*)*VECTOR_START_CAP, false);
     vector->size = 0;
     vector->capacity = VECTOR_START_CAP;
+    vector->start = 0;
+    return vector;
+}
+
+vector_t* vector_init_size(size_t init_size) {
+    vector_t* vector = _ifj15_malloc(VECTOR, sizeof(vector_t), true);
+    vector->array = _ifj15_malloc(ARRAY, sizeof(void*)*init_size, false);
+    vector->size = 0;
+    vector->capacity = init_size;
     vector->start = 0;
     return vector;
 }

@@ -44,7 +44,7 @@ void htable_set(htable_t* htable, str_t* key, symbol_t item) {
 symbol_t* htable_get(htable_t* htable, str_t* key) {
     size_t hash_code = hash(key, htable->cap_index);
     if (htable->array[hash_code] == NULL)
-        return 0;
+        return NULL;
     return ulist_get(htable->array[hash_code], key);
 }
 

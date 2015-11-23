@@ -583,34 +583,34 @@ token_t get_next_token(scanner_t * s)
 enum e_token_t scanner_check_keyword(str_t *s)
 {
 
-    if (str_equals(s, "double"))
+    if (str_equal(s, "double"))
         return TT_TYPE_DOUBLE;
 
-    else if(str_equals(s, "string"))
+    else if(str_equal(s, "string"))
         return TT_TYPE_STRING;
 
-    else if(str_equals(s, "auto"))
+    else if(str_equal(s, "auto"))
         return TT_TYPE_AUTO;
 
-    else if(str_equals(s, "int"))
+    else if(str_equal(s, "int"))
         return TT_TYPE_INT;
 
-    else if (str_equals(s, "cin"))
+    else if (str_equal(s, "cin"))
         return TT_KW_CIN;
 
-    else if (str_equals(s, "cout"))
+    else if (str_equal(s, "cout"))
         return TT_KW_COUT;
 
-    else if (str_equals(s, "for"))
+    else if (str_equal(s, "for"))
         return TT_KW_FOR;
 
-    else if (str_equals(s, "if"))
+    else if (str_equal(s, "if"))
         return TT_KW_IF;
 
-    else if (str_equals(s, "return"))
+    else if (str_equal(s, "return"))
         return TT_KW_RETURN;
 
-    else if (str_equals(s, "else"))
+    else if (str_equal(s, "else"))
         return TT_KW_ELSE;
 
     else

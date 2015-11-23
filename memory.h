@@ -3,7 +3,8 @@
 
 #include "common.h"
 
-typedef enum {PTABLE, HTABLE, VECTOR, ARRAY, SIMPLE, STACK, STRING, SCANNER, FILEP} ptr_t;
+typedef enum {PTABLE, HTABLE, VECTOR, ARRAY, SIMPLE, STACK, STRING, SCANNER,
+              FILEP, ULIST, ULISTSTR} ptr_t;
 
 #include "symbol.h"
 #include "error.h"

@@ -14,6 +14,7 @@ struct _vector_t {
 #include "memory.h"
 
 vector_t* vector_init();
+vector_t* vector_init_size(size_t init_size);
 void _vector_free(vector_t* vector);
 
 void vector_push_back(vector_t* vector, void* item);
