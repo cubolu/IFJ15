@@ -44,12 +44,11 @@ struct _stack_token_t {
       stack_token_t* : _stack_top_token)(stack, false)
 
 #define stack_find(stack, cmp) _Generic((stack), \
-      stack_char_t* : _stack_find(stack, cmp), \
-      default : error("Unsupported stack operation", ERROR_INTERNAL))
+      stack_char_t* : _stack_find_char, \
+      stack_htable_t* : _stack_find_symbol)(stack, cmp)
 
 #define stack_insert_after(stack, c, cmp) _Generic((stack), \
-      stack_char_t* : _stack_insert_after(stack, c, cmp), \
-      default : error("Unsupported stack operation", ERROR_INTERNAL))
+      stack_char_t* : _stack_insert_after(stack, c, cmp))
 
 void* _stack_init(stack_item_t si, bool ptable_insert);
 void _stack_free(void* stack);
@@ -63,7 +62,10 @@ token_t _stack_top_token(stack_token_t* stack, bool remove_top);
 
 /* search for item in stack from top to bottom, item must fulfill
  * user defined cmp function */
-int _stack_find(stack_char_t* stack, stack_compare cmp);
+int _stack_find_char(stack_char_t* stack, stack_compare cmp);
+
+symbol_t* _stack_find_symbol(stack_htable_t* stack, str_t* name);
+
 /* insert item c directly after first item, that fulfill cmp function */
 void _stack_insert_after(stack_char_t* stack, char c, stack_compare cmp);
 

@@ -88,12 +88,23 @@ token_t _stack_top_token(stack_token_t* stack, bool remove_top) {
     return top_token;
 }
 
-int _stack_find(stack_char_t* stack, stack_compare cmp) {
+int _stack_find_char(stack_char_t* stack, stack_compare cmp) {
     int found = -1;
     for (int i = stack->top - 1; i >= 0; --i) {
         if (cmp(stack->data[i])) {
            found = stack->data[i];
            break;
+        }
+    }
+    return found;
+}
+
+symbol_t* _stack_find_symbol(stack_htable_t* stack, str_t* name) {
+    symbol_t* found = NULL;
+    for (int i = stack->top - 1; i >= 0; --i) {
+        found = htable_get(stack->data[i], name);
+        if (found != NULL) {
+           return found;
         }
     }
     return found;
