@@ -131,10 +131,10 @@ stack_sym_t token_to_sym(token_t *tok) {
     }
 }
 
-int reduce_sequence(stack_char_t *stack) {
+int reduce_sequence(vector_char_t* stack) {
     stack_sym_t sym;
     int seq = 0;
-    while ((sym = stack_pop(stack)) != S_SEP) {
+    while ((sym = vector_pop(stack)) != S_SEP) {
         seq |= sym;
         seq <<= 8;
     }
@@ -550,25 +550,25 @@ void parse_varDefFollow() {
     }
 }
 
-bool top_term_cmp(char stack_item) { return stack_item != S_EXPR; }
+bool top_term_cmp(char vector_item) { return vector_item != S_EXPR; }
 
 void parse_expr() {
     stack_sym_t top;
     stack_sym_t next;
-    stack_char_t* stack = stack_init(SI_CHAR);
-    stack_push(stack, S_END);
+    vector_char_t* stack = vector_init(VI_CHAR);
+    vector_push(stack, S_END);
 
     bool use_cached = cached_identificator.type != TT_NONE;
     token_t expr_token = use_cached ? cached_identificator : next_token ;
     next = token_to_sym(&expr_token);
 
     do {
-        top = stack_find(stack, top_term_cmp);
+        top = vector_find(stack, top_term_cmp);
         switch (prec_table[top][next]) {
             case TAB_SP:
-                stack_insert_after(stack, S_SEP, top_term_cmp);
+                vector_insert_after(stack, S_SEP, top_term_cmp);
             case TAB_P:
-                stack_push(stack, next);
+                vector_push(stack, next);
                 //choose between cached_identificator and next_token
                 if (use_cached) {
                     use_cached = false;
@@ -591,10 +591,10 @@ void parse_expr() {
                     default:
                         error("Syntactic error: Failed to parse the expression", ERROR_SYN);
                 }
-                stack_push(stack, S_EXPR);
+                vector_push(stack, S_EXPR);
                 break;
             case TAB_END:
-                if (stack_pop(stack) != S_EXPR) {
+                if (vector_pop(stack) != S_EXPR) {
                     error("Syntactic error: Failed to parse the expression", ERROR_SYN);
                 }
                 break;

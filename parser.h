@@ -4,7 +4,7 @@
 #include "common.h"
 #include "token.h"
 #include "scanner.h"
-#include "stack.h"
+#include "vector.h"
 
 void parse_program(scanner_t* s);
 

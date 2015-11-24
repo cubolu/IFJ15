@@ -5,13 +5,13 @@ bool is_equal_paramlist(ulist_str_t* paramList1, ulist_str_t* paramList2);
 void load_builtin_functions();
 
 void symbol_table_init() {
-    var_table_stack = stack_init(SI_HTABLE);
+    var_table_vector = vector_init(VI_HTABLE);
     func_symtable = htable_init();
     load_builtin_functions();
 }
 
 symbol_t* var_table_find(str_t* name) {
-    return stack_find(var_table_stack, name);
+    return vector_find(var_table_vector, name);
 }
 
 //symbol_t* var_table_curr_find(str_t* name) {
@@ -40,12 +40,12 @@ void func_table_add(symbol_t* func) {
 
 void var_table_scope_enter() {
     curr_symtable = htable_init();
-    stack_push(var_table_stack, curr_symtable);
+    vector_push(var_table_vector, curr_symtable);
 }
 
 void var_table_scope_exit() {
-    htable_t* left_htable = stack_pop(var_table_stack);
-    curr_symtable = stack_top(var_table_stack);
+    htable_t* left_htable = vector_pop(var_table_vector);
+    curr_symtable = vector_top(var_table_vector);
     ifj15_free(left_htable);
 }
 

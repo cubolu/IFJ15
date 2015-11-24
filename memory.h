@@ -3,18 +3,17 @@
 
 #include "common.h"
 
-typedef enum {PTABLE, HTABLE, VECTOR, ARRAY, SIMPLE, STACK, STRING, SCANNER,
+typedef enum {PTABLE, HTABLE, VECTOR, ARRAY, SIMPLE, STRING, SCANNER,
               FILEP, ULIST, ULISTSTR} ptr_t;
 
 #include "symbol.h"
 #include "error.h"
 #include "ulist.h"
-#include "vector.h"
 #include "ptable.h"
 #include "htable.h"
 #include "str.h"
 #include "scanner.h"
-#include "stack.h"
+#include "vector.h"
 
 // Global program pointer table
 ptable_t* ifj15_ptable;

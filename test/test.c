@@ -38,34 +38,8 @@ START_TEST(test_memory)
     ifj15_memory_init();
     ptable_t* test_ptable = ptable_init();
     htable_t* test_htable = htable_init();
-    vector_t* test_vector = vector_init();
     ifj15_free(test_ptable);
     ifj15_free(test_htable);
-    ifj15_free(test_vector);
-    ifj15_free_all();
-}
-END_TEST
-
-START_TEST(test_vector)
-{
-    char msg_at[256] = "Vector at returned bad item";
-    ifj15_memory_init();
-    vector_t* test_vector = vector_init();
-    for (int i = 0; i < 1000; ++i) {
-        vector_push_front(test_vector, i);
-    }
-    for(int i = 0; i < 1000; ++i) {
-        vector_push_back(test_vector, i);
-    }
-    for (int i = 999; i >=0; --i) {
-        ck_assert_int_eq(vector_at(test_vector, 999-i), i);
-    }
-    for (int i = 1000; i <2000; ++i) {
-        ck_assert_int_eq(vector_at(test_vector, i), i-1000);
-    }
-    for (int i = 0; i < 1000; ++i) {
-        ck_assert_int_eq(vector_pop_front(test_vector), 999-i);
-    }
     ifj15_free_all();
 }
 END_TEST
@@ -158,43 +132,47 @@ bool test_cmp_true(char c){ return true; }
 bool test_cmp_false(char c){ return false; }
 bool test_cmp(char c){ return c < 'm'; }
 
-START_TEST(test_stack)
+START_TEST(test_vector)
 {
 
-    char msg_pop[256] = "Stack pop returned bad item";
-    char msg_get[256] = "Stack get returned bad item";
-    char msg_fnd[256] = "Stack find returned bad item";
-    char msg_ins[256] = "Stack insert returned bad item";
+    char msg_pop[256] = "Vector pop returned bad item";
+    char msg_get[256] = "Vector get returned bad item";
+    char msg_fnd[256] = "Vector find returned bad item";
+    char msg_ins[256] = "Vector insert returned bad item";
     ifj15_memory_init();
-    stack_char_t* test_stack = stack_init(SI_CHAR);
-    stack_push(test_stack, 'a');
-    ck_assert_msg(stack_pop(test_stack) == 'a', msg_get);
-
+    vector_char_t* test_vector = vector_init(VI_CHAR);
+    vector_push(test_vector, 'a');
+    ck_assert_msg(vector_pop(test_vector) == 'a', msg_get);
     for (char c = 'a'; c <= 'z'; ++c)
-        stack_push(test_stack, c);
-    ck_assert_msg(stack_top(test_stack) == 'z', msg_get);
+        vector_push(test_vector, c);
+    ck_assert_msg(vector_top(test_vector) == 'z', msg_get);
     for (char c = 'z'; c >= 'a'; --c)
-        ck_assert_int_eq(stack_pop(test_stack), c);
-    //ck_assert_msg(stack_top(test_stack) == -1, msg_get);
+        ck_assert_int_eq(vector_pop(test_vector), c);
+    //ck_assert_msg(vector_top(test_vector) == -1, msg_get);
 
     for (char c = 'a'; c <= 'z'; ++c)
-        stack_push(test_stack, c);
-    ck_assert_msg(stack_find(test_stack, test_cmp_false) == -1, msg_fnd);
-    ck_assert_msg(stack_find(test_stack, test_cmp_true) == stack_top(test_stack), msg_fnd);
-    ck_assert_msg(stack_find(test_stack, test_cmp) == 'l', msg_fnd);
+        vector_push(test_vector, c);
+    ck_assert_msg(vector_find(test_vector, test_cmp_false) == -1, msg_fnd);
+    ck_assert_msg(vector_find(test_vector, test_cmp_true) == vector_top(test_vector), msg_fnd);
+    ck_assert_msg(vector_find(test_vector, test_cmp) == 'l', msg_fnd);
+    ck_assert_int_eq(vector_at(test_vector, 0), 'a');
+    ck_assert_int_eq(vector_at(test_vector, 5), 'a' + 5);
+    ck_assert_int_eq(vector_at(test_vector, 10), 'a' + 10);
+    ck_assert_int_eq(vector_at(test_vector, 20), 'a' + 20);
+    ck_assert_int_eq(vector_at(test_vector, 25), 'a' + 25);
+    //ck_assert_int_eq(vector_at(test_vector, 26), -1);
 
-    stack_insert_after(test_stack, 'z', test_cmp_true);
-    ck_assert_msg(stack_pop(test_stack) == 'z', msg_pop);
-    ck_assert_msg(stack_top(test_stack) == 'z', msg_get);
-    stack_insert_after(test_stack, 'a', test_cmp_false);
-    stack_insert_after(test_stack, 'a', test_cmp);
+    vector_insert_after(test_vector, 'z', test_cmp_true);
+    ck_assert_msg(vector_pop(test_vector) == 'z', msg_pop);
+    ck_assert_msg(vector_top(test_vector) == 'z', msg_get);
+    vector_insert_after(test_vector, 'a', test_cmp_false);
+    vector_insert_after(test_vector, 'a', test_cmp);
     for (char c = 'z'; c >= 'm'; --c)
-        ck_assert_int_eq(stack_pop(test_stack), c);
-    ck_assert_msg(stack_pop(test_stack) == 'a', msg_pop);
+        ck_assert_int_eq(vector_pop(test_vector), c);
+    ck_assert_msg(vector_pop(test_vector) == 'a', msg_pop);
     for (char c = 'l'; c >= 'a'; --c)
-        ck_assert_int_eq(stack_pop(test_stack), c);
-    //ck_assert_msg(stack_pop(test_stack) == -1, msg_pop);
-
+        ck_assert_int_eq(vector_pop(test_vector), c);
+    //ck_assert_msg(vector_pop(test_vector) == -1, msg_pop);
     ifj15_free_all();
 }
 END_TEST
@@ -212,9 +190,8 @@ Suite* core_suite(void)
     tcase_add_test(tc_core, test_memory);
     tcase_add_test(tc_core, test_htable);
     tcase_add_test(tc_core, test_ptable);
-    tcase_add_test(tc_core, test_vector);
     tcase_add_test(tc_core, test_str);
-    tcase_add_test(tc_core, test_stack);
+    tcase_add_test(tc_core, test_vector);
     suite_add_tcase(s, tc_core);
 
     return s;

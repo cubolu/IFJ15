@@ -21,7 +21,7 @@ struct _symbol_t {
     ulist_str_t* paramList;
 };
 
-#include "stack.h"
+#include "vector.h"
 #include "str.h"
 
 symbol_t INVALID_SYM;
@@ -30,7 +30,7 @@ symbol_t bufferFunc;
 symbol_t bufferVar;
 str_t dontCareName;
 
-stack_htable_t* var_table_stack;
+vector_htable_t* var_table_vector;
 
 htable_t* curr_symtable;
 htable_t* func_symtable;
