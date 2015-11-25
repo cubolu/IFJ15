@@ -42,5 +42,8 @@
 ifj15
 test/test
 
+# Atom ctags config
+.tags*
+
 # IFJ15 Language source files
 *.ifj15

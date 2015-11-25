@@ -160,15 +160,15 @@ void parse_asgnFollow() {
             match(TT_IDENTIFICATOR);
             // TO REMOVE IF FUNEXP
             if (next_token.type == TT_PARENTHESES_OPEN) {
-                func_init();
-                func_set_name(curr_token.str);
+                func_call_init();
+                func_call_set_name(curr_token.str);
                 match(TT_PARENTHESES_OPEN);
                 parse_paramList();
                 match(TT_PARENTHESES_CLOSE);
-                symbol_t* func_call = func_finish();
+                func_call_t* func_call = func_call_finish();
                 symbol_t* func_def = func_table_find(func_call->name);
                 if (func_def) {
-                    if (!is_equal_func(func_def, func_call))
+                    if (!is_valid_func_call(func_call, func_def))
                         error("Bad function call parameters types/count", ERROR_SEM);
                 } else {
                     error("Call to unknown function", ERROR_SEM);
@@ -360,12 +360,11 @@ void parse_paramList() {
                 if (!var)
                     error("Reference to undefined variable", ERROR_SEM);
                 else {
-                    var_set_type(var->type);
+                    func_call_add_param(var->type);
                 }
             } else {
-                var_set_type(curr_token.type);
+                func_call_add_param(curr_token.type - 8);
             }
-            func_add_param(var_finish());
             parse_paramListFollow();
             break;
         default:
@@ -378,6 +377,17 @@ void parse_paramListFollow() {
         case TT_COMMA:
             match(TT_COMMA);
             parse_term();
+            var_init();
+            if (curr_token.type == TT_IDENTIFICATOR) {
+                symbol_t* var = var_table_find(curr_token.str);
+                if (!var)
+                    error("Reference to undefined variable", ERROR_SEM);
+                else {
+                    func_call_add_param(var->type);
+                }
+            } else {
+                func_call_add_param(curr_token.type - 8);
+            }
             parse_paramListFollow();
             break;
         default:

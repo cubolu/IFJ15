@@ -52,13 +52,27 @@ void var_table_scope_exit() {
 bool is_equal_paramlist(ulist_str_t* paramList1, ulist_str_t* paramList2) {
     unode_str_t* iter1 = paramList1->front;
     unode_str_t* iter2 = paramList2->front;
-    while (iter1 != NULL || iter2 != NULL) {
+    while (iter1 != NULL && iter2 != NULL) {
         if(iter1->item.type != iter2->item.type)
             return false;
         iter1 = iter1->next;
         iter2 = iter2->next;
     }
     if (iter1 != NULL || iter2 != NULL)
+        return false; //not the same amout of parameters
+    return true;
+}
+
+bool is_equal_paramtypes(vector_int_t* paramTypes, ulist_str_t* paramList) {
+    int iter1 = paramTypes->size -1;
+    unode_str_t* iter2 = paramList->front;
+    while (iter1 >= 0 && iter2 != NULL) {
+        if((e_data_t)vector_at(paramTypes, iter1) != iter2->item.type)
+            return false;
+        --iter1;
+        iter2 = iter2->next;
+    }
+    if (iter1 >= 0 || iter2 != NULL)
         return false; //not the same amout of parameters
     return true;
 }
@@ -72,6 +86,17 @@ bool is_equal_func(symbol_t* func1, symbol_t* func2) {
     }
     if (func1->paramList != NULL) //means func2->paramList is not NULL
         return is_equal_paramlist(func1->paramList, func2->paramList);
+    return true;
+}
+
+bool is_valid_func_call(func_call_t* funcCall, symbol_t* funcSym) {
+    if (!str_equal(funcCall->name, funcSym->name)
+        || (funcCall->paramTypes == NULL && funcSym->paramList != NULL)
+        || (funcCall->paramTypes != NULL && funcSym->paramList == NULL)) {
+        return false;
+    }
+    if (funcCall->paramTypes != NULL)
+        return is_equal_paramtypes(funcCall->paramTypes, funcSym->paramList);
     return true;
 }
 
@@ -112,8 +137,7 @@ void func_add_param(symbol_t* paramSymbol) {
     if (bufferFunc.paramList == NULL) {
         bufferFunc.paramList = ulist_str_init();
     }
-    if (paramSymbol->name == NULL
-        || !ulist_get(bufferFunc.paramList, paramSymbol->name))
+    if (!ulist_get(bufferFunc.paramList, paramSymbol->name))
         ulist_set(bufferFunc.paramList, paramSymbol->name, *paramSymbol);
     else
         error("Two function parameters with the same name", ERROR_SEM);
@@ -124,6 +148,24 @@ void func_set_return_type(e_data_t retType) {
 
 symbol_t* func_finish() {
     return &bufferFunc;
+}
+
+void func_call_init() {
+    bufferFuncCall.name = NULL;
+    bufferFuncCall.paramTypes = NULL;
+}
+void func_call_set_name(str_t* name) {
+    bufferFuncCall.name = name;
+}
+void func_call_add_param(e_data_t type){
+    if (bufferFuncCall.paramTypes == NULL) {
+        bufferFuncCall.paramTypes = vector_init(VI_INT, 1);
+    }
+    vector_push(bufferFuncCall.paramTypes, (int) type);
+}
+
+func_call_t* func_call_finish() {
+    return &bufferFuncCall;
 }
 
 void load_builtin_functions() {
@@ -137,13 +179,19 @@ void load_builtin_functions() {
     str_copy(concatName, "concat");
     str_copy(findName, "find");
     str_copy(sortName, "sort");
-
+    str_t* paramName1 = str_init();
+    str_t* paramName2 = str_init();
+    str_t* paramName3 = str_init();
+    str_copy(paramName1, "p1");
+    str_copy(paramName2, "p2");
+    str_copy(paramName3, "p3");
     var_init();
 
     func_init();
     func_set_return_type(INT_DT);
     func_set_name(lengthName);
     var_set_type(STRING_DT);
+    var_set_name(paramName1);
     func_add_param(var_finish());
     func_table_add(func_finish());
 
@@ -152,7 +200,9 @@ void load_builtin_functions() {
     func_set_name(substrName);
     func_add_param(var_finish());
     var_set_type(INT_DT);
+    var_set_name(paramName2);
     func_add_param(var_finish());
+    var_set_name(paramName3);
     func_add_param(var_finish());
     func_table_add(func_finish());
 
@@ -160,20 +210,25 @@ void load_builtin_functions() {
     func_set_return_type(STRING_DT);
     func_set_name(concatName);
     var_set_type(STRING_DT);
+    var_set_name(paramName1);
     func_add_param(var_finish());
+    var_set_name(paramName2);
     func_add_param(var_finish());
     func_table_add(func_finish());
 
     func_init();
     func_set_return_type(INT_DT);
     func_set_name(findName);
+    var_set_name(paramName1);
     func_add_param(var_finish());
+    var_set_name(paramName2);
     func_add_param(var_finish());
     func_table_add(func_finish());
 
     func_init();
     func_set_return_type(STRING_DT);
     func_set_name(sortName);
+    var_set_name(paramName1);
     func_add_param(var_finish());
     func_table_add(func_finish());
 }

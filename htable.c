@@ -33,7 +33,7 @@ void _htable_free(htable_t* htable) {
 
 void htable_set(htable_t* htable, str_t* key, symbol_t item) {
     ++(htable->size);
-    if (htable->size > 5*HTABLE_SIZES[htable->cap_index])
+    if (htable->size > 10*HTABLE_SIZES[htable->cap_index])
         htable_resize(htable, UP);
     size_t hash_code = hash(key, htable->cap_index);
     if (htable->array[hash_code] == NULL)
@@ -50,7 +50,7 @@ symbol_t* htable_get(htable_t* htable, str_t* key) {
 
 symbol_t htable_pop(htable_t* htable, str_t* key) {
     --(htable->size);
-    if (htable->size < HTABLE_SIZES[htable->cap_index] && htable->cap_index > 0)
+    if (htable->size < 2*HTABLE_SIZES[htable->cap_index] && htable->cap_index > 0)
         htable_resize(htable, DOWN);
     size_t hash_code = hash(key, htable->cap_index);
     if (htable->array[hash_code] == NULL)

@@ -31,8 +31,8 @@ enum e_token_t {
     TT_PARENTHESES_OPEN,
     TT_PARENTHESES_CLOSE,
 
+    TT_LIT_DOUBLE = 21,
     TT_LIT_INT,
-    TT_LIT_DOUBLE,
     TT_LIT_STRING,
 
     TT_SEMICOLON,

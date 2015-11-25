@@ -21,14 +21,18 @@ struct _symbol_t {
     ulist_str_t* paramList;
 };
 
-#include "vector.h"
+struct _func_call_t {
+    str_t* name;
+    vector_int_t* paramTypes;
+};
+
 #include "str.h"
 
 symbol_t INVALID_SYM;
 
+func_call_t bufferFuncCall;
 symbol_t bufferFunc;
 symbol_t bufferVar;
-str_t dontCareName;
 
 vector_htable_t* var_table_vector;
 
@@ -52,6 +56,11 @@ void func_set_return_type(e_data_t retType);
 symbol_t* func_finish();
 //void func_init_code_addr();
 
+void func_call_init();
+void func_call_set_name(str_t* name);
+void func_call_add_param(e_data_t type);
+func_call_t* func_call_finish();
+
 void var_table_add(symbol_t* symbol);
 void var_table_scope_enter();
 void var_table_scope_exit();
@@ -59,5 +68,6 @@ void var_table_scope_exit();
 void func_table_add(symbol_t* symbol);
 symbol_t* func_table_find(str_t* name);
 bool is_equal_func(symbol_t* func1, symbol_t* func2);
+bool is_valid_func_call(func_call_t* func_call, symbol_t* funcSym);
 
 #endif

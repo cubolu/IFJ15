@@ -23,6 +23,7 @@ typedef struct _htable_t htable_t;
 typedef struct _str_t str_t;
 typedef struct _token_t token_t;
 typedef struct _symbol_t symbol_t;
+typedef struct _func_call_t func_call_t;
 
 typedef bool (*vector_compare)(char vector_item);
 
