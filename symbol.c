@@ -232,3 +232,121 @@ void load_builtin_functions() {
     func_add_param(var_finish());
     func_table_add(func_finish());
 }
+
+void check_rule_rel(token_t* operator, vector_expr_t* expr_buffer) {
+    expression_t rigth_expr = vector_pop(expr_buffer);
+    expression_t left_expr = vector_pop(expr_buffer);
+    expression_t ret_expr = {.type = INT_DT};
+    switch (rigth_expr.type) {
+        case DOUBLE_DT:
+        case DOUBLE_LIT_DT:
+        case INT_DT:
+        case INT_LIT_DT:
+            switch (left_expr.type) {
+                case DOUBLE_DT:
+                case DOUBLE_LIT_DT:
+                case INT_DT:
+                case INT_LIT_DT:
+                    vector_push(expr_buffer, ret_expr);
+                    break;
+                default:
+                    error("Incompatible operators types", ERROR_TYPE_COMPAT);
+            }
+            break;
+        case STRING_DT:
+        case STRING_LIT_DT:
+            switch (left_expr.type) {
+                case STRING_DT:
+                case STRING_LIT_DT:
+                    vector_push(expr_buffer, ret_expr);
+                    break;
+                default:
+                    error("Incompatible operators types", ERROR_TYPE_COMPAT);
+            }
+            break;
+        default:
+            error("Unknown operator type", ERROR_INTERNAL);
+    }
+}
+
+void check_rule_addsub(token_t* operator, vector_expr_t* expr_buffer) {
+    expression_t rigth_expr = vector_pop(expr_buffer);
+    expression_t left_expr = vector_pop(expr_buffer);
+    switch (rigth_expr.type) {
+        case DOUBLE_DT:
+        case DOUBLE_LIT_DT:
+        case INT_DT:
+        case INT_LIT_DT:
+            switch (left_expr.type) {
+                case DOUBLE_DT:
+                case DOUBLE_LIT_DT:
+                case INT_DT:
+                case INT_LIT_DT:
+                    vector_push(expr_buffer, left_expr);
+                    break;
+                default:
+                    error("Incompatible operators types", ERROR_TYPE_COMPAT);
+            }
+            break;
+        default:
+            error("Incompatible operators types", ERROR_TYPE_COMPAT);
+    }
+}
+
+void check_rule_muldiv(token_t* operator, vector_expr_t* expr_buffer) {
+    expression_t rigth_expr = vector_pop(expr_buffer);
+    expression_t left_expr = vector_pop(expr_buffer);
+    switch (rigth_expr.type) {
+        case DOUBLE_DT:
+        case DOUBLE_LIT_DT:
+        case INT_DT:
+        case INT_LIT_DT:
+            switch (left_expr.type) {
+                case DOUBLE_DT:
+                case DOUBLE_LIT_DT:
+                case INT_DT:
+                case INT_LIT_DT:
+                    vector_push(expr_buffer, left_expr);
+                    break;
+                default:
+                    error("Incompatible operators types", ERROR_TYPE_COMPAT);
+            }
+            break;
+        default:
+            error("Incompatible operators types", ERROR_TYPE_COMPAT);
+    }
+}
+
+void check_rule_id(token_t* last_token, vector_expr_t* expr_buffer) {
+    expression_t expr;
+    if (last_token->type == TT_IDENTIFICATOR) {
+        //identificator
+        symbol_t* id = var_table_find(last_token->str);
+        if (id == NULL) { //TODO: initialized?? (id == NULL || id.def)
+            error("Reference to undefined variable", ERROR_SEM);
+        } else {
+            //convert valid variable to expression
+            expr.type = id->type;
+            expr.addr = id->addr;
+        }
+    } else {
+        //literal
+        switch (last_token->type) {
+            case TT_LIT_DOUBLE:
+                expr.type = DOUBLE_LIT_DT;
+                expr.double_val = last_token->double_val;
+                break;
+            case TT_LIT_INT:
+                expr.type = INT_LIT_DT;
+                expr.int_val = last_token->int_val;
+                break;
+            case TT_LIT_STRING:
+                expr.type = STRING_LIT_DT;
+                expr.str_val = last_token->str;
+                break;
+            default:
+                warning("Wrong item in token buffer, probably error in rule aplication");
+        }
+    }
+    vector_push(expr_buffer, expr);
+}

@@ -4,26 +4,31 @@
 #include "common.h"
 
 typedef enum {VAR_SYM, FUN_SYM} e_symbol_t;
-typedef enum {DOUBLE_DT = 13, INT_DT = 14, STRING_DT = 15} e_data_t;
+typedef enum {NONE_DT, DOUBLE_DT = 13, INT_DT = 14, STRING_DT = 15,
+              DOUBLE_LIT_DT, INT_LIT_DT, STRING_LIT_DT} e_data_t;
 
 struct _symbol_t {
     str_t* name;
     e_symbol_t sym;
     e_data_t type; //also determines return type of function
     bool def; //also determines if var is initialized
-
-    union {
-        size_t addr;
-        str_t* strval;
-        int intval;
-        double doubleval;
-    };
+    size_t addr;
     ulist_str_t* paramList;
 };
 
 struct _func_call_t {
     str_t* name;
     vector_int_t* paramTypes;
+};
+
+struct _expression_t {
+    e_data_t type;
+    union {
+        size_t addr;
+        str_t* str_val;
+        int int_val;
+        double double_val;
+    };
 };
 
 #include "str.h"
@@ -69,5 +74,10 @@ void func_table_add(symbol_t* symbol);
 symbol_t* func_table_find(str_t* name);
 bool is_equal_func(symbol_t* func1, symbol_t* func2);
 bool is_valid_func_call(func_call_t* func_call, symbol_t* funcSym);
+
+void check_rule_rel(token_t* operator, vector_expr_t* expr_buffer);
+void check_rule_addsub(token_t* operator, vector_expr_t* expr_buffer);
+void check_rule_muldiv(token_t* operator, vector_expr_t* expr_buffer);
+void check_rule_id(token_t* last_token, vector_expr_t* expr_buffer);
 
 #endif

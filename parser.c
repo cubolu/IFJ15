@@ -61,7 +61,7 @@ void parse_cinStmt();
 void parse_cinStmtFollow();
 void parse_coutStmt();
 void parse_coutStmtFollow();
-void parse_expr();
+expression_t parse_expr();
 void parse_forClause();
 void parse_funcBody();
 void parse_funcHead();
@@ -169,7 +169,7 @@ void parse_asgnFollow() {
                 symbol_t* func_def = func_table_find(func_call->name);
                 if (func_def) {
                     if (!is_valid_func_call(func_call, func_def))
-                        error("Bad function call parameters types/count", ERROR_SEM);
+                        error("Bad function call parameters types/count", ERROR_TYPE_COMPAT);
                 } else {
                     error("Call to unknown function", ERROR_SEM);
                 }
@@ -562,13 +562,17 @@ void parse_varDefFollow() {
 
 bool top_term_cmp(char vector_item) { return vector_item != S_EXPR; }
 
-void parse_expr() {
+expression_t parse_expr() {
+    expression_t parsed_expr;
     stack_sym_t top;
     stack_sym_t next;
     vector_char_t* stack = vector_init(VI_CHAR);
+    vector_token_t* token_buffer = vector_init(VI_TOKEN);
+    vector_expr_t* expr_buffer = vector_init(VI_EXPR);
     vector_push(stack, S_END);
 
     bool use_cached = cached_identificator.type != TT_NONE;
+    token_t last_token;
     token_t expr_token = use_cached ? cached_identificator : next_token ;
     next = token_to_sym(&expr_token);
 
@@ -579,6 +583,10 @@ void parse_expr() {
                 vector_insert_after(stack, S_SEP, top_term_cmp);
             case TAB_P:
                 vector_push(stack, next);
+                //next is now top terminal on stack
+                top = next;
+                //store last token
+                vector_push(token_buffer, expr_token);
                 //choose between cached_identificator and next_token
                 if (use_cached) {
                     use_cached = false;
@@ -591,12 +599,23 @@ void parse_expr() {
                 next = token_to_sym(&expr_token);
                 break;
             case TAB_R:
+                last_token = vector_pop(token_buffer);
                 switch (reduce_sequence(stack)) {
                     case RULE_REL:
+                        check_rule_rel(&last_token, expr_buffer);
+                        break;
                     case RULE_ADDSUB:
+                        check_rule_addsub(&last_token, expr_buffer);
+                        break;
                     case RULE_MULDIV:
+                        check_rule_muldiv(&last_token, expr_buffer);
+                        break;
                     case RULE_PAR:
+                        //only pop next token(TT_PARENTHESES_OPEN) from token buffer
+                        vector_pop(token_buffer);
+                        break;
                     case RULE_ID:
+                        check_rule_id(&last_token, expr_buffer);
                         break;
                     default:
                         error("Syntactic error: Failed to parse the expression", ERROR_SYN);
@@ -607,6 +626,7 @@ void parse_expr() {
                 if (vector_pop(stack) != S_EXPR) {
                     error("Syntactic error: Failed to parse the expression", ERROR_SYN);
                 }
+                parsed_expr = vector_top(expr_buffer);
                 break;
             case TAB_ERR:
             default:
@@ -615,4 +635,7 @@ void parse_expr() {
     } while (top != S_END || next != S_END);
 
     ifj15_free(stack);
+    ifj15_free(token_buffer);
+    ifj15_free(expr_buffer);
+    return parsed_expr;
 }
