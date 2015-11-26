@@ -128,6 +128,32 @@ START_TEST(test_str)
 }
 END_TEST
 
+START_TEST(test_ial_str)
+{
+    char msg_str_substr[256] = "Substring returned bad result";
+    char msg_str_concat[256] = "Concat returned bad result";
+
+    ifj15_memory_init();
+    str_t * s = str_init();
+
+    str_copy(s, "abcd");
+
+    str_t * s2 = substr(s, 2, 5);
+
+    ck_assert_msg(str_equal(s2, "cd"), msg_str_substr);
+
+    str_t * s3 = str_init();
+
+    str_copy(s3, "efgh");
+
+    str_t * s4 = concat(s, s3);
+
+    ck_assert_msg(str_equal(s4, "abcdefgh"), msg_str_concat);
+
+    ifj15_free_all();
+}
+END_TEST
+
 bool test_cmp_true(char c){ return true; }
 bool test_cmp_false(char c){ return false; }
 bool test_cmp(char c){ return c < 'm'; }
@@ -191,6 +217,7 @@ Suite* core_suite(void)
     tcase_add_test(tc_core, test_htable);
     tcase_add_test(tc_core, test_ptable);
     tcase_add_test(tc_core, test_str);
+    tcase_add_test(tc_core, test_ial_str);
     tcase_add_test(tc_core, test_vector);
     suite_add_tcase(s, tc_core);
 

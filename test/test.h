@@ -9,5 +9,6 @@
 #include "str.h"
 #include "symbol.h"
 #include "vector.h"
+#include "ial.h"
 
 #endif
