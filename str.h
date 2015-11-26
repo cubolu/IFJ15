@@ -24,6 +24,8 @@ struct _str_t {
 str_t * _str_init(bool ptable_insert);
 void _str_free(str_t * s);
 
+void _str_resize(str_t* s, size_t size);
+
 void str_append_char(str_t * s, char c);
 void str_copy(str_t* dest, const char* source);
 bool _str_eq_char_char(char * s1, char * s2);

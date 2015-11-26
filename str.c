@@ -40,6 +40,7 @@ void str_copy(str_t* dest, const char* source) {
     size_t s_len = strlen(source);
     _str_resize(dest, s_len+1);
     strcpy(dest->c_str, source);
+    dest->length = s_len;
 }
 
 bool _str_eq_char_char(char * s1, char * s2) {
