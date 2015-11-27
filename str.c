@@ -52,8 +52,38 @@ bool _str_eq_char_str(char * s1, str_t * s2) {
 bool _str_eq_str_char(str_t * s1, char * s2) {
     return strcmp(s1->c_str, s2) == 0;
 }
-bool _star_eq_str_str(str_t * s1, str_t * s2) {
+bool _str_eq_str_str(str_t * s1, str_t * s2) {
     return strcmp(s1->c_str, s2->c_str) == 0;
+}
+
+int str_eq(str_t * s1, str_t * s2)
+{
+    return ( strcmp(s1->c_str, s2->c_str) == 0 ) ? 1 : 0;
+}
+
+int str_neq(str_t * s1, str_t * s2)
+{
+    return ( strcmp(s1->c_str, s2->c_str) != 0 ) ? 1 : 0;
+}
+
+int str_gt(str_t * s1, str_t * s2)
+{
+    return ( strcmp(s1->c_str, s2->c_str) > 0 ) ? 1 : 0;
+}
+
+int str_gt_eq(str_t * s1, str_t * s2)
+{
+    return ( strcmp(s1->c_str, s2->c_str) >= 0 ) ? 1 : 0;
+}
+
+int str_lt(str_t * s1, str_t * s2)
+{
+    return ( strcmp(s1->c_str, s2->c_str) < 0 ) ? 1 : 0;
+}
+
+int str_lt_eq(str_t * s1, str_t * s2)
+{
+    return ( strcmp(s1->c_str, s2->c_str) <= 0 ) ? 1 : 0;
 }
 
 // predpokladam, ze nemuze dojit k chybe pri prevodu, protoze format byl overen konecnym automatem
