@@ -55,7 +55,7 @@ tab_op_t prec_table[][7] = {
 };
 
 void parse_asgn();
-void parse_asgnFollow();
+expression_t parse_asgnFollow();
 void parse_block(bool new_scope);
 void parse_cinStmt();
 void parse_cinStmtFollow();
@@ -76,7 +76,7 @@ void parse_stmts();
 void parse_term();
 void parse_type();
 void parse_varDef();
-void parse_varDefFollow();
+expression_t parse_varDefFollow();
 
 //entry point function
 void parse_program(scanner_t* s) {
@@ -142,23 +142,74 @@ int reduce_sequence(vector_char_t* stack) {
 }
 
 void parse_asgn() {
+    expression_t expr;
     switch(next_token.type) {
         case TT_IDENTIFICATOR:
             match(TT_IDENTIFICATOR);
+            symbol_t* var = var_table_find(curr_token.str);
+            if (var == NULL)
+                error("Trying to assign to undefined variable", ERROR_SEM);
             match(TT_OP_ASSIGNMENT);
-            parse_asgnFollow();
+            expr = parse_asgnFollow();
+            switch (expr.type) {
+                case DOUBLE_DT:
+                case DOUBLE_LIT_DT:
+                    if (var->type != DOUBLE_DT &&
+                        var->type != INT_DT)
+                        error("Incompatible type variable assignment",
+                            ERROR_TYPE_COMPAT);
+                    break;
+                case INT_DT:
+                case INT_LIT_DT:
+                    if (var->type != DOUBLE_DT &&
+                        var->type != INT_DT)
+                        error("Incompatible type variable assignment",
+                            ERROR_TYPE_COMPAT);
+                    break;
+                case STRING_DT:
+                case STRING_LIT_DT:
+                    if (var->type != STRING_DT)
+                        error("Incompatible type variable assignment",
+                            ERROR_TYPE_COMPAT);
+                    break;
+                default:
+                    ;
+            }
+            // TODO UNFINISHED
+            if (expr.type != NONE_DT) {
+                if (expr.type > 15) {// it's a literal
+                    switch (expr.type) {
+                        case DOUBLE_LIT_DT:
+                            //generate mov addr double
+                            break;
+                        case INT_LIT_DT:
+                            //generate mov addr int
+                            break;
+                        case STRING_LIT_DT:
+                            //generate mov addr string
+                            break;
+                        default:
+                            ;
+                    }
+                } else {
+                    //generate mov addr addr
+                    ;
+                }
+            }
             break;
         default:
             error("Syntactic error: Failed to parse the program", ERROR_SYN);
     }
 }
 
-void parse_asgnFollow() {
+expression_t parse_asgnFollow() {
+    expression_t expr;
+    expr.type = NONE_DT;
     switch(next_token.type) {
         case TT_IDENTIFICATOR:
             cached_identificator = next_token;
             match(TT_IDENTIFICATOR);
-            // TO REMOVE IF FUNEXP
+            // TODO REMOVE IF FUNEXP
             if (next_token.type == TT_PARENTHESES_OPEN) {
                 func_call_init();
                 func_call_set_name(curr_token.str);
@@ -170,23 +221,29 @@ void parse_asgnFollow() {
                 if (func_def) {
                     if (!is_valid_func_call(func_call, func_def))
                         error("Bad function call parameters types/count", ERROR_TYPE_COMPAT);
+                    expr.type = func_def->type;
+                    //TODO pass address
+                    cached_identificator.type = TT_NONE;
+                    return expr;
                 } else {
                     error("Call to unknown function", ERROR_SEM);
                 }
-                cached_identificator.type = TT_NONE;
             } else {
-                parse_expr();
+                expr = parse_expr();
+                return expr;
             }
             break;
         case TT_LIT_INT:
         case TT_LIT_DOUBLE:
         case TT_LIT_STRING:
         case TT_PARENTHESES_OPEN:
-            parse_expr();
+            expr = parse_expr();
+            return expr;
             break;
         default:
             error("Syntactic error: Failed to parse the program", ERROR_SYN);
     }
+    return expr;
 }
 
 void parse_block(bool new_scope) {
@@ -210,6 +267,9 @@ void parse_cinStmt() {
             match(TT_KW_CIN);
             match(TT_OP_STREAM_IN);
             match(TT_IDENTIFICATOR);
+            symbol_t* var = var_table_find(curr_token.str);
+            if (var == NULL)
+                error("Trying to use undefined variable", ERROR_SEM);
             parse_cinStmtFollow();
             break;
         default:
@@ -222,6 +282,9 @@ void parse_cinStmtFollow() {
         case TT_OP_STREAM_IN:
             match(TT_OP_STREAM_IN);
             match(TT_IDENTIFICATOR);
+            symbol_t* var = var_table_find(curr_token.str);
+            if (var == NULL)
+                error("Trying to use undefined variable", ERROR_SEM);
             parse_cinStmtFollow();
             break;
         default:
@@ -235,6 +298,11 @@ void parse_coutStmt() {
             match(TT_KW_COUT);
             match(TT_OP_STREAM_OUT);
             parse_term();
+            if (curr_token.type == TT_IDENTIFICATOR) {
+                symbol_t* var = var_table_find(curr_token.str);
+                if (var == NULL)
+                    error("Trying to use undefined variable", ERROR_SEM);
+            }
             parse_coutStmtFollow();
             break;
         default:
@@ -247,6 +315,11 @@ void parse_coutStmtFollow() {
         case TT_OP_STREAM_OUT:
             match(TT_OP_STREAM_OUT);
             parse_term();
+            if (curr_token.type == TT_IDENTIFICATOR) {
+                symbol_t* var = var_table_find(curr_token.str);
+                if (var == NULL)
+                    error("Trying to use undefined variable", ERROR_SEM);
+            }
             parse_coutStmtFollow();
             break;
         default:
@@ -259,13 +332,15 @@ void parse_forClause() {
         case TT_KW_FOR:
             match(TT_KW_FOR);
             match(TT_PARENTHESES_OPEN);
+            var_table_scope_enter();
             parse_varDef();
             match(TT_SEMICOLON);
+            //TODO add gen jump, expr evaluation
             parse_expr();
             match(TT_SEMICOLON);
             parse_asgn();
             match(TT_PARENTHESES_CLOSE);
-            parse_block(true);
+            parse_block(false);
             break;
         default:
             error("Syntactic error: Failed to parse the program", ERROR_SYN);
@@ -336,6 +411,7 @@ void parse_ifClause() {
         case TT_KW_IF:
             match(TT_KW_IF);
             match(TT_PARENTHESES_OPEN);
+            //TODO add gen jump, expr evaluation
             parse_expr();
             match(TT_PARENTHESES_CLOSE);
             parse_block(true);
@@ -445,6 +521,7 @@ void parse_stmt() {
             break;
         case TT_KW_RETURN:
             match(TT_KW_RETURN);
+            //TODO add return type checking
             parse_expr();
             match(TT_SEMICOLON);
             break;
@@ -527,6 +604,8 @@ void parse_type() {
 }
 
 void parse_varDef() {
+    expression_t expr;
+    size_t addr;
     switch(next_token.type) {
         case TT_TYPE_DOUBLE:
         case TT_TYPE_INT:
@@ -536,27 +615,86 @@ void parse_varDef() {
             var_set_type(curr_token.type);
             match(TT_IDENTIFICATOR);
             var_set_name(curr_token.str);
-            parse_varDefFollow();
+            expr = parse_varDefFollow();
+            switch (expr.type) {
+                case DOUBLE_DT:
+                case DOUBLE_LIT_DT:
+                    if (var_get_type() != DOUBLE_DT &&
+                        var_get_type() != INT_DT)
+                        error("Incompatible type variable assignment",
+                            ERROR_TYPE_COMPAT);
+                    break;
+                case INT_DT:
+                case INT_LIT_DT:
+                    if (var_get_type() != DOUBLE_DT &&
+                        var_get_type() != INT_DT)
+                        error("Incompatible type variable assignment",
+                            ERROR_TYPE_COMPAT);
+                    break;
+                case STRING_DT:
+                case STRING_LIT_DT:
+                    if (var_get_type() != STRING_DT)
+                        error("Incompatible type variable assignment",
+                            ERROR_TYPE_COMPAT);
+                    break;
+                default:
+                    ;
+            }
+            // TODO UNFINISHED
+            if (expr.type != NONE_DT) {
+                if (expr.type > 15) {// it's a literal
+                    switch (expr.type) {
+                        case DOUBLE_LIT_DT:
+                            //generate mov addr double
+                            break;
+                        case INT_LIT_DT:
+                            //generate mov addr int
+                            break;
+                        case STRING_LIT_DT:
+                            //generate mov addr string
+                            break;
+                        default:
+                            ;
+                    }
+                } else {
+                    //generate mov addr addr
+                    ;
+                }
+            }
+            addr = generate_push();
+            var_set_addr(addr);
             var_table_add(var_finish());
             break;
         case TT_TYPE_AUTO:
+            var_init();
             match(TT_TYPE_AUTO);
             match(TT_IDENTIFICATOR);
+            var_set_name(curr_token.str);
             match(TT_OP_ASSIGNMENT);
-            parse_expr();
+            expr = parse_expr();
+            if (expr.type > 15) // it's a literal
+                var_set_type(expr.type-3);
+            else
+                var_set_type(expr.type);
+            addr = generate_push();
+            var_set_addr(addr);
+            var_table_add(var_finish());
             break;
         default:
             error("Syntactic error: Failed to parse the program", ERROR_SYN);
     }
 }
 
-void parse_varDefFollow() {
+expression_t parse_varDefFollow() {
+    expression_t expr;
+    expr.type = NONE_DT;
     switch(next_token.type) {
         case TT_OP_ASSIGNMENT:
             match(TT_OP_ASSIGNMENT);
-            parse_asgnFollow();
+            expr = parse_asgnFollow();
+            return expr;
         default:
-            return;
+            return expr;
     }
 }
 

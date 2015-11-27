@@ -113,8 +113,16 @@ void var_set_type(e_data_t type) {
     bufferVar.type = type;
 }
 
+void var_set_addr(size_t addr) {
+    bufferVar.addr = addr;
+}
+
 void var_set_name(str_t* name) {
     bufferVar.name = name;
+}
+
+e_data_t var_get_type() {
+    return bufferVar.type;
 }
 
 symbol_t* var_finish() {

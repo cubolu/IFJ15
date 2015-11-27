@@ -54,7 +54,9 @@ symbol_t* var_table_find(str_t* name);
 
 void var_init();
 void var_set_type(e_data_t type);
+void var_set_addr(size_t addr);
 void var_set_name(str_t* name);
+e_data_t var_get_type();
 symbol_t* var_finish();
 
 void func_init();
