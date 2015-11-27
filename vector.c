@@ -20,6 +20,14 @@ void* _vector_init(vector_item_t vi, size_t start_cap, bool ptable_insert) {
             vct->size = 0;
             return vct;
         }
+        case VI_EXPR:
+        {
+            vector_expr_t* vct = _ifj15_malloc(VECTOR, sizeof(vector_int_t), ptable_insert);
+            vct->array = _ifj15_malloc(ARRAY, sizeof(expression_t)*start_cap, false);
+            vct->capacity = start_cap;
+            vct->size = 0;
+            return vct;
+        }
         case VI_HTABLE:
         {
             vector_htable_t* vct = _ifj15_malloc(VECTOR, sizeof(vector_htable_t), ptable_insert);
@@ -32,6 +40,22 @@ void* _vector_init(vector_item_t vi, size_t start_cap, bool ptable_insert) {
         {
             vector_token_t* vct = _ifj15_malloc(VECTOR, sizeof(vector_token_t), ptable_insert);
             vct->array = _ifj15_malloc(ARRAY, sizeof(token_t)*start_cap, false);
+            vct->capacity = start_cap;
+            vct->size = 0;
+            return vct;
+        }
+        case VI_CODESEG:
+        {
+            vector_inst_t* vct = _ifj15_malloc(VECTOR, sizeof(vector_inst_t), ptable_insert);
+            vct->array = _ifj15_malloc(ARRAY, sizeof(inst_t)*start_cap, false);
+            vct->capacity = start_cap;
+            vct->size = 0;
+            return vct;
+        }
+        case VI_DATASEG:
+        {
+            vector_data_seg_t* vct = _ifj15_malloc(VECTOR, sizeof(vector_data_seg_t), ptable_insert);
+            vct->array = _ifj15_malloc(ARRAY, sizeof(data_seg_t)*start_cap, false);
             vct->capacity = start_cap;
             vct->size = 0;
             return vct;
@@ -65,6 +89,12 @@ void _vector_push_int(vector_int_t* vct, int i) {
 
     vct->array[(vct->size)++] = i;
 }
+void _vector_push_expr(vector_expr_t* vct, expression_t e) {
+    if (vct->size == vct->capacity)
+        vector_resize(expression_t, vct, vct->capacity*2);
+
+    vct->array[(vct->size)++] = e;
+}
 void _vector_push_htable(vector_htable_t* vct, htable_t* h) {
     if (vct->size == vct->capacity)
         vector_resize(htable_t*, vct, vct->capacity*2);
@@ -76,6 +106,18 @@ void _vector_push_token(vector_token_t* vct, token_t t) {
         vector_resize(token_t, vct, vct->capacity*2);
 
     vct->array[(vct->size)++] = t;
+}
+void _vector_push_inst(vector_inst_t* vct, inst_t i) {
+    if (vct->size == vct->capacity)
+        vector_resize(inst_t, vct, vct->capacity*2);
+
+    vct->array[(vct->size)++] = i;
+}
+void _vector_push_data_seg(vector_data_seg_t* vct, data_seg_t d) {
+    if (vct->size == vct->capacity)
+        vector_resize(data_seg_t, vct, vct->capacity*2);
+
+    vct->array[(vct->size)++] = d;
 }
 
 int _vector_top_char(vector_char_t* vct, bool remove_top) {
@@ -96,6 +138,16 @@ int _vector_top_int(vector_int_t* vct, bool remove_top) {
     if (remove_top) --(vct->size);
     return top_int;
 }
+expression_t _vector_top_expr(vector_expr_t* vct, bool remove_top) {
+    if (vct->size == 0) {
+        //warning("vector_pop/vector_top: Tried to pop/get item from an empty vector");
+        expression_t ret = {.type = NONE_DT};
+        return ret;
+    }
+    expression_t top_expr = vct->array[vct->size - 1];
+    if (remove_top) --(vct->size);
+    return top_expr;
+}
 htable_t* _vector_top_htable(vector_htable_t* vct, bool remove_top) {
     if (vct->size == 0) {
         //warning("vector_pop/vector_top: Tried to pop/get item from an empty vector");
@@ -115,6 +167,26 @@ token_t _vector_top_token(vector_token_t* vct, bool remove_top) {
     if (remove_top) --(vct->size);
     return top_token;
 }
+inst_t _vector_top_inst(vector_inst_t* vct, bool remove_top) {
+    if (vct->size == 0) {
+        //warning("vector_pop/vector_top: Tried to pop/get item from an empty vector");
+        inst_t ret = {.inst_code = INST_HALT};
+        return ret;
+    }
+    inst_t top_inst = vct->array[vct->size - 1];
+    if (remove_top) --(vct->size);
+    return top_inst;
+}
+data_seg_t _vector_top_data_seg(vector_data_seg_t* vct, bool remove_top) {
+    if (vct->size == 0) {
+        //warning("vector_pop/vector_top: Tried to pop/get item from an empty vector");
+        data_seg_t ret = {.ret_addr = 0};
+        return ret;
+    }
+    data_seg_t top_data_seg = vct->array[vct->size - 1];
+    if (remove_top) --(vct->size);
+    return top_data_seg;
+}
 
 int _vector_at_char(vector_char_t* vct, size_t pos) {
     if (pos < vct->size)
@@ -128,6 +200,13 @@ int _vector_at_int(vector_int_t* vct, size_t pos) {
     warning("vector_at: Tried to access item out of range");
     return -1;
 }
+expression_t _vector_at_expr(vector_expr_t* vct, size_t pos) {
+    if (pos < vct->size)
+        return vct->array[pos];
+    warning("vector_at: Tried to access item out of range");
+    expression_t ret = {.type = NONE_DT};
+    return ret;
+}
 htable_t* _vector_at_htable(vector_htable_t* vct, size_t pos) {
     if (pos < vct->size)
         return vct->array[pos];
@@ -139,6 +218,20 @@ token_t _vector_at_token(vector_token_t* vct, size_t pos) {
         return vct->array[pos];
     warning("vector_at: Tried to access item out of range");
     token_t ret = {.type = TT_NONE};
+    return ret;
+}
+inst_t _vector_at_inst(vector_inst_t* vct, size_t pos) {
+    if (pos < vct->size)
+        return vct->array[pos];
+    warning("vector_at: Tried to access item out of range");
+    inst_t ret = {.inst_code = INST_HALT};
+    return ret;
+}
+data_seg_t _vector_at_data_seg(vector_data_seg_t* vct, size_t pos) {
+    if (pos < vct->size)
+        return vct->array[pos];
+    warning("vector_at: Tried to access item out of range");
+    data_seg_t ret = {.ret_addr = 0};
     return ret;
 }
 

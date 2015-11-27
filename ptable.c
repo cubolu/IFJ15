@@ -55,7 +55,7 @@ void ptable_resize(ptable_t* ptable, resize_t resize) {
         ptable->capacity_pow -= 1;
 
     ulist_t** old_array = ptable->array;
-    ptable->array = _ifj15_malloc(ARRAY, sizeof(ulist_t*)*pow2(ptable->capacity_pow), false);
+    ptable->array = _ifj15_calloc(ARRAY, sizeof(ulist_t*)*pow2(ptable->capacity_pow), false);
     for (size_t i = 0; i < old_capacity; ++i) {
         if (old_array[i] != NULL) {
             unode_t* unode = old_array[i]->front;
