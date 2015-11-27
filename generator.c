@@ -18,7 +18,7 @@ size_t generate_push() {
 }
 
 size_t generate_int_cnvrt(size_t int_addr) {
-    inst_t curr_inst = {.inst_code = INST_CVT};
+    inst_t curr_inst = {.inst_code = INST_CVT_INT};
     curr_inst.op1_addr = int_addr;
     //curr_inst.op2_addr = 0;
     size_t new_addr = generate_push();

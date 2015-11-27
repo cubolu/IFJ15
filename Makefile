@@ -16,7 +16,7 @@ ifj15: $(OBJ)
 .PHONY: clean pack debug test
 
 clean:
-	rm -f ifj15 test/test *.o $(LOGIN).zip
+	rm -f ifj15 test/test *.o *.gch $(LOGIN).zip
 	@cd test; make clean
 
 pack:

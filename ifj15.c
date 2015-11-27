@@ -4,6 +4,7 @@
 #include "scanner.h"
 #include "parser.h"
 #include "generator.h"
+#include "interpreter.h"
 
 int main(int argc, const char *argv[]) {
     ifj15_memory_init();
@@ -14,7 +15,8 @@ int main(int argc, const char *argv[]) {
     symbol_table_init();
     generator_init();
     parse_program(s);
-    //run_program();
+    interpreter_init();
+    run_program();
 
     ifj15_free_all();
     return 0;

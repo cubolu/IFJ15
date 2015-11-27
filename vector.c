@@ -220,19 +220,17 @@ token_t _vector_at_token(vector_token_t* vct, size_t pos) {
     token_t ret = {.type = TT_NONE};
     return ret;
 }
-inst_t _vector_at_inst(vector_inst_t* vct, size_t pos) {
+inst_t* _vector_at_inst(vector_inst_t* vct, size_t pos) {
     if (pos < vct->size)
-        return vct->array[pos];
+        return &vct->array[pos];
     warning("vector_at: Tried to access item out of range");
-    inst_t ret = {.inst_code = INST_HALT};
-    return ret;
+    return NULL;
 }
-data_seg_t _vector_at_data_seg(vector_data_seg_t* vct, size_t pos) {
+data_seg_t* _vector_at_data_seg(vector_data_seg_t* vct, size_t pos) {
     if (pos < vct->size)
-        return vct->array[pos];
+        return &vct->array[pos];
     warning("vector_at: Tried to access item out of range");
-    data_seg_t ret = {.ret_addr = 0};
-    return ret;
+    return NULL;
 }
 
 int _vector_find_char(vector_char_t* vct, vector_compare cmp) {

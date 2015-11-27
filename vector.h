@@ -127,8 +127,8 @@ int _vector_at_int(vector_int_t* vct, size_t pos);
 expression_t _vector_at_expr(vector_expr_t* vct, size_t pos);
 htable_t* _vector_at_htable(vector_htable_t* vct, size_t pos);
 token_t _vector_at_token(vector_token_t* vct, size_t pos);
-inst_t _vector_at_inst(vector_inst_t* vct, size_t pos);
-data_seg_t _vector_at_data_seg(vector_data_seg_t* vct, size_t pos);
+inst_t* _vector_at_inst(vector_inst_t* vct, size_t pos);
+data_seg_t* _vector_at_data_seg(vector_data_seg_t* vct, size_t pos);
 
 /* search for item in vector from top to bottom, item must fulfill
  * user defined cmp function */

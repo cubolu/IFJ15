@@ -6,6 +6,8 @@
 #include "token.h"
 #include "symbol.h"
 
+extern vector_inst_t* code_seg;
+
 //instruction set generators for IFJ15 interpreter
 void generator_init();
 
