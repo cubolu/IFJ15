@@ -233,32 +233,129 @@ void load_builtin_functions() {
     func_table_add(func_finish());
 }
 
-void check_rule_rel(token_t* operator, vector_expr_t* expr_buffer) {
+void check_rule_rel(op_relational_t op, vector_expr_t* expr_buffer) {
+    //pop operands from stack, rigth is on top
     expression_t rigth_expr = vector_pop(expr_buffer);
     expression_t left_expr = vector_pop(expr_buffer);
     expression_t ret_expr = {.type = INT_DT};
+    //TODO: use look up table, inspired by Precedence table
     switch (rigth_expr.type) {
         case DOUBLE_DT:
+            switch (left_expr.type) {
+                case DOUBLE_DT:
+                    //DOUBLE_DT OP DOUBLE_DT
+                    ret_expr.addr = generate_D_D(op, &left_expr, &rigth_expr, false, false);
+                    break;
+                case DOUBLE_LIT_DT:
+                    //DOUBLE_DT OP DOUBLE_LIT_DT
+                    ret_expr.addr = generate_D_DL(op, &left_expr, &rigth_expr, false, false);
+                    break;
+                case INT_DT:
+                    //DOUBLE_DT OP INT_DT
+                    ret_expr.addr = generate_D_D(op, &left_expr, &rigth_expr, false, true);
+                    break;
+                case INT_LIT_DT:
+                    //DOUBLE_DT OP INT_LIT_DT
+                    ret_expr.addr = generate_D_DL(op, &left_expr, &rigth_expr, false, true);
+                    break;
+                default:
+                    error("Incompatible operators types", ERROR_TYPE_COMPAT);
+            }
+            break;
         case DOUBLE_LIT_DT:
+            switch (left_expr.type) {
+                case DOUBLE_DT:
+                    //DOUBLE_LIT_DT OP DOUBLE_DT
+                    ret_expr.addr = generate_DL_D(op, &left_expr, &rigth_expr, false, false);
+                    break;
+                case DOUBLE_LIT_DT:
+                    //DOUBLE_LIT_DT OP DOUBLE_LIT_DT
+                    ret_expr.type = INT_LIT_DT;
+                    ret_expr.int_val = solve_rel_DL_DL(op, &left_expr, &rigth_expr, false, false);
+                    break;
+                case INT_DT:
+                    //DOUBLE_LIT_DT OP INT_DT
+                    ret_expr.addr = generate_DL_D(op, &left_expr, &rigth_expr, false, true);
+                    break;
+                case INT_LIT_DT:
+                    //DOUBLE_LIT_DT OP INT_LIT_DT
+                    ret_expr.type = INT_LIT_DT;
+                    ret_expr.int_val = solve_rel_DL_DL(op, &left_expr, &rigth_expr, false, true);
+                    break;
+                default:
+                    error("Incompatible operators types", ERROR_TYPE_COMPAT);
+            }
+            break;
         case INT_DT:
+            switch (left_expr.type) {
+                case DOUBLE_DT:
+                    //INT_DT OP DOUBLE_DT
+                    ret_expr.addr = generate_D_D(op, &left_expr, &rigth_expr, true, false);
+                    break;
+                case DOUBLE_LIT_DT:
+                    //INT_DT OP DOUBLE_LIT_DT
+                    ret_expr.addr = generate_D_DL(op, &left_expr, &rigth_expr, true, false);
+                    break;
+                case INT_DT:
+                    //INT_DT OP INT_DT
+                    ret_expr.addr = generate_I_I(op, &left_expr, &rigth_expr);
+                    break;
+                case INT_LIT_DT:
+                    //INT_DT OP INT_LIT_DT
+                    ret_expr.addr = generate_I_IL(op, &left_expr, &rigth_expr);
+                    break;
+                default:
+                    error("Incompatible operators types", ERROR_TYPE_COMPAT);
+            }
+            break;
         case INT_LIT_DT:
             switch (left_expr.type) {
                 case DOUBLE_DT:
+                    //INT_LIT_DT OP DOUBLE_DT
+                    ret_expr.addr = generate_DL_D(op, &left_expr, &rigth_expr, true, false);
+                    break;
                 case DOUBLE_LIT_DT:
+                    //INT_LIT_DT OP DOUBLE_LIT_DT
+                    ret_expr.type = INT_LIT_DT;
+                    ret_expr.int_val = solve_rel_DL_DL(op, &left_expr, &rigth_expr, true, false);
+                    break;
                 case INT_DT:
+                    //INT_LIT_DT OP INT_DT
+                    ret_expr.addr = generate_IL_I(op, &left_expr, &rigth_expr);
+                    break;
                 case INT_LIT_DT:
-                    vector_push(expr_buffer, ret_expr);
+                    //INT_LIT_DT OP INT_LIT_DT
+                    ret_expr.type = INT_LIT_DT;
+                    ret_expr.int_val = solve_rel_IL_IL(op, &left_expr, &rigth_expr);
                     break;
                 default:
                     error("Incompatible operators types", ERROR_TYPE_COMPAT);
             }
             break;
         case STRING_DT:
+            switch (left_expr.type) {
+                case STRING_DT:
+                    //STRING_DT OP STRING_DT
+                    ret_expr.addr = generate_S_S(op, &left_expr, &rigth_expr);
+                    break;
+                case STRING_LIT_DT:
+                    //STRING_DT OP STRING_LIT_DT
+                    ret_expr.addr = generate_S_SL(op, &left_expr, &rigth_expr);
+                    break;
+                default:
+                    error("Incompatible operators types", ERROR_TYPE_COMPAT);
+            }
+            break;
         case STRING_LIT_DT:
             switch (left_expr.type) {
                 case STRING_DT:
+                    //STRING_LIT_DT OP STRING_DT
+                    ret_expr.addr = generate_SL_S(op, &left_expr, &rigth_expr);
+                    break;
                 case STRING_LIT_DT:
-                    vector_push(expr_buffer, ret_expr);
+                    //STRING_DT OP STRING_DT
+                    ret_expr.type = INT_LIT_DT;
+                    ret_expr.int_val = solve_rel_SL_SL(op, &left_expr, &rigth_expr);
                     break;
                 default:
                     error("Incompatible operators types", ERROR_TYPE_COMPAT);
@@ -267,22 +364,109 @@ void check_rule_rel(token_t* operator, vector_expr_t* expr_buffer) {
         default:
             error("Unknown operator type", ERROR_INTERNAL);
     }
+    vector_push(expr_buffer, ret_expr);
 }
 
-void check_rule_addsub(token_t* operator, vector_expr_t* expr_buffer) {
+void check_rule_arith(op_arithmetic_t op, vector_expr_t* expr_buffer) {
     expression_t rigth_expr = vector_pop(expr_buffer);
     expression_t left_expr = vector_pop(expr_buffer);
+    expression_t ret_expr = {.type = NONE_DT};
     switch (rigth_expr.type) {
         case DOUBLE_DT:
+            ret_expr.type = DOUBLE_DT;
+            switch (left_expr.type) {
+                case DOUBLE_DT:
+                    //DOUBLE_DT OP DOUBLE_DT
+                    ret_expr.addr = generate_D_D(op, &left_expr, &rigth_expr, false, false);
+                    break;
+                case DOUBLE_LIT_DT:
+                    //DOUBLE_DT OP DOUBLE_LIT_DT
+                    ret_expr.addr = generate_D_DL(op, &left_expr, &rigth_expr, false, false);
+                    break;
+                case INT_DT:
+                    //DOUBLE_DT OP INT_DT
+                    ret_expr.addr = generate_D_D(op, &left_expr, &rigth_expr, false, true);
+                    break;
+                case INT_LIT_DT:
+                    //DOUBLE_DT OP INT_LIT_DT
+                    ret_expr.addr = generate_D_DL(op, &left_expr, &rigth_expr, false, true);
+                    break;
+                default:
+                    error("Incompatible operators types", ERROR_TYPE_COMPAT);
+            }
+            break;
         case DOUBLE_LIT_DT:
+            ret_expr.type = DOUBLE_DT;
+            switch (left_expr.type) {
+                case DOUBLE_DT:
+                    //DOUBLE_LIT_DT OP DOUBLE_DT
+                    ret_expr.addr = generate_DL_D(op, &left_expr, &rigth_expr, false, false);
+                    break;
+                case DOUBLE_LIT_DT:
+                    //DOUBLE_LIT_DT OP DOUBLE_LIT_DT
+                    ret_expr.type = DOUBLE_LIT_DT;
+                    ret_expr.double_val = solve_arith_DL_DL(op, &left_expr, &rigth_expr, false, false);
+                    break;
+                case INT_DT:
+                    //DOUBLE_LIT_DT OP INT_DT
+                    ret_expr.addr = generate_DL_D(op, &left_expr, &rigth_expr, false, true);
+                    break;
+                case INT_LIT_DT:
+                    //DOUBLE_LIT_DT OP INT_LIT_DT
+                    ret_expr.type = DOUBLE_LIT_DT;
+                    ret_expr.double_val = solve_arith_DL_DL(op, &left_expr, &rigth_expr, false, true);
+                    break;
+                default:
+                    error("Incompatible operators types", ERROR_TYPE_COMPAT);
+            }
+            break;
         case INT_DT:
+            switch (left_expr.type) {
+                case DOUBLE_DT:
+                    //INT_DT OP DOUBLE_DT
+                    ret_expr.type = DOUBLE_DT;
+                    ret_expr.addr = generate_D_D(op, &left_expr, &rigth_expr, true, false);
+                    break;
+                case DOUBLE_LIT_DT:
+                    //INT_DT OP DOUBLE_LIT_DT
+                    ret_expr.type = DOUBLE_DT;
+                    ret_expr.addr = generate_D_DL(op, &left_expr, &rigth_expr, true, false);
+                    break;
+                case INT_DT:
+                    //INT_DT OP INT_DT
+                    ret_expr.type = INT_DT;
+                    ret_expr.addr = generate_I_I(op, &left_expr, &rigth_expr);
+                    break;
+                case INT_LIT_DT:
+                    //INT_DT OP INT_LIT_DT
+                    ret_expr.type = INT_DT;
+                    ret_expr.addr = generate_I_IL(op, &left_expr, &rigth_expr);
+                    break;
+                default:
+                    error("Incompatible operators types", ERROR_TYPE_COMPAT);
+            }
+            break;
         case INT_LIT_DT:
             switch (left_expr.type) {
                 case DOUBLE_DT:
+                    //INT_LIT_DT OP DOUBLE_DT
+                    ret_expr.type = DOUBLE_DT;
+                    ret_expr.addr = generate_DL_D(op, &left_expr, &rigth_expr, true, false);
+                    break;
                 case DOUBLE_LIT_DT:
+                    //INT_LIT_DT OP DOUBLE_LIT_DT
+                    ret_expr.type = DOUBLE_LIT_DT;
+                    ret_expr.double_val = solve_arith_DL_DL(op, &left_expr, &rigth_expr, true, false);
+                    break;
                 case INT_DT:
+                    //INT_LIT_DT OP INT_DT
+                    ret_expr.type = INT_DT;
+                    ret_expr.addr = generate_IL_I(op, &left_expr, &rigth_expr);
+                    break;
                 case INT_LIT_DT:
-                    vector_push(expr_buffer, left_expr);
+                    //INT_LIT_DT OP INT_LIT_DT
+                    ret_expr.type = INT_LIT_DT;
+                    ret_expr.int_val = solve_arith_IL_IL(op, &left_expr, &rigth_expr);
                     break;
                 default:
                     error("Incompatible operators types", ERROR_TYPE_COMPAT);
@@ -291,30 +475,7 @@ void check_rule_addsub(token_t* operator, vector_expr_t* expr_buffer) {
         default:
             error("Incompatible operators types", ERROR_TYPE_COMPAT);
     }
-}
-
-void check_rule_muldiv(token_t* operator, vector_expr_t* expr_buffer) {
-    expression_t rigth_expr = vector_pop(expr_buffer);
-    expression_t left_expr = vector_pop(expr_buffer);
-    switch (rigth_expr.type) {
-        case DOUBLE_DT:
-        case DOUBLE_LIT_DT:
-        case INT_DT:
-        case INT_LIT_DT:
-            switch (left_expr.type) {
-                case DOUBLE_DT:
-                case DOUBLE_LIT_DT:
-                case INT_DT:
-                case INT_LIT_DT:
-                    vector_push(expr_buffer, left_expr);
-                    break;
-                default:
-                    error("Incompatible operators types", ERROR_TYPE_COMPAT);
-            }
-            break;
-        default:
-            error("Incompatible operators types", ERROR_TYPE_COMPAT);
-    }
+    vector_push(expr_buffer, ret_expr);
 }
 
 void check_rule_id(token_t* last_token, vector_expr_t* expr_buffer) {

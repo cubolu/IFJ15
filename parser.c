@@ -602,13 +602,13 @@ expression_t parse_expr() {
                 last_token = vector_pop(token_buffer);
                 switch (reduce_sequence(stack)) {
                     case RULE_REL:
-                        check_rule_rel(&last_token, expr_buffer);
+                        check_rule_rel(last_token.op_rel, expr_buffer);
                         break;
                     case RULE_ADDSUB:
-                        check_rule_addsub(&last_token, expr_buffer);
+                        check_rule_arith(last_token.op_arith, expr_buffer);
                         break;
                     case RULE_MULDIV:
-                        check_rule_muldiv(&last_token, expr_buffer);
+                        check_rule_arith(last_token.op_arith, expr_buffer);
                         break;
                     case RULE_PAR:
                         //only pop next token(TT_PARENTHESES_OPEN) from token buffer

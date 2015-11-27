@@ -32,6 +32,9 @@ struct _expression_t {
 };
 
 #include "str.h"
+#include "token.h"
+#include "vector.h"
+#include "generator.h"
 
 symbol_t INVALID_SYM;
 
@@ -75,9 +78,8 @@ symbol_t* func_table_find(str_t* name);
 bool is_equal_func(symbol_t* func1, symbol_t* func2);
 bool is_valid_func_call(func_call_t* func_call, symbol_t* funcSym);
 
-void check_rule_rel(token_t* operator, vector_expr_t* expr_buffer);
-void check_rule_addsub(token_t* operator, vector_expr_t* expr_buffer);
-void check_rule_muldiv(token_t* operator, vector_expr_t* expr_buffer);
+void check_rule_rel(op_relational_t op, vector_expr_t* expr_buffer);
+void check_rule_arith(op_arithmetic_t op, vector_expr_t* expr_buffer);
 void check_rule_id(token_t* last_token, vector_expr_t* expr_buffer);
 
 #endif

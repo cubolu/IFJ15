@@ -40,29 +40,29 @@ enum e_token_t {
     TT_EOF,
 };
 
-enum e_op_arithmetic {
-    OP_ARITH_MULTIPLY,
+typedef enum {
+    OP_ARITH_MULTIPLY = 0,
     OP_ARITH_DIVIDE,
     OP_ARITH_ADD,
-    OP_ARITH_SUBTRACT,
-};
+    OP_ARITH_SUBTRACT = 3,
+} op_arithmetic_t;
 
-enum e_op_relational {
-    OP_REL_LESS,
+typedef enum {
+    OP_REL_LESS = 4,
     OP_REL_GREATER,
     OP_REL_LESS_OR_EQ,
     OP_REL_GREATER_OR_EQ,
     OP_REL_EQUAL,
-    OP_REL_NOT_EQUAL
-};
+    OP_REL_NOT_EQUAL = 9
+} op_relational_t;
 
 #include "str.h"
 
 struct _token_t {
     enum e_token_t type;
     union {
-        enum e_op_arithmetic op_arith;
-        enum e_op_relational op_rel;
+        op_arithmetic_t op_arith;
+        op_relational_t op_rel;
         str_t * str;
 
         int int_val;
