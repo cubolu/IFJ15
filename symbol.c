@@ -121,6 +121,10 @@ void var_set_name(str_t* name) {
     bufferVar.name = name;
 }
 
+void var_set_initialized() {
+    bufferVar.def = true;
+}
+
 e_data_t var_get_type() {
     return bufferVar.type;
 }
@@ -141,6 +145,11 @@ void func_init() {
 void func_set_name(str_t* name) {
     bufferFunc.name = name;
 }
+
+void func_set_start_addr(size_t addr) {
+    bufferFunc.addr = addr;
+}
+
 void func_add_param(symbol_t* paramSymbol) {
     if (bufferFunc.paramList == NULL) {
         bufferFunc.paramList = ulist_str_init();
@@ -150,8 +159,21 @@ void func_add_param(symbol_t* paramSymbol) {
     else
         error("Two function parameters with the same name", ERROR_SEM);
 }
+
+void func_set_defined() {
+    bufferFunc.def = true;
+}
+
 void func_set_return_type(e_data_t retType) {
     bufferFunc.type = retType;
+}
+
+str_t* func_get_name() {
+    return bufferFunc.name;
+}
+
+e_data_t func_get_return_type() {
+    return bufferFunc.type;
 }
 
 symbol_t* func_finish() {
@@ -201,6 +223,7 @@ void load_builtin_functions() {
     var_set_type(STRING_DT);
     var_set_name(paramName1);
     func_add_param(var_finish());
+    func_set_defined();
     func_table_add(func_finish());
 
     func_init();
@@ -212,6 +235,7 @@ void load_builtin_functions() {
     func_add_param(var_finish());
     var_set_name(paramName3);
     func_add_param(var_finish());
+    func_set_defined();
     func_table_add(func_finish());
 
     func_init();
@@ -222,6 +246,7 @@ void load_builtin_functions() {
     func_add_param(var_finish());
     var_set_name(paramName2);
     func_add_param(var_finish());
+    func_set_defined();
     func_table_add(func_finish());
 
     func_init();
@@ -231,6 +256,7 @@ void load_builtin_functions() {
     func_add_param(var_finish());
     var_set_name(paramName2);
     func_add_param(var_finish());
+    func_set_defined();
     func_table_add(func_finish());
 
     func_init();
@@ -238,6 +264,7 @@ void load_builtin_functions() {
     func_set_name(sortName);
     var_set_name(paramName1);
     func_add_param(var_finish());
+    func_set_defined();
     func_table_add(func_finish());
 }
 
@@ -491,8 +518,11 @@ void check_rule_id(token_t* last_token, vector_expr_t* expr_buffer) {
     if (last_token->type == TT_IDENTIFICATOR) {
         //identificator
         symbol_t* id = var_table_find(last_token->str);
-        if (id == NULL) { //TODO: initialized?? (id == NULL || id.def)
+        if (id == NULL) {
             error("Reference to undefined variable", ERROR_SEM);
+        }
+        else if (id->def != true) {
+            error("Using uninitialized variable in expression", ERROR_UNDEF);
         } else {
             //convert valid variable to expression
             expr.type = id->type;

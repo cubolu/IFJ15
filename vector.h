@@ -53,7 +53,7 @@ struct _vector_data_seg_t {
 #include "symbol.h"
 #include "htable.h"
 #include "token.h"
-#include "instructionset.h"
+#include "instruction.h"
 
 #define vector_init1(type) _vector_init(type, 8, true)
 #define vector_init2(type, start_cap) _vector_init(type, start_cap, true)

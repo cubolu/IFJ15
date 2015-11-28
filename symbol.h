@@ -12,7 +12,8 @@ struct _symbol_t {
     e_symbol_t sym;
     e_data_t type; //also determines return type of function
     bool def; //also determines if var is initialized
-    size_t addr;
+    size_t addr; //relative address in stack frame for var,
+                 //absolute code segment address for function
     ulist_str_t* paramList;
 };
 
@@ -56,13 +57,18 @@ void var_init();
 void var_set_type(e_data_t type);
 void var_set_addr(size_t addr);
 void var_set_name(str_t* name);
+void var_set_initialized();
 e_data_t var_get_type();
 symbol_t* var_finish();
 
 void func_init();
 void func_set_name(str_t* name);
+void func_set_start_addr(size_t addr);
 void func_add_param(symbol_t* paramSymbol);
+void func_set_defined();
 void func_set_return_type(e_data_t retType);
+e_data_t func_get_return_type();
+str_t* func_get_name();
 symbol_t* func_finish();
 //void func_init_code_addr();
 

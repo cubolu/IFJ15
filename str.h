@@ -27,6 +27,7 @@ void _str_free(str_t * s);
 void _str_resize(str_t* s, size_t size);
 
 void str_append_char(str_t * s, char c);
+void str_append(str_t*, char* cstr);
 void str_copy(str_t* dest, const char* source);
 bool _str_eq_char_char(char * s1, char * s2);
 bool _str_eq_char_str(char * s1, str_t * s2);

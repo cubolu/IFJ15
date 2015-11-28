@@ -7,7 +7,70 @@ void generator_init() {
     code_seg = vector_init(VI_CODESEG);
 }
 
-void init_new_stack_frame() {
+void generate_cin_int(size_t dest) {
+    inst_t curr_inst = {.inst_code = INST_CIN_INT};
+    curr_inst.res_addr = dest;
+    vector_push(code_seg, curr_inst);
+}
+
+void generate_cin_double(size_t dest) {
+    inst_t curr_inst = {.inst_code = INST_CIN_DOUBLE};
+    curr_inst.res_addr = dest;
+    vector_push(code_seg, curr_inst);
+}
+
+void generate_cin_string(size_t dest){
+    inst_t curr_inst = {.inst_code = INST_CIN_STRING};
+    curr_inst.res_addr = dest;
+    vector_push(code_seg, curr_inst);
+}
+
+void generate_cout_int(size_t source) {
+    inst_t curr_inst = {.inst_code = INST_COUT_INT};
+    curr_inst.op1_addr = source;
+    vector_push(code_seg, curr_inst);
+}
+
+void generate_cout_double(size_t source) {
+    inst_t curr_inst = {.inst_code = INST_COUT_DOUBLE};
+    curr_inst.op1_addr = source;
+    vector_push(code_seg, curr_inst);
+}
+
+void generate_cout_string(size_t source){
+    inst_t curr_inst = {.inst_code = INST_COUT_STRING};
+    curr_inst.op1_addr = source;
+    vector_push(code_seg, curr_inst);
+}
+
+void generate_cout_int_lit(int val) {
+    inst_t curr_inst = {.inst_code = INST_COUT_INT_LIT};
+    curr_inst.op1_int_val = val;
+    vector_push(code_seg, curr_inst);
+}
+
+void generate_cout_double_lit(double val) {
+    inst_t curr_inst = {.inst_code = INST_COUT_DOUBLE_LIT};
+    curr_inst.op1_double_val = val;
+    vector_push(code_seg, curr_inst);
+}
+
+void generate_cout_string_lit(str_t* val){
+    inst_t curr_inst = {.inst_code = INST_COUT_STRING_LIT};
+    curr_inst.op1_str_val = val;
+    vector_push(code_seg, curr_inst);
+}
+
+void generate_halt() {
+    inst_t curr_inst = {.inst_code = INST_HALT};
+    vector_push(code_seg, curr_inst);
+}
+
+size_t get_code_seg_top() {
+    return code_seg->size;
+}
+
+void init_new_stack_frame(size_t param_count) {
     curr_stack_frame = 1; //index 0 is reseved for return address
 }
 
@@ -17,9 +80,51 @@ size_t generate_push() {
     return curr_stack_frame++;
 }
 
-size_t generate_int_cnvrt(size_t int_addr) {
-    inst_t curr_inst = {.inst_code = INST_CVT_INT};
+void generate_mov(size_t dest, size_t source) {
+    inst_t curr_inst = {.inst_code = INST_MOV};
+    curr_inst.res_addr = dest;
+    curr_inst.op1_addr = source;
+    vector_push(code_seg, curr_inst);
+}
+
+void generate_mov_int(size_t dest, int val) {
+    inst_t curr_inst = {.inst_code = INST_MOV_INT};
+    curr_inst.res_addr = dest;
+    curr_inst.op1_int_val = val;
+    vector_push(code_seg, curr_inst);
+}
+
+void generate_mov_double(size_t dest, double val) {
+    inst_t curr_inst = {.inst_code = INST_MOV_DOUBLE};
+    curr_inst.res_addr = dest;
+    curr_inst.op1_double_val = val;
+    vector_push(code_seg, curr_inst);
+}
+
+void generate_mov_string(size_t dest, str_t* val) {
+    inst_t curr_inst = {.inst_code = INST_MOV_STRING};
+    curr_inst.res_addr = dest;
+    curr_inst.op1_str_val = val;
+    vector_push(code_seg, curr_inst);
+}
+
+void generate_call() {
+
+}
+
+size_t generate_int_to_double(size_t int_addr) {
+    inst_t curr_inst = {.inst_code = INST_INT_TO_DOUBLE};
     curr_inst.op1_addr = int_addr;
+    //curr_inst.op2_addr = 0;
+    size_t new_addr = generate_push();
+    curr_inst.res_addr = new_addr;
+    vector_push(code_seg, curr_inst);
+    return new_addr;
+}
+
+size_t generate_double_to_int(size_t double_addr) {
+    inst_t curr_inst = {.inst_code = INST_DOUBLE_TO_INT};
+    curr_inst.op1_addr = double_addr;
     //curr_inst.op2_addr = 0;
     size_t new_addr = generate_push();
     curr_inst.res_addr = new_addr;
@@ -32,8 +137,8 @@ expression_t* op_left, expression_t* op_right, \
 bool op_l_convert, bool op_r_convert) {
     inst_t curr_inst;
     curr_inst.inst_code = oper + D_D_OFFSET;
-    curr_inst.op1_addr = (op_l_convert) ? generate_int_cnvrt(op_left->addr) : op_left->addr;
-    curr_inst.op2_addr = (op_l_convert) ? generate_int_cnvrt(op_right->addr) : op_right->addr;
+    curr_inst.op1_addr = (op_l_convert) ? generate_int_to_double(op_left->addr) : op_left->addr;
+    curr_inst.op2_addr = (op_r_convert) ? generate_int_to_double(op_right->addr) : op_right->addr;
     size_t new_addr = generate_push();
     curr_inst.res_addr = new_addr;
     vector_push(code_seg, curr_inst);
@@ -45,8 +150,8 @@ expression_t* op_left, expression_t* op_right, \
 bool op_l_convert, bool op_r_convert) {
     inst_t curr_inst;
     curr_inst.inst_code = oper + D_DL_OFFSET;
-    curr_inst.op1_addr = (op_l_convert) ? generate_int_cnvrt(op_left->addr) : op_left->addr;
-    curr_inst.op2_double_val = (op_l_convert) ? (double)op_right->int_val : op_right->double_val;
+    curr_inst.op1_addr = (op_l_convert) ? generate_int_to_double(op_left->addr) : op_left->addr;
+    curr_inst.op2_double_val = (op_r_convert) ? (double)op_right->int_val : op_right->double_val;
     size_t new_addr = generate_push();
     curr_inst.res_addr = new_addr;
     vector_push(code_seg, curr_inst);
@@ -59,7 +164,7 @@ bool op_l_convert, bool op_r_convert) {
     inst_t curr_inst;
     curr_inst.inst_code = oper + DL_D_OFFSET;
     curr_inst.op1_double_val = (op_l_convert) ? (double)op_left->int_val : op_left->double_val;
-    curr_inst.op2_addr = (op_l_convert) ? generate_int_cnvrt(op_right->addr) : op_right->addr;
+    curr_inst.op2_addr = (op_r_convert) ? generate_int_to_double(op_right->addr) : op_right->addr;
     size_t new_addr = generate_push();
     curr_inst.res_addr = new_addr;
     vector_push(code_seg, curr_inst);

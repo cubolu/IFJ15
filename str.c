@@ -36,6 +36,13 @@ void str_append_char(str_t * s, char c) {
     s->c_str[++s->length] = '\0';
 }
 
+void str_append(str_t* s, char* cstr) {
+    size_t cstr_len = strlen(cstr);
+    if (s->length + cstr_len + 1 > s->capacity)
+        _str_resize(s, s->length + cstr_len + 1);
+    strcpy(s->c_str+s->length, cstr);
+}
+
 void str_copy(str_t* dest, const char* source) {
     size_t s_len = strlen(source);
     _str_resize(dest, s_len+1);
