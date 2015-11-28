@@ -11,7 +11,7 @@ str_t * concat(str_t * s1, str_t * s2);
 
 int find(str_t * s, str_t * search);
 
-str_t * sort(str_t * s);
+str_t * sort(str_t * orig);
 
 #endif // IAL_H
 
