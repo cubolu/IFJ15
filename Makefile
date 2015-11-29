@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -std=c11 -Wall
+CFLAGS = -std=c11 -Wall -Wextra
 DBGFLAGS = -g
 LOGIN = xabcde00
 CHECK = `pkg-config --cflags --libs check`

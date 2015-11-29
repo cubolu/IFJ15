@@ -11,28 +11,46 @@ extern vector_inst_t* code_seg;
 //instruction set generators for IFJ15 interpreter
 void generator_init();
 
-void init_new_stack_frame();
 size_t get_code_seg_top();
+void init_new_stack_frame(size_t param_count);
 
 size_t generate_push();
-size_t generate_double_to_int();
-size_t generate_int_to_double();
+size_t generate_push_double(double val);
+size_t generate_push_int(int val);
+size_t generate_push_string(str_t* val);
+void generate_param_push(size_t source);
+void generate_param_push_double(double val);
+void generate_param_push_int(int val);
+void generate_param_push_string(str_t* val);
+
+size_t generate_int_to_double(size_t source);
+size_t generate_double_to_int(size_t source);
 
 void generate_mov(size_t dest, size_t source);
 void generate_mov_int(size_t dest, int val);
 void generate_mov_double(size_t dest, double val);
 void generate_mov_string(size_t dest, str_t* val);
 
-
 void generate_cin_int(size_t dest);
 void generate_cin_double(size_t dest);
 void generate_cin_string(size_t dest);
+
 void generate_cout_int(size_t dest);
 void generate_cout_double(size_t dest);
 void generate_cout_string(size_t dest);
 void generate_cout_int_lit(int val);
 void generate_cout_double_lit(double val);
 void generate_cout_string_lit(str_t* val);
+
+void generate_jump(size_t dest);
+void generate_cond_jump(size_t dest, size_t source);
+void generate_if_else_jump(size_t source, size_t true_branch, size_t false_branch);
+
+size_t generate_call(size_t dest);
+void generate_return(size_t source);
+void generate_return_double(double val);
+void generate_return_int(int val);
+void generate_return_string(str_t* val);
 
 void generate_halt();
 

@@ -3,7 +3,6 @@
 vector_data_seg_t* data_seg;
 size_t inst_ptr;
 size_t curr_stack_frame_ptr;
-char string_buffer[256];
 
 void interpreter_init() {
     data_seg = vector_init(VI_DATASEG);
@@ -23,7 +22,11 @@ void run_program() {
     data_seg_t* op_left;
     data_seg_t* op_right;
     data_seg_t* res_addr;
-    data_seg_t empty_item = {.ret_addr = 0};
+    data_seg_t* prev_size;
+    data_seg_t* prev_stack_frame_ptr;
+    data_seg_t push_value;
+    data_seg_t empty_value = {.inst_addr = 0};
+    char string_buffer[256];
 
     while (1) {
         inst = vector_at(code_seg, inst_ptr);
@@ -216,61 +219,95 @@ void run_program() {
                 break;
             // STRING
             case INST_LESS_S_S:
-                EXECSTR_ADDR_ADDR(less);
+                EXECSTR_ADDR_ADDR(str_lt);
                 break;
             case INST_GREATER_S_S:
-                EXECSTR_ADDR_ADDR(greater);
+                EXECSTR_ADDR_ADDR(str_gt);
                 break;
             case INST_LESS_OR_EQ_S_S:
-                EXECSTR_ADDR_ADDR(lesseq);
+                EXECSTR_ADDR_ADDR(str_lt_eq);
                 break;
             case INST_GREATER_OR_EQ_S_S:
-                EXECSTR_ADDR_ADDR(greatereq);
+                EXECSTR_ADDR_ADDR(str_gt_eq);
                 break;
             case INST_EQUAL_S_S:
-                EXECSTR_ADDR_ADDR(equal);
+                EXECSTR_ADDR_ADDR(str_eq);
                 break;
             case INST_NOT_EQUAL_S_S:
-                EXECSTR_ADDR_ADDR(noteq);
+                EXECSTR_ADDR_ADDR(str_neq);
                 break;
 
             case INST_LESS_S_SL:
-                EXECSTR_ADDR_LIT(less);
+                EXECSTR_ADDR_LIT(str_lt);
                 break;
             case INST_GREATER_S_SL:
-                EXECSTR_ADDR_LIT(greater);
+                EXECSTR_ADDR_LIT(str_gt);
                 break;
             case INST_LESS_OR_EQ_S_SL:
-                EXECSTR_ADDR_LIT(lesseq);
+                EXECSTR_ADDR_LIT(str_lt_eq);
                 break;
             case INST_GREATER_OR_EQ_S_SL:
-                EXECSTR_ADDR_LIT(greatereq);
+                EXECSTR_ADDR_LIT(str_gt_eq);
                 break;
             case INST_EQUAL_S_SL:
-                EXECSTR_ADDR_LIT(equal);
+                EXECSTR_ADDR_LIT(str_eq);
                 break;
             case INST_NOT_EQUAL_S_SL:
-                EXECSTR_ADDR_LIT(noteq);
+                EXECSTR_ADDR_LIT(str_neq);
                 break;
 
             case INST_LESS_SL_S:
-                EXECSTR_LIT_ADDR(less);
+                EXECSTR_LIT_ADDR(str_lt);
                 break;
             case INST_GREATER_SL_S:
-                EXECSTR_LIT_ADDR(greater);
+                EXECSTR_LIT_ADDR(str_gt);
                 break;
             case INST_LESS_OR_EQ_SL_S:
-                EXECSTR_LIT_ADDR(lesseq);
+                EXECSTR_LIT_ADDR(str_lt_eq);
                 break;
             case INST_GREATER_OR_EQ_SL_S:
-                EXECSTR_LIT_ADDR(greatereq);
+                EXECSTR_LIT_ADDR(str_gt_eq);
                 break;
             case INST_EQUAL_SL_S:
-                EXECSTR_LIT_ADDR(equal);
+                EXECSTR_LIT_ADDR(str_eq);
                 break;
             case INST_NOT_EQUAL_SL_S:
-                EXECSTR_LIT_ADDR(noteq);
+                EXECSTR_LIT_ADDR(str_neq);
                 break;
+
+            case INST_PUSH:
+                vector_push(data_seg, empty_value);
+                break;
+            case INST_PUSH_VALUE:
+                prev_stack_frame_ptr = vector_at(data_seg, curr_stack_frame_ptr - 2);
+                op_left = vector_at(data_seg, inst->op1_addr + prev_stack_frame_ptr->inst_addr);
+                push_value = *op_left;
+                vector_push(data_seg, push_value);
+                break;
+            case INST_PUSH_DOUBLE:
+                push_value.double_val = inst->op1_double_val;
+                vector_push(data_seg, push_value);
+                break;
+            case INST_PUSH_INT:
+                push_value.int_val = inst->op1_int_val;
+                vector_push(data_seg, push_value);
+                break;
+            case INST_PUSH_STRING:
+                push_value.str_val = inst->op1_str_val;
+                vector_push(data_seg, push_value);
+                break;
+
+            case INST_INT_TO_DOUBLE:
+                res_addr = vector_at(data_seg, inst->res_addr + curr_stack_frame_ptr);
+                op_left = vector_at(data_seg, inst->op1_addr + curr_stack_frame_ptr);
+                res_addr->double_val = (double)op_left->int_val;
+                break;
+            case INST_DOUBLE_TO_INT:
+                res_addr = vector_at(data_seg, inst->res_addr + curr_stack_frame_ptr);
+                op_left = vector_at(data_seg, inst->op1_addr + curr_stack_frame_ptr);
+                res_addr->int_val = (int)op_left->int_val;
+                break;
+
             case INST_MOV:
                 res_addr = vector_at(data_seg, inst->res_addr + curr_stack_frame_ptr);
                 op_left = vector_at(data_seg, inst->op1_addr + curr_stack_frame_ptr);
@@ -288,25 +325,10 @@ void run_program() {
                 res_addr = vector_at(data_seg, inst->res_addr + curr_stack_frame_ptr);
                 res_addr->str_val = inst->op1_str_val;
                 break;
-            case INST_PUSH:
-                vector_push(data_seg, empty_item);
-                break;
-            case INST_INT_TO_DOUBLE:
-                res_addr = vector_at(data_seg, inst->res_addr + curr_stack_frame_ptr);
-                op_left = vector_at(data_seg, inst->op1_addr + curr_stack_frame_ptr);
-                res_addr->double_val = (double)op_left->int_val;
-                break;
-            case INST_DOUBLE_TO_INT:
-                res_addr = vector_at(data_seg, inst->res_addr + curr_stack_frame_ptr);
-                op_left = vector_at(data_seg, inst->op1_addr + curr_stack_frame_ptr);
-                res_addr->int_val = (int)op_left->int_val;
-                break;
-            case INST_HALT:
-                warning("Halt!");
-                return;
-                break;
+
             case INST_CIN_INT:
                 res_addr = vector_at(data_seg, inst->res_addr + curr_stack_frame_ptr);
+                //TODO: scanf wrong data type detection
                 scanf("%d", &(res_addr->int_val));
                 break;
             case INST_CIN_DOUBLE:
@@ -322,13 +344,14 @@ void run_program() {
                 } while (isspace(string_buffer[254]));
                 res_addr->str_val = new_string;
                 break;
+
             case INST_COUT_INT:
                 op_left = vector_at(data_seg, inst->op1_addr + curr_stack_frame_ptr);
                 printf("%d", op_left->int_val);
                 break;
             case INST_COUT_DOUBLE:
                 op_left = vector_at(data_seg, inst->op1_addr + curr_stack_frame_ptr);
-                printf("%lf", op_left->double_val);
+                printf("%g", op_left->double_val);
                 break;
             case INST_COUT_STRING:
                 op_left = vector_at(data_seg, inst->op1_addr + curr_stack_frame_ptr);
@@ -338,13 +361,81 @@ void run_program() {
                 printf("%d", inst->op1_int_val);
                 break;
             case INST_COUT_DOUBLE_LIT:
-                printf("%lf", inst->op1_double_val);
+                printf("%g", inst->op1_double_val);
                 break;
             case INST_COUT_STRING_LIT:
                 printf("%s", inst->op1_str_val->c_str);
                 break;
+
+            case INST_JUMP:
+                inst_ptr = inst->res_addr - 1; //-1 because of ++inst_ptr at the end
+                break;
+            case INST_CONDITIONAL_JUMP:
+                op_left = vector_at(data_seg, inst->op1_addr + curr_stack_frame_ptr);
+                if (op_left->int_val)
+                    inst_ptr = inst->res_addr - 1;
+                break;
+            case INST_IF_ELSE_JUMP:
+                op_left = vector_at(data_seg, inst->op1_addr + curr_stack_frame_ptr);
+                if (op_left->int_val)
+                    inst_ptr = inst->res_addr - 1;
+                else
+                    inst_ptr = inst->op2_addr - 1;
+                break;
+
+            case INST_CALL:
+                //push current data segment top
+                push_value.inst_addr = data_seg->size;
+                vector_push(data_seg, push_value);
+                //push current stack frame pointer
+                push_value.inst_addr = curr_stack_frame_ptr;
+                vector_push(data_seg, push_value);
+                //push return address
+                push_value.inst_addr = inst->op1_addr;
+                vector_push(data_seg, push_value);
+                //call function at address inst->res_addr
+                inst_ptr = inst->res_addr - 1; //-1 because of ++inst_ptr at the end
+                //change stack frame
+                curr_stack_frame_ptr = data_seg->size;
+                vector_push(data_seg, empty_value); //++(data_seg->size)
+                break;
+            case INST_RET:
+                //move return value to its address
+                res_addr = vector_at(data_seg, curr_stack_frame_ptr - 4);
+                op_left = vector_at(data_seg, inst->op1_addr + curr_stack_frame_ptr);
+                *res_addr = *op_left;
+                break;
+            case INST_RET_DOUBLE:
+                //move return value to its address
+                res_addr = vector_at(data_seg, curr_stack_frame_ptr - 4);
+                res_addr->double_val = inst->op1_double_val;
+                break;
+            case INST_RET_INT:
+                //move return value to its address
+                res_addr = vector_at(data_seg, curr_stack_frame_ptr - 4);
+                res_addr->int_val = inst->op1_int_val;
+                break;
+            case INST_RET_STRING:
+                //move return value to its address
+                res_addr = vector_at(data_seg, curr_stack_frame_ptr - 4);
+                res_addr->str_val = inst->op1_str_val;
+                break;
+            case INST_RESTORE:
+                //restore previous stack frame
+                prev_size = vector_at(data_seg, curr_stack_frame_ptr - 3);
+                prev_stack_frame_ptr = vector_at(data_seg, curr_stack_frame_ptr - 2);
+                res_addr = vector_at(data_seg, curr_stack_frame_ptr - 1);
+                data_seg->size = prev_size->inst_addr;
+                curr_stack_frame_ptr = prev_stack_frame_ptr->inst_addr;
+                inst_ptr = res_addr->inst_addr - 1; //-1 because of ++inst_ptr at the end
+                break;
+
+            case INST_HALT:
+                warning("Halt!");
+                return;
+
             default:
-                ;
+                warning("Unsupported instruction code");
         } //end switch
         ++inst_ptr;
     } //end while

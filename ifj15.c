@@ -9,6 +9,11 @@
 int main(int argc, const char *argv[]) {
     ifj15_memory_init();
 
+    if (argc < 2)
+        error("Missing file operand", ERROR_INTERNAL);
+    else if (argc > 2)
+        warning("Too many file operands");
+
     FILE* input_file = ifj15_fopen(argv[1], "r");
 
     scanner_t* s = scanner_init(input_file);

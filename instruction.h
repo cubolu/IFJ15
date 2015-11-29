@@ -104,9 +104,13 @@ typedef enum {
     INST_NOT_EQUAL_SL_S,
 
     INST_PUSH,
+    INST_PUSH_VALUE,
+    INST_PUSH_DOUBLE,
+    INST_PUSH_INT,
+    INST_PUSH_STRING,
+
     INST_INT_TO_DOUBLE,
     INST_DOUBLE_TO_INT,
-    INST_HALT,
 
     INST_MOV,
     INST_MOV_INT,
@@ -123,30 +127,43 @@ typedef enum {
     INST_COUT_INT_LIT,
     INST_COUT_DOUBLE_LIT,
     INST_COUT_STRING_LIT,
+
+    INST_JUMP,
+    INST_CONDITIONAL_JUMP,
+    INST_IF_ELSE_JUMP,
+
+    INST_CALL,
+    INST_RET,
+    INST_RET_DOUBLE,
+    INST_RET_INT,
+    INST_RET_STRING,
+    INST_RESTORE,
+
+    INST_HALT,
 } inst_set_t;
 
 struct _inst_t {
     inst_set_t inst_code;
     union {
         size_t op1_addr;
-        str_t* op1_str_val;
-        int op1_int_val;
         double op1_double_val;
+        int op1_int_val;
+        str_t* op1_str_val;
     };
     union {
         size_t op2_addr;
-        str_t* op2_str_val;
-        int op2_int_val;
         double op2_double_val;
+        int op2_int_val;
+        str_t* op2_str_val;
     };
     size_t res_addr;
 };
 
 union _data_seg_t {
-    str_t* str_val;
-    int int_val;
     double double_val;
-    size_t ret_addr;
+    int int_val;
+    str_t* str_val;
+    size_t inst_addr;
 };
 
 #endif

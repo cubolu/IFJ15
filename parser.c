@@ -467,7 +467,7 @@ void parse_funcBody(symbol_t* funcRef) {
         case TT_BLOCK_START:
             func = func_table_find(func_get_name());
             func->def = true; //function is defined
-            func_set_start_addr(get_code_seg_top());
+            func->addr = get_code_seg_top();
             var_table_scope_enter();
             init_new_stack_frame();
             if (funcRef->paramList) {

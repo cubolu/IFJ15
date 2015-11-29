@@ -180,7 +180,7 @@ inst_t _vector_top_inst(vector_inst_t* vct, bool remove_top) {
 data_seg_t _vector_top_data_seg(vector_data_seg_t* vct, bool remove_top) {
     if (vct->size == 0) {
         //warning("vector_pop/vector_top: Tried to pop/get item from an empty vector");
-        data_seg_t ret = {.ret_addr = 0};
+        data_seg_t ret = {.inst_addr = 0};
         return ret;
     }
     data_seg_t top_data_seg = vct->array[vct->size - 1];
@@ -227,6 +227,8 @@ inst_t* _vector_at_inst(vector_inst_t* vct, size_t pos) {
     return NULL;
 }
 data_seg_t* _vector_at_data_seg(vector_data_seg_t* vct, size_t pos) {
+    if (pos == 0)
+        warning("Try to access memory at address 0x0");
     if (pos < vct->size)
         return &vct->array[pos];
     warning("vector_at: Tried to access item out of range");
