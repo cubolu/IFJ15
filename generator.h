@@ -46,11 +46,12 @@ void generate_jump(size_t dest);
 void generate_cond_jump(size_t dest, size_t source);
 void generate_if_else_jump(size_t source, size_t true_branch, size_t false_branch);
 
-size_t generate_call(size_t dest);
-void generate_return(size_t source);
-void generate_return_double(double val);
-void generate_return_int(int val);
-void generate_return_string(str_t* val);
+#define generate_call_init() generate_push()
+void generate_call(size_t dest, size_t param_cnt);
+void generate_return(size_t source, size_t param_cnt);
+void generate_return_double(double val, size_t param_cnt);
+void generate_return_int(int val, size_t param_cnt);
+void generate_return_string(str_t* val, size_t param_cnt);
 
 void generate_halt();
 

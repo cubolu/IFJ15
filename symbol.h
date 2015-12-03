@@ -41,6 +41,7 @@ symbol_t INVALID_SYM;
 
 func_call_t bufferFuncCall;
 symbol_t bufferFunc;
+size_t bufferFuncParamCnt; //TODO: add to struct _symbol_t 
 symbol_t bufferVar;
 
 vector_htable_t* var_table_vector;
@@ -67,8 +68,10 @@ void func_set_start_addr(size_t addr);
 void func_add_param(symbol_t* paramSymbol);
 void func_set_defined();
 void func_set_return_type(e_data_t retType);
+void func_set_param_count(size_t cnt);
 e_data_t func_get_return_type();
 str_t* func_get_name();
+size_t func_get_param_count();
 symbol_t* func_finish();
 //void func_init_code_addr();
 

@@ -7,6 +7,8 @@ token_t cached_identificator;
 
 scanner_t* token_stream;
 
+size_t param_count;
+
 //precedence table operators
 typedef enum _tab_op_t {TAB_SP, TAB_P, TAB_R, TAB_END, TAB_ERR} tab_op_t;
 //symbols for pushdown automata
@@ -175,104 +177,111 @@ expression_t parse_asgnFollow(symbol_t* var) {
             if (next_token.type == TT_PARENTHESES_OPEN) {
                 func_call_init();
                 func_call_set_name(curr_token.str);
+                symbol_t* func_def = func_table_find(curr_token.str);
+                size_t return_value_addr;
+                if (func_def){
+                    if (!func_def->def)
+                        error("Function call for an undefined function", ERROR_SEM);
+                    //alocate space for return value
+                    return_value_addr = generate_call_init();
+                } else {
+                    error("Call to unknown function", ERROR_SEM);
+                }
                 match(TT_PARENTHESES_OPEN);
                 parse_paramList();
                 match(TT_PARENTHESES_CLOSE);
                 func_call_t* func_call = func_call_finish();
-                symbol_t* func_def = func_table_find(func_call->name);
-                if (func_def) {
-                    if (!is_valid_func_call(func_call, func_def))
-                        error("Bad function call parameters types/count", ERROR_TYPE_COMPAT);
-                    if (!func_def->def)
-                        error("Function call for an undefined function", ERROR_SEM);
-                    expr.type = func_def->type;
-                    //TODO pass(var->address
-                    cached_identificator.type = TT_NONE;
-                    return expr;
-                } else {
-                    error("Call to unknown function", ERROR_SEM);
-                }
+                if (!is_valid_func_call(func_call, func_def))
+                    error("Bad function call parameters types/count", ERROR_TYPE_COMPAT);
+                generate_call(func_def->addr, param_count);
+                expr.type = func_def->type;
+                expr.addr = return_value_addr;
+                cached_identificator.type = TT_NONE;
+            } else {
+                expr = parse_expr();
             }
+            break;
         case TT_LIT_INT:
         case TT_LIT_DOUBLE:
         case TT_LIT_STRING:
         case TT_PARENTHESES_OPEN:
             expr = parse_expr();
+            break;
+        default:
+            error("Syntactic error: Failed to parse the program", ERROR_SYN);
+    }
+    //semantic analysis
+    switch (expr.type) {
+        case DOUBLE_DT:
+        case DOUBLE_LIT_DT:
+            if (var->type != DOUBLE_DT &&
+                var->type != INT_DT)
+                error("Incompatible type variable assignment",
+                    ERROR_TYPE_COMPAT);
+            break;
+        case INT_DT:
+        case INT_LIT_DT:
+            if (var->type != DOUBLE_DT &&
+                var->type != INT_DT)
+                error("Incompatible type variable assignment",
+                    ERROR_TYPE_COMPAT);
+            break;
+        case STRING_DT:
+        case STRING_LIT_DT:
+            if (var->type != STRING_DT)
+                error("Incompatible type variable assignment",
+                    ERROR_TYPE_COMPAT);
+            break;
+        default:
+            ;
+    }
+    //generate assignment instruction
+    if (expr.type != NONE_DT) { //TODO: REMOVE ?!
+        if (expr.type > 15) {// it's a literal
             switch (expr.type) {
-                case DOUBLE_DT:
                 case DOUBLE_LIT_DT:
-                    if (var->type != DOUBLE_DT &&
-                        var->type != INT_DT)
-                        error("Incompatible type variable assignment",
-                            ERROR_TYPE_COMPAT);
+                    if(var->type == DOUBLE_DT)
+                        generate_mov_double(var->addr, expr.double_val);
+                    else
+                        generate_mov_double(var->addr, (int)expr.double_val);
                     break;
-                case INT_DT:
                 case INT_LIT_DT:
-                    if (var->type != DOUBLE_DT &&
-                        var->type != INT_DT)
-                        error("Incompatible type variable assignment",
-                            ERROR_TYPE_COMPAT);
+                    if(var->type == INT_DT)
+                        generate_mov_int(var->addr, expr.int_val);
+                    else
+                        generate_mov_int(var->addr, (double)expr.int_val);
                     break;
-                case STRING_DT:
                 case STRING_LIT_DT:
-                    if (var->type != STRING_DT)
-                        error("Incompatible type variable assignment",
-                            ERROR_TYPE_COMPAT);
+                    generate_mov_string(var->addr, expr.str_val);
                     break;
                 default:
                     ;
             }
-            if (expr.type != NONE_DT) {
-                if (expr.type > 15) {// it's a literal
-                    switch (expr.type) {
-                        case DOUBLE_LIT_DT:
-                            if(var->type == DOUBLE_DT)
-                                generate_mov_double(var->addr, expr.double_val);
-                            else
-                                generate_mov_double(var->addr, (int)expr.double_val);
-                            break;
-                        case INT_LIT_DT:
-                            if(var->type == INT_DT)
-                                generate_mov_int(var->addr, expr.int_val);
-                            else
-                                generate_mov_int(var->addr, (double)expr.int_val);
-                            break;
-                        case STRING_LIT_DT:
-                            generate_mov_string(var->addr, expr.str_val);
-                            break;
-                        default:
-                            ;
+        } else {
+            switch(expr.type) {
+                case INT_DT:
+                    if(var->type == DOUBLE_DT) {
+                        size_t conv_expr = generate_double_to_int(expr.addr);
+                        generate_mov(var->addr, conv_expr);
+                    } else {
+                        generate_mov(var->addr, expr.addr);
                     }
-                } else {
-                    switch(expr.type) {
-                        case INT_DT:
-                            if(var->type == DOUBLE_DT) {
-                                size_t conv_expr = generate_double_to_int(expr.addr);
-                                generate_mov(var->addr, conv_expr);
-                            } else {
-                                generate_mov(var->addr, expr.addr);
-                            }
-                            break;
-                        case DOUBLE_DT:
-                            if(var->type == INT_DT) {
-                                size_t conv_expr = generate_int_to_double(expr.addr);
-                                generate_mov(var->addr, conv_expr);
-                            } else {
-                                generate_mov(var->addr, expr.addr);
-                            }
-                            break;
-                        case STRING_DT:
-                            generate_mov(var->addr, expr.addr);
-                            break;
-                        default:
-                            ;
+                    break;
+                case DOUBLE_DT:
+                    if(var->type == INT_DT) {
+                        size_t conv_expr = generate_int_to_double(expr.addr);
+                        generate_mov(var->addr, conv_expr);
+                    } else {
+                        generate_mov(var->addr, expr.addr);
                     }
-                }
+                    break;
+                case STRING_DT:
+                    generate_mov(var->addr, expr.addr);
+                    break;
+                default:
+                    ;
             }
-            return expr;
-            break;
-        default:
-            error("Syntactic error: Failed to parse the program", ERROR_SYN);
+        }
     }
     return expr;
 }
@@ -358,8 +367,11 @@ void parse_coutStmt() {
             symbol_t* var;
             if (curr_token.type == TT_IDENTIFICATOR) {
                 var = var_table_find(curr_token.str);
-                if (var == NULL)
-                    error("Trying to use undefined variable", ERROR_SEM);
+                if (var == NULL) {
+                    error("Reference to undefined variable", ERROR_SEM);
+                } else if (var->def != true) {
+                    error("Trying to use uninitialized variable", ERROR_UNDEF);
+                }
                 switch(var->type) {
                     case INT_DT:
                         generate_cout_int(var->addr);
@@ -402,8 +414,11 @@ void parse_coutStmtFollow() {
             symbol_t* var;
             if (curr_token.type == TT_IDENTIFICATOR) {
                 var = var_table_find(curr_token.str);
-                if (var == NULL)
-                    error("Trying to use undefined variable", ERROR_SEM);
+                if (var == NULL) {
+                    error("Reference to undefined variable", ERROR_SEM);
+                } else if (var->def != true) {
+                    error("Trying to use uninitialized variable", ERROR_UNDEF);
+                }
                 switch(var->type) {
                     case INT_DT:
                         generate_cout_int(var->addr);
@@ -469,7 +484,7 @@ void parse_funcBody(symbol_t* funcRef) {
             func->def = true; //function is defined
             func->addr = get_code_seg_top();
             var_table_scope_enter();
-            init_new_stack_frame();
+            init_new_stack_frame(param_count);
             if (funcRef->paramList) {
                 unode_str_t* paramIter = funcRef->paramList->front;
                 while (paramIter) {
@@ -496,6 +511,7 @@ void parse_funcHead() {
             func_set_name(curr_token.str);
             match(TT_PARENTHESES_OPEN);
             parse_paramSpec();
+            func_set_param_count(param_count);
             match(TT_PARENTHESES_CLOSE);
             symbol_t* funcRef = func_finish();
             func_table_add(funcRef);
@@ -540,23 +556,43 @@ void parse_ifClause() {
 }
 
 void parse_paramList() {
+    param_count = 0; //initialize param counter
+    symbol_t* var;
     switch(next_token.type) {
         case TT_LIT_INT:
         case TT_LIT_DOUBLE:
         case TT_LIT_STRING:
         case TT_IDENTIFICATOR:
             parse_term();
-            var_init();
-            if (curr_token.type == TT_IDENTIFICATOR) {
-                symbol_t* var = var_table_find(curr_token.str);
-                if (!var)
-                    error("Reference to undefined variable", ERROR_SEM);
-                else {
-                    func_call_add_param(var->type);
-                }
-            } else {
-                func_call_add_param(curr_token.type - 8);
+            //var_init(); //TODO: ???
+            switch (curr_token.type) {
+                case TT_LIT_INT:
+                    func_call_add_param(INT_DT);
+                    generate_param_push_int(curr_token.int_val);
+                    break;
+                case TT_LIT_DOUBLE:
+                    func_call_add_param(DOUBLE_DT);
+                    generate_param_push_double(curr_token.double_val);
+                    break;
+                case TT_LIT_STRING:
+                    func_call_add_param(STRING_DT);
+                    generate_param_push_string(curr_token.str);
+                    break;
+                case TT_IDENTIFICATOR:
+                    var = var_table_find(curr_token.str);
+                    if (var == NULL) {
+                        error("Reference to undefined variable", ERROR_SEM);
+                    } else if (var->def != true) {
+                        error("Trying to use uninitialized variable", ERROR_UNDEF);
+                    } else {
+                        func_call_add_param(var->type);
+                        generate_param_push(var->addr);
+                    }
+                    break;
+                default:
+                    ;
             }
+            ++param_count;
             parse_paramListFollow();
             break;
         default:
@@ -565,21 +601,40 @@ void parse_paramList() {
 }
 
 void parse_paramListFollow() {
+    symbol_t* var;
     switch(next_token.type) {
         case TT_COMMA:
             match(TT_COMMA);
             parse_term();
-            var_init();
-            if (curr_token.type == TT_IDENTIFICATOR) {
-                symbol_t* var = var_table_find(curr_token.str);
-                if (!var)
-                    error("Reference to undefined variable", ERROR_SEM);
-                else {
-                    func_call_add_param(var->type);
-                }
-            } else {
-                func_call_add_param(curr_token.type - 8);
+            //var_init(); //TODO: ???
+            switch (curr_token.type) {
+                case TT_LIT_INT:
+                    func_call_add_param(INT_DT);
+                    generate_param_push_int(curr_token.int_val);
+                    break;
+                case TT_LIT_DOUBLE:
+                    func_call_add_param(DOUBLE_DT);
+                    generate_param_push_double(curr_token.double_val);
+                    break;
+                case TT_LIT_STRING:
+                    func_call_add_param(STRING_DT);
+                    generate_param_push_string(curr_token.str);
+                    break;
+                case TT_IDENTIFICATOR:
+                    var = var_table_find(curr_token.str);
+                    if (var == NULL) {
+                        error("Reference to undefined variable", ERROR_SEM);
+                    } else if (var->def != true) {
+                        error("Trying to use uninitialized variable", ERROR_UNDEF);
+                    } else {
+                        func_call_add_param(var->type);
+                        generate_param_push(var->addr);
+                    }
+                    break;
+                default:
+                    ;
             }
+            ++param_count;
             parse_paramListFollow();
             break;
         default:
@@ -588,6 +643,7 @@ void parse_paramListFollow() {
 }
 
 void parse_paramSpec() {
+    param_count = 0; //initialize param counter
     switch(next_token.type) {
         case TT_TYPE_DOUBLE:
         case TT_TYPE_INT:
@@ -597,6 +653,7 @@ void parse_paramSpec() {
             var_set_type(curr_token.type);
             match(TT_IDENTIFICATOR);
             var_set_name(curr_token.str);
+            var_set_addr(++param_count);
             var_set_initialized();
             func_add_param(var_finish());
             parse_paramSpecFollow();
@@ -615,6 +672,7 @@ void parse_paramSpecFollow() {
             var_set_type(curr_token.type);
             match(TT_IDENTIFICATOR);
             var_set_name(curr_token.str);
+            var_set_addr(++param_count);
             var_set_initialized();
             func_add_param(var_finish());
             parse_paramSpecFollow();
@@ -665,7 +723,28 @@ void parse_stmt() {
                     ;
             }
             match(TT_SEMICOLON);
-            generate_halt();
+            if (str_equal(func_get_name(), "main"))
+                generate_halt();
+            else {
+                switch (expr.type) {
+                    case DOUBLE_DT:
+                    case INT_DT:
+                    case STRING_DT:
+                        generate_return(expr.addr, func_get_param_count());
+                        break;
+                    case DOUBLE_LIT_DT:
+                        generate_return_double(expr.double_val, func_get_param_count());
+                        break;
+                    case INT_LIT_DT:
+                        generate_return_int(expr.int_val, func_get_param_count());
+                        break;
+                    case STRING_LIT_DT:
+                        generate_return_string(expr.str_val, func_get_param_count());
+                        break;
+                    default:
+                        ;
+                }
+            }
             break;
         case TT_KW_COUT:
             parse_coutStmt();

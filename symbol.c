@@ -140,6 +140,7 @@ void func_init() {
     bufferFunc.def = false;
     bufferFunc.addr = 0;
     bufferFunc.paramList = NULL;
+    bufferFuncParamCnt = 0;
 }
 
 void func_set_name(str_t* name) {
@@ -168,12 +169,20 @@ void func_set_return_type(e_data_t retType) {
     bufferFunc.type = retType;
 }
 
+void func_set_param_count(size_t cnt) {
+    bufferFuncParamCnt = cnt;
+}
+
 str_t* func_get_name() {
     return bufferFunc.name;
 }
 
 e_data_t func_get_return_type() {
     return bufferFunc.type;
+}
+
+size_t func_get_param_count() {
+    return bufferFuncParamCnt;
 }
 
 symbol_t* func_finish() {
@@ -220,6 +229,7 @@ void load_builtin_functions() {
     func_init();
     func_set_return_type(INT_DT);
     func_set_name(lengthName);
+    func_set_start_addr(0);
     var_set_type(STRING_DT);
     var_set_name(paramName1);
     func_add_param(var_finish());
@@ -229,6 +239,7 @@ void load_builtin_functions() {
     func_init();
     func_set_return_type(STRING_DT);
     func_set_name(substrName);
+    func_set_start_addr(2);
     func_add_param(var_finish());
     var_set_type(INT_DT);
     var_set_name(paramName2);
@@ -241,6 +252,7 @@ void load_builtin_functions() {
     func_init();
     func_set_return_type(STRING_DT);
     func_set_name(concatName);
+    func_set_start_addr(4);
     var_set_type(STRING_DT);
     var_set_name(paramName1);
     func_add_param(var_finish());
@@ -252,6 +264,7 @@ void load_builtin_functions() {
     func_init();
     func_set_return_type(INT_DT);
     func_set_name(findName);
+    func_set_start_addr(6);
     var_set_name(paramName1);
     func_add_param(var_finish());
     var_set_name(paramName2);
@@ -262,6 +275,7 @@ void load_builtin_functions() {
     func_init();
     func_set_return_type(STRING_DT);
     func_set_name(sortName);
+    func_set_start_addr(8);
     var_set_name(paramName1);
     func_add_param(var_finish());
     func_set_defined();
@@ -520,8 +534,7 @@ void check_rule_id(token_t* last_token, vector_expr_t* expr_buffer) {
         symbol_t* id = var_table_find(last_token->str);
         if (id == NULL) {
             error("Reference to undefined variable", ERROR_SEM);
-        }
-        else if (id->def != true) {
+        } else if (id->def != true) {
             error("Using uninitialized variable in expression", ERROR_UNDEF);
         } else {
             //convert valid variable to expression

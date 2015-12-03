@@ -192,7 +192,7 @@ token_t get_next_token(scanner_t * s)
                 state = SS_EXCLAMATION;
 
             else
-                error("KOKOTINA, ktoru jazyk nezvlada.", ERROR_LEX);
+                error("Using an unknown character", ERROR_LEX);
 
             break;
 

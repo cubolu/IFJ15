@@ -14,16 +14,20 @@ void interpreter_init() {
     }
     inst_ptr = main_func->addr;
     curr_stack_frame_ptr = 0;
-    data_seg->size = 1;
+    data_seg->size = 4; //return address + data for INST_RESTORE
 }
 
 void run_program() {
     inst_t* inst;
+    size_t size;
     data_seg_t* op_left;
     data_seg_t* op_right;
     data_seg_t* res_addr;
     data_seg_t* prev_size;
     data_seg_t* prev_stack_frame_ptr;
+    data_seg_t* op_1;
+    data_seg_t* op_2;
+    data_seg_t* op_3;
     data_seg_t push_value;
     data_seg_t empty_value = {.inst_addr = 0};
     char string_buffer[256];
@@ -279,8 +283,7 @@ void run_program() {
                 vector_push(data_seg, empty_value);
                 break;
             case INST_PUSH_VALUE:
-                prev_stack_frame_ptr = vector_at(data_seg, curr_stack_frame_ptr - 2);
-                op_left = vector_at(data_seg, inst->op1_addr + prev_stack_frame_ptr->inst_addr);
+                op_left = vector_at(data_seg, inst->op1_addr + curr_stack_frame_ptr);
                 push_value = *op_left;
                 vector_push(data_seg, push_value);
                 break;
@@ -384,8 +387,9 @@ void run_program() {
                 break;
 
             case INST_CALL:
-                //push current data segment top
-                push_value.inst_addr = data_seg->size;
+                //push current data segment size without parameters
+                size = data_seg->size - inst->op2_addr;
+                push_value.inst_addr = size;
                 vector_push(data_seg, push_value);
                 //push current stack frame pointer
                 push_value.inst_addr = curr_stack_frame_ptr;
@@ -396,38 +400,68 @@ void run_program() {
                 //call function at address inst->res_addr
                 inst_ptr = inst->res_addr - 1; //-1 because of ++inst_ptr at the end
                 //change stack frame
-                curr_stack_frame_ptr = data_seg->size;
-                vector_push(data_seg, empty_value); //++(data_seg->size)
+                curr_stack_frame_ptr = size - 1;
                 break;
             case INST_RET:
                 //move return value to its address
-                res_addr = vector_at(data_seg, curr_stack_frame_ptr - 4);
+                res_addr = vector_at(data_seg, curr_stack_frame_ptr);
                 op_left = vector_at(data_seg, inst->op1_addr + curr_stack_frame_ptr);
                 *res_addr = *op_left;
                 break;
             case INST_RET_DOUBLE:
                 //move return value to its address
-                res_addr = vector_at(data_seg, curr_stack_frame_ptr - 4);
+                res_addr = vector_at(data_seg, curr_stack_frame_ptr);
                 res_addr->double_val = inst->op1_double_val;
                 break;
             case INST_RET_INT:
                 //move return value to its address
-                res_addr = vector_at(data_seg, curr_stack_frame_ptr - 4);
+                res_addr = vector_at(data_seg, curr_stack_frame_ptr);
                 res_addr->int_val = inst->op1_int_val;
                 break;
             case INST_RET_STRING:
                 //move return value to its address
-                res_addr = vector_at(data_seg, curr_stack_frame_ptr - 4);
+                res_addr = vector_at(data_seg, curr_stack_frame_ptr);
                 res_addr->str_val = inst->op1_str_val;
                 break;
             case INST_RESTORE:
                 //restore previous stack frame
-                prev_size = vector_at(data_seg, curr_stack_frame_ptr - 3);
-                prev_stack_frame_ptr = vector_at(data_seg, curr_stack_frame_ptr - 2);
-                res_addr = vector_at(data_seg, curr_stack_frame_ptr - 1);
+                size = inst->op1_addr + 1; //parameters count + res_addr
+                prev_size = vector_at(data_seg, curr_stack_frame_ptr + size);
+                prev_stack_frame_ptr = vector_at(data_seg, curr_stack_frame_ptr + size + 1);
+                res_addr = vector_at(data_seg, curr_stack_frame_ptr + size + 2);
                 data_seg->size = prev_size->inst_addr;
                 curr_stack_frame_ptr = prev_stack_frame_ptr->inst_addr;
                 inst_ptr = res_addr->inst_addr - 1; //-1 because of ++inst_ptr at the end
+                break;
+
+            case INST_BUILTIN_LENGTH:
+                op_1 = vector_at(data_seg, curr_stack_frame_ptr + 1);
+                res_addr = vector_at(data_seg, curr_stack_frame_ptr);
+                res_addr->int_val = length(op_1->str_val);
+                break;
+            case INST_BUILTIN_SUBSTR:
+                op_1 = vector_at(data_seg, curr_stack_frame_ptr + 1);
+                op_2 = vector_at(data_seg, curr_stack_frame_ptr + 2);
+                op_3 = vector_at(data_seg, curr_stack_frame_ptr + 3);
+                res_addr = vector_at(data_seg, curr_stack_frame_ptr);
+                res_addr->str_val = substr(op_1->str_val, op_2->int_val, op_3->int_val);
+                break;
+            case INST_BUILTIN_CONCAT:
+                op_1 = vector_at(data_seg, curr_stack_frame_ptr + 1);
+                op_2 = vector_at(data_seg, curr_stack_frame_ptr + 2);
+                res_addr = vector_at(data_seg, curr_stack_frame_ptr);
+                res_addr->str_val = concat(op_1->str_val, op_2->str_val);
+                break;
+            case INST_BUILTIN_FIND:
+                op_1 = vector_at(data_seg, curr_stack_frame_ptr + 1);
+                op_2 = vector_at(data_seg, curr_stack_frame_ptr + 2);
+                res_addr = vector_at(data_seg, curr_stack_frame_ptr);
+                res_addr->int_val = find(op_1->str_val, op_2->str_val);
+                break;
+            case INST_BUILTIN_SORT:
+                op_1 = vector_at(data_seg, curr_stack_frame_ptr + 1);
+                res_addr = vector_at(data_seg, curr_stack_frame_ptr);
+                res_addr->str_val = sort(op_1->str_val);
                 break;
 
             case INST_HALT:

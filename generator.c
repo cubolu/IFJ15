@@ -5,6 +5,42 @@ vector_inst_t* code_seg;
 
 void generator_init() {
     code_seg = vector_init(VI_CODESEG);
+    //initialize built in functions
+    inst_t curr_inst;
+    //function address is 0
+    curr_inst.inst_code = INST_BUILTIN_LENGTH;
+    vector_push(code_seg, curr_inst);
+    curr_inst.inst_code = INST_RESTORE;
+    curr_inst.op1_addr = 1;
+    vector_push(code_seg, curr_inst);
+
+    //function address is 2
+    curr_inst.inst_code = INST_BUILTIN_SUBSTR;
+    vector_push(code_seg, curr_inst);
+    curr_inst.inst_code = INST_RESTORE;
+    curr_inst.op1_addr = 3;
+    vector_push(code_seg, curr_inst);
+
+    //function address is 4
+    curr_inst.inst_code = INST_BUILTIN_CONCAT;
+    vector_push(code_seg, curr_inst);
+    curr_inst.inst_code = INST_RESTORE;
+    curr_inst.op1_addr = 2;
+    vector_push(code_seg, curr_inst);
+
+    //function address is 6
+    curr_inst.inst_code = INST_BUILTIN_FIND;
+    vector_push(code_seg, curr_inst);
+    curr_inst.inst_code = INST_RESTORE;
+        curr_inst.op1_addr = 2;
+    vector_push(code_seg, curr_inst);
+
+    //function address is 8
+    curr_inst.inst_code = INST_BUILTIN_SORT;
+    vector_push(code_seg, curr_inst);
+    curr_inst.inst_code = INST_RESTORE;
+    curr_inst.op1_addr = 1;
+    vector_push(code_seg, curr_inst);
 }
 
 size_t get_code_seg_top() {
@@ -12,7 +48,8 @@ size_t get_code_seg_top() {
 }
 
 void init_new_stack_frame(size_t param_count) {
-    curr_stack_frame = param_count + 1; //index 0 is not used
+    curr_stack_frame = param_count + 1; //index 0 is reseved for return address
+    curr_stack_frame += 3; //data for INST_RESTORE
 }
 
 size_t generate_push() {
@@ -187,51 +224,54 @@ void generate_if_else_jump(size_t source, size_t true_branch, size_t false_branc
     vector_push(code_seg, curr_inst);
 }
 
-size_t generate_call(size_t dest) {
+void generate_call(size_t dest, size_t param_cnt) {
     inst_t curr_inst = {.inst_code = INST_CALL};
-    //alocate space for return value
-    size_t new_addr = generate_push();
     //store return address
     curr_inst.op1_addr = get_code_seg_top() + 1;
+    //store count
+    curr_inst.op2_addr = param_cnt;
     //set function address
     curr_inst.res_addr = dest;
     vector_push(code_seg, curr_inst);
-    return new_addr;
 }
 
-void generate_return(size_t source) {
+void generate_return(size_t source, size_t param_cnt) {
     inst_t curr_inst = {.inst_code = INST_RET};
     //this value will be returned
     curr_inst.op1_addr = source;
     vector_push(code_seg, curr_inst);
     curr_inst.inst_code = INST_RESTORE;
+    curr_inst.op1_addr = param_cnt;
     vector_push(code_seg, curr_inst);
 }
 
-void generate_return_double(double val) {
+void generate_return_double(double val, size_t param_cnt) {
     inst_t curr_inst = {.inst_code = INST_RET_DOUBLE};
     //this value will be returned
     curr_inst.op1_double_val = val;
     vector_push(code_seg, curr_inst);
     curr_inst.inst_code = INST_RESTORE;
+    curr_inst.op1_addr = param_cnt;
     vector_push(code_seg, curr_inst);
 }
 
-void generate_return_int(int val) {
+void generate_return_int(int val, size_t param_cnt) {
     inst_t curr_inst = {.inst_code = INST_RET_INT};
     //this value will be returned
     curr_inst.op1_int_val = val;
     vector_push(code_seg, curr_inst);
     curr_inst.inst_code = INST_RESTORE;
+    curr_inst.op1_addr = param_cnt;
     vector_push(code_seg, curr_inst);
 }
 
-void generate_return_string(str_t* val) {
+void generate_return_string(str_t* val, size_t param_cnt) {
     inst_t curr_inst = {.inst_code = INST_RET_STRING};
     //this value will be returned
     curr_inst.op1_str_val = val;
     vector_push(code_seg, curr_inst);
     curr_inst.inst_code = INST_RESTORE;
+    curr_inst.op1_addr = param_cnt;
     vector_push(code_seg, curr_inst);
 }
 
