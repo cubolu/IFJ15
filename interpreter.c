@@ -378,12 +378,10 @@ void run_program() {
                 if (op_left->int_val)
                     inst_ptr = inst->res_addr - 1;
                 break;
-            case INST_IF_ELSE_JUMP:
+            case INST_NEGATIVE_CONDITIONAL_JUMP:
                 op_left = vector_at(data_seg, inst->op1_addr + curr_stack_frame_ptr);
-                if (op_left->int_val)
+                if (!(op_left->int_val))
                     inst_ptr = inst->res_addr - 1;
-                else
-                    inst_ptr = inst->op2_addr - 1;
                 break;
 
             case INST_CALL:

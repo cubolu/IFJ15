@@ -52,29 +52,16 @@ void init_new_stack_frame(size_t param_count) {
     curr_stack_frame += 3; //data for INST_RESTORE
 }
 
+size_t store_stack_frame() {
+    return curr_stack_frame;
+}
+
+void load_stack_frame(size_t stack_frame_value) {
+    curr_stack_frame = stack_frame_value;
+}
+
 size_t generate_push() {
     inst_t curr_inst = {.inst_code = INST_PUSH};
-    vector_push(code_seg, curr_inst);
-    return curr_stack_frame++;
-}
-
-size_t generate_push_double(double val) {
-    inst_t curr_inst = {.inst_code = INST_PUSH_DOUBLE};
-    curr_inst.op1_double_val = val;
-    vector_push(code_seg, curr_inst);
-    return curr_stack_frame++;
-}
-
-size_t generate_push_int(int val) {
-    inst_t curr_inst = {.inst_code = INST_PUSH_INT};
-    curr_inst.op1_int_val = val;
-    vector_push(code_seg, curr_inst);
-    return curr_stack_frame++;
-}
-
-size_t generate_push_string(str_t* val) {
-    inst_t curr_inst = {.inst_code = INST_PUSH_STRING};
-    curr_inst.op1_str_val = val;
     vector_push(code_seg, curr_inst);
     return curr_stack_frame++;
 }
@@ -216,12 +203,16 @@ void generate_cond_jump(size_t dest, size_t source) {
     vector_push(code_seg, curr_inst);
 }
 
-void generate_if_else_jump(size_t source, size_t true_branch, size_t false_branch) {
-    inst_t curr_inst = {.inst_code = INST_IF_ELSE_JUMP};
+void generate_neg_cond_jump(size_t dest, size_t source) {
+    inst_t curr_inst = {.inst_code = INST_NEGATIVE_CONDITIONAL_JUMP};
     curr_inst.op1_addr = source;
-    curr_inst.op2_addr = false_branch;
-    curr_inst.res_addr = true_branch;
+    curr_inst.res_addr = dest;
     vector_push(code_seg, curr_inst);
+}
+
+void set_jump_addr(size_t inst_addr, size_t dest) {
+    inst_t* inst = vector_at(code_seg, inst_addr);
+    inst->res_addr = dest;
 }
 
 void generate_call(size_t dest, size_t param_cnt) {

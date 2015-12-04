@@ -158,8 +158,8 @@ void parse_asgn() {
             if (var == NULL)
                 error("Trying to assign to undefined variable", ERROR_SEM);
             match(TT_OP_ASSIGNMENT);
-            var->def = true;
             parse_asgnFollow(var);
+            var->def = true;
             break;
         default:
             error("Syntactic error: Failed to parse the program", ERROR_SYN);
@@ -323,6 +323,7 @@ void parse_cinStmt() {
                 default:
                     ;
             }
+            var->def = true;
             parse_cinStmtFollow();
             break;
         default:
@@ -351,6 +352,7 @@ void parse_cinStmtFollow() {
                 default:
                     ;
             }
+            var->def = true;
             parse_cinStmtFollow();
             break;
         default:
@@ -454,19 +456,80 @@ void parse_coutStmtFollow() {
 }
 
 void parse_forClause() {
+    expression_t expr;
+    size_t conv_expr;
+    size_t loop_start;
+    size_t loop_end;
+    size_t asgn_start;
+    size_t block_start;
+    size_t jc_addr;
+    size_t jmp_to_block_addr;
+    size_t asgn_frame;
+    size_t block_frame;
+    bool jmp_used = true;
     switch(next_token.type) {
         case TT_KW_FOR:
             match(TT_KW_FOR);
             match(TT_PARENTHESES_OPEN);
             var_table_scope_enter();
+            block_frame = store_stack_frame();
             parse_varDef();
             match(TT_SEMICOLON);
-            //TODO add gen jump, expr evaluation
-            parse_expr();
+            //loop start
+            loop_start = get_code_seg_top();
+            expr = parse_expr();
             match(TT_SEMICOLON);
+            //gen jc
+            jc_addr = get_code_seg_top();
+            switch (expr.type) {
+                case DOUBLE_LIT_DT:
+                    if(!((int)expr.double_val))
+                        generate_jump(0); //address is unknown yet
+                    else
+                        jmp_used = false;
+                    break;
+                case INT_LIT_DT:
+                    if(!expr.int_val)
+                        generate_jump(0); //address is unknown yet
+                    else
+                        jmp_used = false;
+                    break;
+                case DOUBLE_DT:
+                    conv_expr = generate_double_to_int(expr.addr);
+                    generate_neg_cond_jump(0, conv_expr); //address is unknown yet
+                    break;
+                case INT_DT:
+                    generate_neg_cond_jump(0, expr.addr); //address is unknown yet
+                    break;
+                case STRING_LIT_DT:
+                case STRING_DT:
+                    error("String value in a if statement", ERROR_TYPE_COMPAT);
+                    break;
+                default:
+                    ;
+            }
+            //jump to block start
+            jmp_to_block_addr = get_code_seg_top();
+            generate_jump(0); //address is unknown yet
+            //assignment start
+            asgn_start = get_code_seg_top();
+            asgn_frame = store_stack_frame();
             parse_asgn();
+            load_stack_frame(asgn_frame);
+            //jump to loop start
+            generate_jump(loop_start);
             match(TT_PARENTHESES_CLOSE);
-            parse_block(false);
+            //block start
+            block_start = get_code_seg_top();
+            set_jump_addr(jmp_to_block_addr, block_start);
+            parse_block(true);
+            //jump to assignment
+            generate_jump(asgn_start);
+            //loop end
+            load_stack_frame(block_frame);
+            loop_end = get_code_seg_top();
+            if (jmp_used)
+                set_jump_addr(jc_addr, loop_end);
             break;
         default:
             error("Syntactic error: Failed to parse the program", ERROR_SYN);
@@ -531,7 +594,7 @@ void parse_funcs() {
             parse_funcs();
             break;
         case TT_EOF:
-            printf("Successful parse\n");
+            //printf("Successful parse\n");
             break;
         default:
             error("Syntactic error: Failed to parse the program", ERROR_SYN);
@@ -539,16 +602,58 @@ void parse_funcs() {
 }
 
 void parse_ifClause() {
+    expression_t expr;
+    size_t conv_expr;
+    size_t jc_addr;
+    size_t jmp_addr;
+    size_t stack_frame;
+    bool jmp_used = true;
     switch(next_token.type) {
         case TT_KW_IF:
             match(TT_KW_IF);
             match(TT_PARENTHESES_OPEN);
-            //TODO add gen jump, expr evaluation
-            parse_expr();
+            expr = parse_expr();
             match(TT_PARENTHESES_CLOSE);
+            jc_addr = get_code_seg_top();
+            switch (expr.type) {
+                case DOUBLE_LIT_DT:
+                    if(!((int)expr.double_val))
+                        generate_jump(0); //address is unknown yet
+                    else
+                        jmp_used = false;
+                    break;
+                case INT_LIT_DT:
+                    if(!expr.int_val)
+                        generate_jump(0); //address is unknown yet
+                    else
+                        jmp_used = false;
+                    break;
+                case DOUBLE_DT:
+                    conv_expr = generate_double_to_int(expr.addr);
+                    generate_neg_cond_jump(0, conv_expr); //address is unknown yet
+                    break;
+                case INT_DT:
+                    generate_neg_cond_jump(0, expr.addr); //address is unknown yet
+                    break;
+                case STRING_LIT_DT:
+                case STRING_DT:
+                    error("String value in a if statement", ERROR_TYPE_COMPAT);
+                    break;
+                default:
+                    ;
+            }
+            stack_frame = store_stack_frame();
             parse_block(true);
+            load_stack_frame(stack_frame);
+            jmp_addr = get_code_seg_top();
+            generate_jump(0); //address is unknown yet
+            if (jmp_used)
+                set_jump_addr(jc_addr, get_code_seg_top());
             match(TT_KW_ELSE);
+            stack_frame = store_stack_frame();
             parse_block(true);
+            load_stack_frame(stack_frame);
+            set_jump_addr(jmp_addr, get_code_seg_top());
             break;
         default:
             error("Syntactic error: Failed to parse the program", ERROR_SYN);
@@ -868,8 +973,8 @@ void parse_varDefFollow(symbol_t* var) {
     switch(next_token.type) {
         case TT_OP_ASSIGNMENT:
             match(TT_OP_ASSIGNMENT);
-            var->def = true;
             parse_asgnFollow(var);
+            var->def = true;
         default:
             ;
     }

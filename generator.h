@@ -13,11 +13,10 @@ void generator_init();
 
 size_t get_code_seg_top();
 void init_new_stack_frame(size_t param_count);
+size_t store_stack_frame();
+void load_stack_frame(size_t stack_frame_value);
 
 size_t generate_push();
-size_t generate_push_double(double val);
-size_t generate_push_int(int val);
-size_t generate_push_string(str_t* val);
 void generate_param_push(size_t source);
 void generate_param_push_double(double val);
 void generate_param_push_int(int val);
@@ -44,7 +43,8 @@ void generate_cout_string_lit(str_t* val);
 
 void generate_jump(size_t dest);
 void generate_cond_jump(size_t dest, size_t source);
-void generate_if_else_jump(size_t source, size_t true_branch, size_t false_branch);
+void generate_neg_cond_jump(size_t dest, size_t source);
+void set_jump_addr(size_t inst_addr, size_t dest);
 
 #define generate_call_init() generate_push()
 void generate_call(size_t dest, size_t param_cnt);
