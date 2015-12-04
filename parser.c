@@ -242,7 +242,7 @@ expression_t parse_asgnFollow(symbol_t* var) {
                 if(var->type == DOUBLE_DT) {
                     generate_mov(var->addr, expr.addr);
                 } else {
-                    size_t conv_expr = generate_int_to_double(expr.addr);
+                    size_t conv_expr = generate_double_to_int(expr.addr);
                     generate_mov(var->addr, conv_expr);
                 }
                 break;
@@ -250,7 +250,7 @@ expression_t parse_asgnFollow(symbol_t* var) {
                 if(var->type == INT_DT) {
                     generate_mov(var->addr, expr.addr);
                 } else {
-                    size_t conv_expr = generate_double_to_int(expr.addr);
+                    size_t conv_expr = generate_int_to_double(expr.addr);
                     generate_mov(var->addr, conv_expr);
                 }
                 break;

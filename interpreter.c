@@ -308,7 +308,7 @@ void run_program() {
             case INST_DOUBLE_TO_INT:
                 res_addr = vector_at(data_seg, inst->res_addr + curr_stack_frame_ptr);
                 op_left = vector_at(data_seg, inst->op1_addr + curr_stack_frame_ptr);
-                res_addr->int_val = (int)op_left->int_val;
+                res_addr->int_val = (int)op_left->double_val;
                 break;
 
             case INST_MOV:
