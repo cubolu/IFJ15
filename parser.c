@@ -237,50 +237,43 @@ expression_t parse_asgnFollow(symbol_t* var) {
     }
     //generate assignment instruction
     if (expr.type != NONE_DT) { //TODO: REMOVE ?!
-        if (expr.type > 15) {// it's a literal
-            switch (expr.type) {
-                case DOUBLE_LIT_DT:
-                    if(var->type == DOUBLE_DT)
-                        generate_mov_double(var->addr, expr.double_val);
-                    else
-                        generate_mov_double(var->addr, (int)expr.double_val);
-                    break;
-                case INT_LIT_DT:
-                    if(var->type == INT_DT)
-                        generate_mov_int(var->addr, expr.int_val);
-                    else
-                        generate_mov_int(var->addr, (double)expr.int_val);
-                    break;
-                case STRING_LIT_DT:
-                    generate_mov_string(var->addr, expr.str_val);
-                    break;
-                default:
-                    ;
-            }
-        } else {
-            switch(expr.type) {
-                case INT_DT:
-                    if(var->type == DOUBLE_DT) {
-                        size_t conv_expr = generate_double_to_int(expr.addr);
-                        generate_mov(var->addr, conv_expr);
-                    } else {
-                        generate_mov(var->addr, expr.addr);
-                    }
-                    break;
-                case DOUBLE_DT:
-                    if(var->type == INT_DT) {
-                        size_t conv_expr = generate_int_to_double(expr.addr);
-                        generate_mov(var->addr, conv_expr);
-                    } else {
-                        generate_mov(var->addr, expr.addr);
-                    }
-                    break;
-                case STRING_DT:
+        switch (expr.type) {
+            case DOUBLE_DT:
+                if(var->type == DOUBLE_DT) {
                     generate_mov(var->addr, expr.addr);
-                    break;
-                default:
-                    ;
-            }
+                } else {
+                    size_t conv_expr = generate_int_to_double(expr.addr);
+                    generate_mov(var->addr, conv_expr);
+                }
+                break;
+            case INT_DT:
+                if(var->type == INT_DT) {
+                    generate_mov(var->addr, expr.addr);
+                } else {
+                    size_t conv_expr = generate_double_to_int(expr.addr);
+                    generate_mov(var->addr, conv_expr);
+                }
+                break;
+            case STRING_DT:
+                generate_mov(var->addr, expr.addr);
+                break;
+            case DOUBLE_LIT_DT:
+                if(var->type == DOUBLE_DT)
+                    generate_mov_double(var->addr, expr.double_val);
+                else
+                    generate_mov_double(var->addr, (int)expr.double_val);
+                break;
+            case INT_LIT_DT:
+                if(var->type == INT_DT)
+                    generate_mov_int(var->addr, expr.int_val);
+                else
+                    generate_mov_int(var->addr, (double)expr.int_val);
+                break;
+            case STRING_LIT_DT:
+                generate_mov_string(var->addr, expr.str_val);
+                break;
+            default:
+                ;
         }
     }
     return expr;
@@ -948,20 +941,37 @@ void parse_varDef() {
             parse_varDefFollow(var_table_find(var->name));
             break;
         case TT_TYPE_AUTO:
-            //TODO code generation
             var_init();
             match(TT_TYPE_AUTO);
             match(TT_IDENTIFICATOR);
             var_set_name(curr_token.str);
             match_deduction(TT_OP_ASSIGNMENT);
             var_set_initialized();
-            expr = parse_expr();
-            if (expr.type > 15) // it's a literal
-                var_set_type(expr.type-3);
-            else
-                var_set_type(expr.type);
             addr = generate_push();
             var_set_addr(addr);
+            expr = parse_expr();
+            switch (expr.type) {
+                case DOUBLE_DT:
+                case INT_DT:
+                case STRING_DT:
+                    var_set_type(expr.type);
+                    generate_mov(addr, expr.addr);
+                    break;
+                case DOUBLE_LIT_DT:
+                    var_set_type(DOUBLE_DT);
+                    generate_mov_double(addr, expr.double_val);
+                    break;
+                case INT_LIT_DT:
+                    var_set_type(INT_DT);
+                    generate_mov_int(addr, expr.int_val);
+                    break;
+                case STRING_LIT_DT:
+                    var_set_type(STRING_DT);
+                    generate_mov_string(addr, expr.str_val);
+                    break;
+                default:
+                    ;
+            }
             var_table_add(var_finish());
             break;
         default:
