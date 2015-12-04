@@ -431,6 +431,8 @@ void run_program() {
                 curr_stack_frame_ptr = prev_stack_frame_ptr->inst_addr;
                 inst_ptr = res_addr->inst_addr - 1; //-1 because of ++inst_ptr at the end
                 break;
+            case INST_NO_RET:
+                error("Function call with no return", ERROR_UNDEF);
 
             case INST_BUILTIN_LENGTH:
                 op_1 = vector_at(data_seg, curr_stack_frame_ptr + 1);

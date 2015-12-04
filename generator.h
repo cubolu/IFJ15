@@ -52,6 +52,7 @@ void generate_return(size_t source, size_t param_cnt);
 void generate_return_double(double val, size_t param_cnt);
 void generate_return_int(int val, size_t param_cnt);
 void generate_return_string(str_t* val, size_t param_cnt);
+void generate_no_return_exception();
 
 void generate_halt();
 

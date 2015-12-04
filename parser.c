@@ -549,6 +549,7 @@ void parse_funcBody(symbol_t* funcRef) {
                 }
             }
             parse_block(false);
+            generate_no_return_exception();
             break;
         default:
             error("Syntactic error: Failed to parse the program", ERROR_SYN);

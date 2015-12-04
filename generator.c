@@ -62,6 +62,8 @@ void load_stack_frame(size_t stack_frame_value) {
 
 size_t generate_push() {
     inst_t curr_inst = {.inst_code = INST_PUSH};
+    //DEBUG
+    curr_inst.res_addr = curr_stack_frame;
     vector_push(code_seg, curr_inst);
     return curr_stack_frame++;
 }
@@ -264,6 +266,11 @@ void generate_return_string(str_t* val, size_t param_cnt) {
     curr_inst.inst_code = INST_RESTORE;
     curr_inst.op1_addr = param_cnt;
     vector_push(code_seg, curr_inst);
+}
+void generate_no_return_exception() {
+    inst_t curr_inst = {.inst_code = INST_NO_RET};
+    vector_push(code_seg, curr_inst);
+
 }
 
 void generate_halt() {
