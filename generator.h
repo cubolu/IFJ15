@@ -15,6 +15,7 @@ size_t get_code_seg_top();
 void init_new_stack_frame(size_t param_count);
 size_t store_stack_frame();
 void load_stack_frame(size_t stack_frame_value);
+void generate_data_seg_restore();
 
 size_t generate_push();
 void generate_param_push(size_t source);

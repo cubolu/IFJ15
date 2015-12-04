@@ -464,6 +464,9 @@ void run_program() {
                 res_addr->str_val = sort(op_1->str_val);
                 break;
 
+            case INST_DATA_SEGMENT_RESTORE:
+                data_seg->size = inst->op1_addr + curr_stack_frame_ptr;
+                break;
             case INST_HALT:
                 warning("Halt!");
                 return;

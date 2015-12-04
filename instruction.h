@@ -146,6 +146,7 @@ typedef enum {
     INST_BUILTIN_FIND,
     INST_BUILTIN_SORT,
 
+    INST_DATA_SEGMENT_RESTORE,
     INST_HALT,
 } inst_set_t;
 

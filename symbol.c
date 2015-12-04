@@ -53,13 +53,14 @@ bool is_equal_paramlist(ulist_str_t* paramList1, ulist_str_t* paramList2) {
     unode_str_t* iter1 = paramList1->front;
     unode_str_t* iter2 = paramList2->front;
     while (iter1 != NULL && iter2 != NULL) {
-        if(iter1->item.type != iter2->item.type)
+        if((iter1->item.type == STRING_DT || iter2->item.type == STRING_DT) &&
+            iter1->item.type != iter2->item.type)
             return false;
         iter1 = iter1->next;
         iter2 = iter2->next;
     }
     if (iter1 != NULL || iter2 != NULL)
-        return false; //not the same amout of parameters
+        return false; //not the same amount of parameters
     return true;
 }
 

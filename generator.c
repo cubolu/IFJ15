@@ -60,6 +60,12 @@ void load_stack_frame(size_t stack_frame_value) {
     curr_stack_frame = stack_frame_value;
 }
 
+void generate_data_seg_restore() {
+    inst_t curr_inst = {.inst_code = INST_DATA_SEGMENT_RESTORE};
+    curr_inst.op1_addr = curr_stack_frame;
+    vector_push(code_seg, curr_inst);
+}
+
 size_t generate_push() {
     inst_t curr_inst = {.inst_code = INST_PUSH};
     //DEBUG

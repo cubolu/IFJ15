@@ -470,6 +470,7 @@ void parse_forClause() {
             match(TT_SEMICOLON);
             //loop start
             loop_start = get_code_seg_top();
+            generate_data_seg_restore();
             expr = parse_expr();
             match(TT_SEMICOLON);
             //gen jc
