@@ -39,8 +39,13 @@ void run_program() {
                 OPER_ADDR_ADDR(*, double_val, double_val);
                 break;
             case INST_DIV_D_D:
-                //TODO: division by zero
-                OPER_ADDR_ADDR(/, double_val, double_val);
+                res_addr = vector_at(data_seg, inst->res_addr + curr_stack_frame_ptr);
+                op_left = vector_at(data_seg, inst->op1_addr + curr_stack_frame_ptr);
+                op_right = vector_at(data_seg, inst->op2_addr + curr_stack_frame_ptr);
+                if (op_right->double_val != 0)
+                    res_addr->double_val = op_left->double_val / op_right->double_val;
+                else
+                    error("Division by zero", ERROR_DIVZERO);
                 break;
             case INST_ADD_D_D:
                 OPER_ADDR_ADDR(+, double_val, double_val);
@@ -71,7 +76,12 @@ void run_program() {
                 OPER_ADDR_LIT(*, double_val, double_val);
                 break;
             case INST_DIV_D_DL:
-                OPER_ADDR_LIT(/, double_val, double_val);
+                res_addr = vector_at(data_seg, inst->res_addr + curr_stack_frame_ptr);
+                op_left = vector_at(data_seg, inst->op1_addr + curr_stack_frame_ptr);
+                if (inst->op2_double_val != 0)
+                    res_addr->double_val = op_left->double_val / inst->op2_double_val;
+                else
+                    error("Division by zero", ERROR_DIVZERO);
                 break;
             case INST_ADD_D_DL:
                 OPER_ADDR_LIT(+, double_val, double_val);
@@ -102,7 +112,12 @@ void run_program() {
                 OPER_LIT_ADDR(*, double_val, double_val);
                 break;
             case INST_DIV_DL_D:
-                OPER_LIT_ADDR(/, double_val, double_val);
+                res_addr = vector_at(data_seg, inst->res_addr + curr_stack_frame_ptr);
+                op_right = vector_at(data_seg, inst->op2_addr + curr_stack_frame_ptr);
+                if (op_right->double_val != 0)
+                    res_addr->double_val = inst->op1_double_val / op_right->double_val;
+                else
+                    error("Division by zero", ERROR_DIVZERO);
                 break;
             case INST_ADD_DL_D:
                 OPER_LIT_ADDR(+, double_val, double_val);
@@ -133,7 +148,13 @@ void run_program() {
                 OPER_ADDR_ADDR(*, int_val, int_val);
                 break;
             case INST_DIV_I_I:
-                OPER_ADDR_ADDR(/, int_val, int_val);
+                res_addr = vector_at(data_seg, inst->res_addr + curr_stack_frame_ptr);
+                op_left = vector_at(data_seg, inst->op1_addr + curr_stack_frame_ptr);
+                op_right = vector_at(data_seg, inst->op2_addr + curr_stack_frame_ptr);
+                if (op_right->int_val != 0)
+                    res_addr->int_val = op_left->int_val / op_right->int_val;
+                else
+                    error("Division by zero", ERROR_DIVZERO);
                 break;
             case INST_ADD_I_I:
                 OPER_ADDR_ADDR(+, int_val, int_val);
@@ -164,7 +185,12 @@ void run_program() {
                 OPER_ADDR_LIT(*, int_val, int_val);
                 break;
             case INST_DIV_I_IL:
-                OPER_ADDR_LIT(/, int_val, int_val);
+                res_addr = vector_at(data_seg, inst->res_addr + curr_stack_frame_ptr);
+                op_left = vector_at(data_seg, inst->op1_addr + curr_stack_frame_ptr);
+                if (inst->op2_int_val != 0)
+                    res_addr->int_val = op_left->int_val / inst->op2_int_val;
+                else
+                    error("Division by zero", ERROR_DIVZERO);
                 break;
             case INST_ADD_I_IL:
                 OPER_ADDR_LIT(+, int_val, int_val);
@@ -195,7 +221,12 @@ void run_program() {
                 OPER_LIT_ADDR(*, int_val, int_val);
                 break;
             case INST_DIV_IL_I:
-                OPER_LIT_ADDR(/, int_val, int_val);
+                res_addr = vector_at(data_seg, inst->res_addr + curr_stack_frame_ptr);
+                op_right = vector_at(data_seg, inst->op2_addr + curr_stack_frame_ptr);
+                if (op_right->int_val != 0)
+                    res_addr->int_val = inst->op1_int_val / op_right->int_val;
+                else
+                    error("Division by zero", ERROR_DIVZERO);
                 break;
             case INST_ADD_IL_I:
                 OPER_LIT_ADDR(+, int_val, int_val);

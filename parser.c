@@ -516,7 +516,7 @@ void parse_forClause() {
             //block start
             block_start = get_code_seg_top();
             set_jump_addr(jmp_to_block_addr, block_start);
-            parse_block(true);
+            parse_block(false);
             //jump to assignment
             generate_jump(asgn_start);
             //loop end
@@ -665,6 +665,7 @@ void parse_paramList() {
         case TT_IDENTIFICATOR:
             parse_term();
             //var_init(); //TODO: ???
+            //TODO: implicit conversion
             switch (curr_token.type) {
                 case TT_LIT_INT:
                     func_call_add_param(INT_DT);
@@ -707,6 +708,7 @@ void parse_paramListFollow() {
             match(TT_COMMA);
             parse_term();
             //var_init(); //TODO: ???
+            //TODO: implicit conversion
             switch (curr_token.type) {
                 case TT_LIT_INT:
                     func_call_add_param(INT_DT);
@@ -828,15 +830,35 @@ void parse_stmt() {
             else {
                 switch (expr.type) {
                     case DOUBLE_DT:
+                        if(func_get_return_type() == DOUBLE_DT) {
+                            generate_return(expr.addr, func_get_param_count());
+                        } else {
+                            size_t conv_expr = generate_double_to_int(expr.addr);
+                            generate_return(conv_expr, func_get_param_count());
+                        }
+                        break;
                     case INT_DT:
+                        if(func_get_return_type() == INT_DT) {
+                            generate_return(expr.addr, func_get_param_count());
+                        } else {
+                            size_t conv_expr = generate_int_to_double(expr.addr);
+                            generate_return(conv_expr, func_get_param_count());
+                        }
+                        break;
                     case STRING_DT:
                         generate_return(expr.addr, func_get_param_count());
                         break;
                     case DOUBLE_LIT_DT:
-                        generate_return_double(expr.double_val, func_get_param_count());
+                        if(func_get_return_type() == DOUBLE_DT)
+                            generate_return_double(expr.double_val, func_get_param_count());
+                        else
+                            generate_return_double((int)expr.double_val, func_get_param_count());
                         break;
                     case INT_LIT_DT:
-                        generate_return_int(expr.int_val, func_get_param_count());
+                        if(func_get_return_type() == INT_DT)
+                            generate_return_int(expr.int_val, func_get_param_count());
+                        else
+                            generate_return_int((double)expr.int_val, func_get_param_count());
                         break;
                     case STRING_LIT_DT:
                         generate_return_string(expr.str_val, func_get_param_count());
