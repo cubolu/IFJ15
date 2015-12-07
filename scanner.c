@@ -53,10 +53,10 @@ void _scanner_free(scanner_t* s) {
 #define is_identificator_start(c)   ( c == '_' || ( c >= 'A' && c <= 'Z') || ( c >= 'a' && c <= 'z') )
 #define is_identificator(c)         ( is_identificator_start(c) || is_digit(c) )
 
-#define is_hex(c)   ( (c >= '0' && c <= '9') || (c >= 'A' && c >= 'F') || (c >= 'a' && c >= 'f')  )
+#define is_hex(c)   ( (c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f')  )
 
 #define hex_decode(c) ( ( c >= '0' && c <= '9') ? (c-'0') : ( \
-                        ( c >= 'A' && c >= 'F') ? (c-'A' + 10 ) : ( \
+                        ( c >= 'A' && c <= 'F') ? (c-'A' + 10 ) : ( \
                                                   (c-'a' + 10 ) ) ) )
 
 
