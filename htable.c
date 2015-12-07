@@ -10,7 +10,7 @@ size_t HTABLE_SIZES[24] = {193, 389, 769, 1543, 3079, 6151, 12289, 24593,
                            1610612741};
 
 void htable_resize(htable_t* htable, resize_t resize);
-static unsigned int hash(char* key, size_t cap_index);
+static unsigned int hash(str_t* key, size_t cap_index);
 
 htable_t* htable_init() {
     htable_t* htable = _ifj15_calloc(HTABLE, sizeof(htable_t), true);
@@ -25,36 +25,36 @@ void _htable_free(htable_t* htable) {
     size_t capacity = HTABLE_SIZES[htable->cap_index];
     for (size_t i = 0; i < capacity; ++i) {
         if (htable->array[i] != NULL)
-            _ulist_free(htable->array[i]);
+            _ulist_str_free(htable->array[i]);
     }
     free(htable->array);
     free(htable);
 }
 
-void htable_set(htable_t* htable, char* key, void* item) {
+void htable_set(htable_t* htable, str_t* key, symbol_t item) {
     ++(htable->size);
-    if (htable->size > 5*HTABLE_SIZES[htable->cap_index])
+    if (htable->size > 10*HTABLE_SIZES[htable->cap_index])
         htable_resize(htable, UP);
     size_t hash_code = hash(key, htable->cap_index);
     if (htable->array[hash_code] == NULL)
-        htable->array[hash_code] = _ulist_init(false);
+        htable->array[hash_code] = _ulist_str_init(false);
     ulist_set(htable->array[hash_code], key, item);
 }
 
-void* htable_get(htable_t* htable, char* key) {
+symbol_t* htable_get(htable_t* htable, str_t* key) {
     size_t hash_code = hash(key, htable->cap_index);
     if (htable->array[hash_code] == NULL)
-        return 0;
+        return NULL;
     return ulist_get(htable->array[hash_code], key);
 }
 
-void* htable_pop(htable_t* htable, char* key) {
+symbol_t htable_pop(htable_t* htable, str_t* key) {
     --(htable->size);
-    if (htable->size < HTABLE_SIZES[htable->cap_index] && htable->cap_index > 0)
+    if (htable->size < 2*HTABLE_SIZES[htable->cap_index] && htable->cap_index > 0)
         htable_resize(htable, DOWN);
     size_t hash_code = hash(key, htable->cap_index);
     if (htable->array[hash_code] == NULL)
-        return 0;
+        return INVALID_SYM;
     return ulist_pop(htable->array[hash_code], key);
 }
 
@@ -65,27 +65,27 @@ void htable_resize(htable_t* htable, resize_t resize) {
     else
         --htable->cap_index;
 
-    ulist_t** old_array = htable->array;
+    ulist_str_t** old_array = htable->array;
     size_t capacity = HTABLE_SIZES[htable->cap_index];
-    htable->array = _ifj15_malloc(ULIST, sizeof(ulist_t*)*capacity, false);
+    htable->array = _ifj15_malloc(ARRAY, sizeof(ulist_str_t*)*capacity, false);
     for (size_t i = 0; i < old_capacity; ++i) {
         if (old_array[i] != NULL) {
-            unode_t* unode = old_array[i]->front;
+            unode_str_t* unode = old_array[i]->front;
             while (unode != NULL) {
-                htable_set(htable, (char*)unode->key, unode->item);
+                htable_set(htable, unode->key, unode->item);
                 unode = unode->next;
             }
-            _ulist_free(old_array[i]);
+            _ulist_str_free(old_array[i]);
         }
     }
     free(old_array);
 }
 
-static unsigned int hash(char* key, size_t cap_index) {
+static unsigned int hash(str_t* key, size_t cap_index) {
     size_t i = 0;
     int hash = 0;
-    while (key[i] != 0) {
-        hash = key[i] + (31 * hash);
+    while (key->c_str[i] != 0) {
+        hash = key->c_str[i] + (31 * hash);
         ++i;
     }
     return (hash & 0x7fffffff) % HTABLE_SIZES[cap_index];

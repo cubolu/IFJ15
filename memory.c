@@ -50,11 +50,23 @@ void _ifj15_free(void* ptr, ptr_t ptr_type) {
         case HTABLE:
             _htable_free(ptr);
             break;
+        case VECTOR:
+            _vector_free(ptr);
+            break;
+        case STRING:
+            _str_free(ptr);
+            break;
+        case SCANNER:
+            _scanner_free(ptr);
+            break;
+        case FILEP:
+            ifj15_fclose(ptr);
+            break;
         case ULIST:
             _ulist_free(ptr);
             break;
-        case VECTOR:
-            _vector_free(ptr);
+        case ULISTSTR:
+            _ulist_str_free(ptr);
             break;
         default:
             free(ptr);
@@ -75,6 +87,20 @@ void ifj15_free_all() {
     }
     free(ifj15_ptable->array);
     free(ifj15_ptable);
+}
+
+FILE* ifj15_fopen(const char* filename, const char* mod) {
+    FILE* fp;
+    fp = fopen(filename, mod);
+    if (fp == NULL)
+        error("Failed to open file", ERROR_INTERNAL);
+    ptable_insert(ifj15_ptable, fp, FILEP);
+    return fp;
+}
+void ifj15_fclose(FILE* fp) {
+    ptable_pop(ifj15_ptable, fp);
+    if (fclose(fp) == EOF)
+        error("Failed to close file", ERROR_INTERNAL);
 }
 
 static unsigned int pow2(unsigned int pow) {
