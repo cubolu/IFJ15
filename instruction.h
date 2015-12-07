@@ -165,6 +165,9 @@ struct _inst_t {
         str_t* op2_str_val;
     };
     size_t res_addr;
+#ifndef NDEBUG
+    size_t line;
+#endif
 };
 
 union _data_seg_t {

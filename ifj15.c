@@ -1,6 +1,7 @@
 #include "common.h"
 #include "memory.h"
 #include "str.h"
+#include "vector.h"
 #include "scanner.h"
 #include "parser.h"
 #include "generator.h"
@@ -17,6 +18,7 @@ int main(int argc, const char *argv[]) {
     FILE* input_file = ifj15_fopen(argv[1], "r");
 
     scanner_t* s = scanner_init(input_file);
+    dLineNumInit(s);
     symbol_table_init();
     generator_init();
     parse_program(s);

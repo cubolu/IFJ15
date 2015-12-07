@@ -53,7 +53,12 @@ struct _vector_data_seg_t {
 #include "symbol.h"
 #include "htable.h"
 #include "token.h"
+#include "scanner.h"
 #include "instruction.h"
+
+#ifndef NDEBUG
+scanner_t* line_stream;
+#endif
 
 #define vector_init1(type) _vector_init(type, 8, true)
 #define vector_init2(type, start_cap) _vector_init(type, start_cap, true)

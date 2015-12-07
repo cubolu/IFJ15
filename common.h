@@ -33,4 +33,21 @@ typedef union _data_seg_t data_seg_t;
 
 typedef bool (*vector_compare)(char vector_item);
 
+// NDEBUG disable the debug mode
+#ifdef NDEBUG
+
+#define dLineNumInit(scanner)
+#define dAddLineNum(inst_name)
+//...
+
+// DEBUG MODE
+#else
+
+//set line number stream
+#define dLineNumInit(scanner) line_stream = scanner
+//add line numer to instruction in code segment
+#define dAddLineNum(inst_name) inst_name.line = line_stream->line
+
+#endif //end NDEBUG
+
 #endif
