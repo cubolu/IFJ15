@@ -1,6 +1,7 @@
 CC = gcc
-CFLAGS = -std=c11 -Wall
+CFLAGS = -std=c11 -Wall -Wextra
 DBGFLAGS = -g
+GPFLAGS = -pg
 LOGIN = xabcde00
 CHECK = `pkg-config --cflags --libs check`
 
@@ -16,7 +17,7 @@ ifj15: $(OBJ)
 .PHONY: clean pack debug test
 
 clean:
-	rm -f ifj15 test/test *.o $(LOGIN).zip
+	rm -f ifj15 test/test *.o *.gch gmon.out $(LOGIN).zip
 	@cd test; make clean
 
 pack:
@@ -27,5 +28,8 @@ test: ifj15
 
 debug: CFLAGS+= $(DBGFLAGS)
 debug: remake
+
+gprof: CFLAGS+= $(GPFLAGS) $(DBGFLAGS)
+gprof: remake
 
 remake: clean ifj15

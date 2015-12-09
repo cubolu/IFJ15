@@ -1,78 +1,122 @@
 #include "str.h"
-#include "memory.h"
 
-str * str_init(void)
-{
-    str * s;
-    s = _ifj15_malloc(STRING, sizeof (str), true);
-    s->str = malloc(STRING_SIZE_INC);
-    s->curr_len = 0;
-    s->mem_size = STRING_SIZE_INC;
+const size_t STR_START_CAP = 8;
 
-    s->str[0] = '\0';
-
+str_t * _str_init(bool ptable_insert) {
+    str_t * s;
+    s = _ifj15_malloc(STRING, sizeof(str_t), ptable_insert);
+    s->c_str = _ifj15_malloc(ARRAY, STR_START_CAP, false);
+    s->length = 0;
+    s->capacity = STR_START_CAP;
+    s->c_str[0] = '\0';
     return s;
 }
 
-void str_free(str * s)
-{
-    free(s->str);
+void _str_free(str_t* s) {
+    free(s->c_str);
     free(s);
 }
 
 
-void _str_rise(str * s)
-{
-    size_t newsize = s->mem_size + STRING_SIZE_INC;
-    //TODO osetrit selhani reallocu
-    s->str = realloc(s->str, newsize);
-    s->mem_size = newsize;
+void _str_double_size(str_t * s) {
+    size_t newcap = 2*s->capacity;
+    s->c_str = _ifj15_realloc(s->c_str, newcap, false);
+    s->capacity = newcap;
 }
 
-void str_append_char(str * s, char c)
-{
-    if (s->curr_len + 2 > s->mem_size) // need space for c and ending \0
-        _str_rise(s);
-
-    s->str[s->curr_len] = c;
-
-    s->str[++s->curr_len] = '\0';
+void _str_resize(str_t* s, size_t size) {
+    s->c_str = _ifj15_realloc(s->c_str, size, false);
+    s->capacity = size;
 }
 
-bool str_equals(str * s, char * s2)
+void str_append_char(str_t * s, char c) {
+    if (s->length + 2 > s->capacity) // need space for c and ending \0
+        _str_double_size(s);
+    s->c_str[s->length] = c;
+    s->c_str[++s->length] = '\0';
+}
+
+void str_append(str_t* s, char* cstr) {
+    size_t cstr_len = strlen(cstr);
+    if (s->length + cstr_len + 1 > s->capacity)
+        _str_resize(s, s->length + cstr_len + 1);
+    strcpy(s->c_str+s->length, cstr);
+}
+
+void str_copy(str_t* dest, const char* source) {
+    size_t s_len = strlen(source);
+    _str_resize(dest, s_len+1);
+    strcpy(dest->c_str, source);
+    dest->length = s_len;
+}
+
+bool _str_eq_char_char(char * s1, char * s2) {
+    return strcmp(s1, s2) == 0;
+}
+bool _str_eq_char_str(char * s1, str_t * s2) {
+    return strcmp(s1, s2->c_str) == 0;
+}
+bool _str_eq_str_char(str_t * s1, char * s2) {
+    return strcmp(s1->c_str, s2) == 0;
+}
+bool _str_eq_str_str(str_t * s1, str_t * s2) {
+    return strcmp(s1->c_str, s2->c_str) == 0;
+}
+
+int str_eq(str_t * s1, str_t * s2)
 {
-    return !(strcmp(s->str, s2));
+    return ( strcmp(s1->c_str, s2->c_str) == 0 ) ? 1 : 0;
+}
+
+int str_neq(str_t * s1, str_t * s2)
+{
+    return ( strcmp(s1->c_str, s2->c_str) != 0 ) ? 1 : 0;
+}
+
+int str_gt(str_t * s1, str_t * s2)
+{
+    return ( strcmp(s1->c_str, s2->c_str) > 0 ) ? 1 : 0;
+}
+
+int str_gt_eq(str_t * s1, str_t * s2)
+{
+    return ( strcmp(s1->c_str, s2->c_str) >= 0 ) ? 1 : 0;
+}
+
+int str_lt(str_t * s1, str_t * s2)
+{
+    return ( strcmp(s1->c_str, s2->c_str) < 0 ) ? 1 : 0;
+}
+
+int str_lt_eq(str_t * s1, str_t * s2)
+{
+    return ( strcmp(s1->c_str, s2->c_str) <= 0 ) ? 1 : 0;
 }
 
 // predpokladam, ze nemuze dojit k chybe pri prevodu, protoze format byl overen konecnym automatem
-double str_to_double(str *s)
-{
-    return strtod(s->str, NULL);
+double str_to_double(str_t *s) {
+    return strtod(s->c_str, NULL);
 }
 
 // predpokladam, ze nemuze dojit k chybe pri prevodu, protoze format byl overen konecnym automatem
-int str_to_int(str *s)
-{
-    return strtol(s->str, NULL, 10);
+int str_to_int(str_t *s) {
+    return strtol(s->c_str, NULL, 10);
 }
 
-void str_clear(str *s)
-{
-    if (s->curr_len == 0 && s->mem_size == STRING_SIZE_INC)
+void str_clear(str_t *s) {
+    if (s->length == 0)
         return;
 
-    //TODO osetrit selhani reallocu
-    s->str = realloc(s->str, STRING_SIZE_INC);
-    s->mem_size = STRING_SIZE_INC;
-    s->curr_len = 0;
-    s->str[0] = '\0';
+    s->c_str = _ifj15_realloc(s->c_str, STR_START_CAP, false);
+    s->capacity = STR_START_CAP;
+    s->length  = 0;
+    s->c_str[0] = '\0';
 }
 
-char str_last_char(str *s)
-{
-    if (s->curr_len == 0)
+char str_last_char(str_t *s) {
+    if (s->length == 0)
         return 0;
 
     else
-        return s->str[s->curr_len-1];
+        return s->c_str[s->length -1];
 }

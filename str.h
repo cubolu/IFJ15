@@ -3,29 +3,46 @@
 
 #include "common.h"
 
-#define STRING_SIZE_INC 8
+struct _str_t {
+    char * c_str;
+    size_t length;
+    size_t capacity;
+};
 
-typedef struct {
-    char * str;
-    size_t curr_len;
-    size_t mem_size;
-} str;
+#include "memory.h"
 
-str * str_init(void);
+#define str_init() _str_init(true)
 
-void str_free(str * s);
+#define str_equal(s1, s2) _Generic((s1),   \
+    char*: _Generic((s2),                   \
+        char*: _str_eq_char_char,           \
+        str_t*: _str_eq_char_str),          \
+    str_t*: _Generic((s2),                  \
+        char*: _str_eq_str_char,            \
+        str_t*: _str_eq_str_str))(s1,s2)
 
-void str_append_char(str * s, char c);
+int str_eq(str_t * s1, str_t * s2);
+int str_neq(str_t * s1, str_t * s2);
+int str_gt(str_t * s1, str_t * s2);
+int str_gt_eq(str_t * s1, str_t * s2);
+int str_lt(str_t * s1, str_t * s2);
+int str_lt_eq(str_t * s1, str_t * s2);
 
-bool str_equals(str * s, char * s2);
+str_t * _str_init(bool ptable_insert);
+void _str_free(str_t * s);
 
-double str_to_double(str *s);
+void _str_resize(str_t* s, size_t size);
 
-int str_to_int(str *s);
-
-void str_clear(str *s);
-
-char str_last_char(str *s);
+void str_append_char(str_t * s, char c);
+void str_append(str_t*, char* cstr);
+void str_copy(str_t* dest, const char* source);
+bool _str_eq_char_char(char * s1, char * s2);
+bool _str_eq_char_str(char * s1, str_t * s2);
+bool _str_eq_str_char(str_t * s1, char * s2);
+bool _str_eq_str_str(str_t * s1, str_t * s2);
+double str_to_double(str_t *s);
+int str_to_int(str_t *s);
+void str_clear(str_t *s);
+char str_last_char(str_t *s);
 
 #endif // STR_H
-

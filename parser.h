@@ -1,19 +1,11 @@
 #ifndef PARSER_H
 #define PARSER_H
 
+#include "common.h"
 #include "token.h"
+#include "scanner.h"
+#include "vector.h"
 
-typedef struct {
-    FILE * file;
-    str * s;
-    size_t line;
-} parser;
+void parse_program(scanner_t* s);
 
-
-parser * parser_init(char * filename);
-
-token_t parser_next_token(parser * p);
-
-
-#endif // PARSER_H
-
+#endif
