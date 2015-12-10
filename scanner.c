@@ -292,14 +292,9 @@ token_t get_next_token(scanner_t * s)
             else if( str_last_char(s->str) == '0' && is_digit(c))
                 error("Incorrect representation of number", ERROR_LEX);
 
-            else if (c >= '1' && c <= '9')
+            else if (c >= '0' && c <= '9')
             {
                 state = SS_INT_PART_2;
-            }
-
-            else if (c == '0')
-            {
-                state = SS_INT_PART_1;
             }
 
             else if (c == '.')
@@ -404,7 +399,7 @@ token_t get_next_token(scanner_t * s)
                 state = SS_EXPONENCIAL_PART;
             }
 
-            else if(c == '.')
+            else if(c == '.' || c == '-' || c == '+')
                 error("Incorrect representation of number", ERROR_LEX);
 
             else
