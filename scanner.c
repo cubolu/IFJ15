@@ -455,6 +455,8 @@ token_t get_next_token(scanner_t * s)
                 state = SS_STRING_ESCAPE_HEX_1;
                 break;
             }
+            else
+                error("Non allowed character after backslash.", ERROR_LEX);
 
             state = SS_STRING;
             break;
