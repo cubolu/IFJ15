@@ -1,3 +1,4 @@
+
 #include "ial.h"
 #include "str.h"
 
@@ -9,7 +10,7 @@ int length(str_t * s)
 str_t * substr(str_t * s, int i, int n)
 {
     if (i > s->length)
-        return NULL;
+        error("Parameters of function substr: Out of range.", ERROR_RUNTIME);
 
     str_t * ret = str_init();
 

@@ -400,7 +400,7 @@ token_t get_next_token(scanner_t * s)
             }
 
             else if(c == '.' || c == '-' || c == '+')
-                error("Incorrect representation of number", ERROR_LEX);
+                error("Incorrect representation of number.", ERROR_LEX);
 
             else
             {
@@ -417,6 +417,10 @@ token_t get_next_token(scanner_t * s)
 
             if(c == '\\' )
                 state = SS_STRING_BACKSLASH;
+            else if (c == '\n')
+            {
+                error("Incorrect representation of string.", ERROR_LEX);
+            }
 
             else if(c == '"')
             {
