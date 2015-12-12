@@ -473,6 +473,10 @@ token_t get_next_token(scanner_t * s)
             if( is_hex(c) )
             {
                 hex_char |= hex_decode(c);
+                if (hex_char == 0)
+                {
+                    error("Escape sequence \\x00 is not allowed.", ERROR_LEX);
+                }
 
                 str_append_char(s->str, hex_char);
 
