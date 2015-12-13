@@ -80,6 +80,16 @@ void generate_param_push(size_t source) {
     vector_push(code_seg, curr_inst);
 }
 
+void generate_param_conv_push(size_t source, bool to_int, bool to_double) {
+    inst_t curr_inst = {.inst_code = INST_PUSH_VALUE};
+    if (to_int)
+        curr_inst.inst_code = INST_CONV_TO_INT_AND_PUSH_VALUE;
+    else if (to_double)
+        curr_inst.inst_code = INST_CONV_TO_DOUBLE_AND_PUSH_VALUE;
+    curr_inst.op1_addr = source;
+    vector_push(code_seg, curr_inst);
+}
+
 void generate_param_push_double(double val) {
     inst_t curr_inst = {.inst_code = INST_PUSH_DOUBLE};
     curr_inst.op1_double_val = val;

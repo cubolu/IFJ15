@@ -19,6 +19,7 @@ void generate_data_seg_restore(size_t restore_val);
 
 size_t generate_push();
 void generate_param_push(size_t source);
+void generate_param_conv_push(size_t source, bool to_int, bool to_double);
 void generate_param_push_double(double val);
 void generate_param_push_int(int val);
 void generate_param_push_string(str_t* val);

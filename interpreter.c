@@ -30,6 +30,7 @@ void run_program() {
     data_seg_t* op_3;
     data_seg_t push_value;
     data_seg_t empty_value = {.inst_addr = 0};
+    int scanf_ret_val;
     char string_buffer[256];
 
     while (1) {
@@ -318,6 +319,16 @@ void run_program() {
                 push_value = *op_left;
                 vector_push(data_seg, push_value);
                 break;
+            case INST_CONV_TO_DOUBLE_AND_PUSH_VALUE:
+                op_left = vector_at(data_seg, inst->op1_addr + curr_stack_frame_ptr);
+                push_value.double_val = (double)op_left->int_val;
+                vector_push(data_seg, push_value);
+                break;
+            case INST_CONV_TO_INT_AND_PUSH_VALUE:
+                op_left = vector_at(data_seg, inst->op1_addr + curr_stack_frame_ptr);
+                push_value.int_val = (int)op_left->double_val;
+                vector_push(data_seg, push_value);
+                break;
             case INST_PUSH_DOUBLE:
                 push_value.double_val = inst->op1_double_val;
                 vector_push(data_seg, push_value);
@@ -362,20 +373,29 @@ void run_program() {
 
             case INST_CIN_INT:
                 res_addr = vector_at(data_seg, inst->res_addr + curr_stack_frame_ptr);
-                //TODO: scanf wrong data type detection
-                scanf("%d", &(res_addr->int_val));
+                scanf_ret_val = scanf("%d", &(res_addr->int_val));
+                if (scanf_ret_val == 0)
+                    error("Input value is not an integer", ERROR_NUM_INPUT);
+                else if (scanf_ret_val == EOF)
+                    error("Read failure occurs", ERROR_NUM_INPUT);
                 break;
             case INST_CIN_DOUBLE:
                 res_addr = vector_at(data_seg, inst->res_addr + curr_stack_frame_ptr);
-                scanf("%lf", &(res_addr->double_val));
+                scanf_ret_val = scanf("%lf", &(res_addr->double_val));
+                if (scanf_ret_val == 0)
+                    error("Input value is not a floating-point number", ERROR_NUM_INPUT);
+                else if (scanf_ret_val == EOF)
+                    error("Read failure occurs", ERROR_NUM_INPUT);
                 break;
             case INST_CIN_STRING:
                 res_addr = vector_at(data_seg, inst->res_addr + curr_stack_frame_ptr);
                 str_t* new_string = str_init();
+                string_buffer[0] = '\0';
                 do {
-                    scanf("%s", string_buffer);
+                    string_buffer[254] = 0;
+                    scanf("%255s", string_buffer);
                     str_append(new_string, string_buffer);
-                } while (isspace(string_buffer[254]));
+                } while (string_buffer[254]!=0);
                 res_addr->str_val = new_string;
                 break;
 
@@ -499,7 +519,6 @@ void run_program() {
                 data_seg->size = inst->op1_addr + curr_stack_frame_ptr;
                 break;
             case INST_HALT:
-                warning("Halt!");
                 return;
 
             default:
