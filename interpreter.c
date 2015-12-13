@@ -392,9 +392,10 @@ void run_program() {
                 str_t* new_string = str_init();
                 string_buffer[0] = '\0';
                 do {
-                    scanf("%s", string_buffer);
+                    string_buffer[254] = 0;
+                    scanf("%255s", string_buffer);
                     str_append(new_string, string_buffer);
-                } while (isspace(string_buffer[254]));
+                } while (string_buffer[254]!=0);
                 res_addr->str_val = new_string;
                 break;
 
