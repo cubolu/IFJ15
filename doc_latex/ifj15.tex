@@ -14,6 +14,8 @@
 
 \usepackage{mathtools}
 
+\usepackage{alltt}
+
 
 \begin{document}
 
@@ -62,7 +64,7 @@ Interpret má podporovať nasledujúce dátové typy:
 \item double
 \end{itemize}
 
-Samozrejmosťou sú základné aritmetické operácie s uvedenými dátovými typmi. Okrem toho má interpret podporovať vetvenie \texttt{if - else} a cyklus \texttt{for}. Ďalším klúčovým slovom je \texttt{return}. Jednou z nevyhnutných častí akéhokoľvek programovacieho jazyka sú komentáre, náš interpret ich musí podporovať vo forme riadkových komentárov ( \texttt{//} ), ale i vo forme viacriadkových komentárov ( \texttt{/* \ldots */} ). 
+Samozrejmosťou sú základné aritmetické operácie s uvedenými dátovými typmi. Okrem toho má interpret podporovať vetvenie \texttt{if - else} a cyklus \texttt{for}. Ďalším klúčovým slovom je \texttt{return}. Jednou z nevyhnutných častí akéhokoľvek programovacieho jazyka sú komentáre, náš interpret ich musí podporovať vo forme riadkových komentárov ( \texttt{//} ), ale i vo forme viacriadkových komentárov ( \texttt{/* \ldots */} ). 
 Interpret by mal byť chopný spracovať základné aritmetické operátory \texttt{+}, \texttt{-}, \texttt{*}, \texttt{/} ako i relačné operátory \texttt{<}, \texttt{>}, \texttt{>=}, \texttt{<=}, \texttt{==}, \texttt{!=}.
 Interpret podporuje modifikátor \texttt{auto}
 
@@ -107,40 +109,50 @@ stavy, reálne sa nenachádzajúce v zdrovom kóde.
 %=============================================================================
 \subsection{Syntaktický a sémantický analyzátor}
 
-Fukčným jadrom interpretu je syntaktický analyzátor. Jednou z úloh je kontrola syntaktickej správnosti programu. Syntax a jej pravidlá sú definované pomocou LL gramatiky, čiže syntaxe jazyka. Ďalej prebieha sémantická kontrola. Úlohou sémantickej kontroly je napr. kontrolovať korektné použitie dátových typov. Hlavnou úlohou syntaktického analyzátora je v prípade správnosti zdrojového programu jeho preklad na postupnosť pseudoinštrukcií. V opačnom prípade dôjde ku syntaktickej chybe.
+Fukčným jadrom interpretu je syntaktický analyzátor. Jednou z úloh je kontrola syntaktickej správnosti programu. Syntax a jej pravidlá sú definované pomocou LL gramatiky, čiže syntaxe jazyka. Ďalej prebieha sémantická kontrola. Úlohou sémantickej kontroly je napr. kontrolovať korektné použitie dátových typov. Hlavnou úlohou syntaktického analyzátora je v prípade správnosti zdrojového programu jeho preklad na postupnosť pseudoinštrukcií. V opačnom prípade dôjde ku syntaktickej chybe.
 
-Analyzátor si pomocou funkcie \verb+token_t get_next_token(scanner* s)+ načíta jednotlivé tokeny (dodávané lexikálnym analyzátorom) zo zdrojového súboru. Tie následne spracováva pomocou metód syntaktickej analýzy a vytvára pseudokód.
+Analyzátor si pomocou funkcie \verb+token_t get_next_token(scanner* s)+ načíta jednotlivé tokeny (dodávané lexikálnym analyzátorom) zo zdrojového súboru. Tie následne spracováva pomocou metód syntaktickej analýzy a vytvára pseudokód.
 
 V našej implementácií používame dve rôžne tabuľky symbolov. Jedna je globálna tabuľka funkcií, druhá je zásobník tabuliek premenných. So zásobnikom pracujeme tak, že pri vstupe do nového bloku vytvoríme novú tabuľku premenných pre ten blok, a vložíme ju na vrchol zásobníku. Pri odchode z bloku, tabuľku premenných na vrchole zásobníku odstránime a dealokujeme.
 
-Syntaktická analýza prebieha metódou rekurzívneho zostupu a využíva pravidlá LL gramatiky. 
+Syntaktická analýza prebieha metódou rekurzívneho zostupu a využíva pravidlá LL gramatiky. 
 
-\begin{verbatim}
-LL gramatika 
-TODO jebou epsilony
-TODO jebou epsilony
-TODO jebou epsilony
-TODO jebou epsilony
-TODO jebou epsilony
-TODO jebou epsilony
-TODO jebou epsilony
-TODO jebou epsilony
-TODO jebou epsilony
-TODO jebou epsilony
-TODO jebou epsilony
-TODO jebou epsilony
-TODO jebou epsilony
+\subsection{LL gramatika}
+\begin{alltt}
 
-\end{verbatim}
+funcs -> funcHead funcs | EOF
+varDef -> auto id = expr | type id varDefFollow
+varDefFollow -> = asgnFollow | \(\epsilon\)
+type -> int_t | double_t | string_t
+funcHead -> type id ( paramSpec ) funcBody
+	funcBody -> ; | block
+paramSpec -> type id paramSpecFollow | \(\epsilon\)
+	paramSpecFollow -> , type id paramSpecFollow | \(\epsilon\)
+term -> int | double | string | id
+paramList -> term paramListFollow | \(\epsilon\)
+	paramListFollow -> , term paramListFollow | \(\epsilon\)
+block -> { stmts }
+asgn -> id = asgnFollow
+asgnFollow -> expr | id ( paramList )
+ifClause -> if ( expr ) block else block
+forClause -> for ( varDef ; expr; asgn ) block
+coutStmt -> cout << term coutStmtFollow
+coutStmtFollow -> << term coutStmtFollow | \(\epsilon\) 
+cinStmt -> cin >> id cinStmtFollow
+cinStmtFollow -> >> id coutStmtFollow | \(\epsilon\)
+stmt -> varDef; | asgn; | return expr; | coutStmt; | cinStmt; | block\\ | ifClause | forClause
+stmts -> stmt stmts | \(\epsilon\)
+
+\end{alltt}
 
 Vstupný bod syntaktického analyzátora je funkcia \verb+parse_program+, ktorá volá funkciu \verb+parse_funcs+, ktorá slúži ako vstupný bod pre LL gramatiku. Následne pomocou rekurzívnych volaní funkcií \verb+parse_*+, kde \verb+*+ zodpovedá názvom produkcií v LL gramatike. Zároveň s syntaktickou analýzou sa vykonáva sémantická analýza v príslušných funkciách produkcií. Funkcia \verb+parse_expr+ slúží na syntaktickú a sémantickú analýzu výrazov a zároveň ako vstupný bod pre precedenčný syntaktický analyzátor. Zároveň so syntaktickou a sémantickou analýzou sa vykonáva generovanie kódu.
 
 %=============================================================================
 \subsection{Precedenčná analýza}
 
-Precedenčná analýza slúži ku vyhodnocovaniu výrazov. Kedykoľvek syntakt. analyzátor narazí v pravidle na výraz, je volaná preced. analýza, ktorá mu následne vracia spracovaný výraz. 
+Precedenčná analýza slúži ku vyhodnocovaniu výrazov. Kedykoľvek syntakt. analyzátor narazí v pravidle na výraz, je volaná preced. analýza, ktorá mu následne vracia spracovaný výraz. 
 
-Ku svojej činnosti potrebuje a využíva lexikálny analyzátor, ktorý jej dodáva tokeny. Pri aplikácii precedenčných pravidiel sú priamo generované inštrukcie. Syntaktické pravidlá pre precedenčnú analýzu sú jej základom a spolu s precedenčnou tabuľkou sú zadefinované nižšie. 
+Ku svojej činnosti potrebuje a využíva lexikálny analyzátor, ktorý jej dodáva tokeny. Pri aplikácii precedenčných pravidiel sú priamo generované inštrukcie. Syntaktické pravidlá pre precedenčnú analýzu sú jej základom a spolu s precedenčnou tabuľkou sú zadefinované nižšie. 
 \begin{verbatim}
 Expression grammar (missing function calls, rel ops)
 	expr -> expr < expr | expr > expr | expr <= expr | expr >= expr | expr != expr
@@ -151,6 +163,7 @@ Expression grammar (missing function calls, rel ops)
 \end{verbatim}
 
 \begin{table}
+\begin{center}
 \begin{tabular}{ | l | l | l | l | l | l | l | l |  }
 \hline
             & \verb+<>=+& \verb;+-; & \verb+*/+ & \verb+(+  & \verb+)+  & \verb+id+ & \verb+$+ \\ \hline
@@ -165,14 +178,15 @@ Expression grammar (missing function calls, rel ops)
 \end{tabular}
 \caption{Precedenční tabulka}
 \label{table:prec}
+\end{center}
 \end{table}
 
-Samotný algoritmus je tvorený, postupným načítavaním jednotlivých tokenov a vykonávaním operácie určenej precedenčnou tabuľkou s využitím zásobníku. Jednotlivé znaky v tabuľke vyjadrujú operácie push(\verb+<+), reduce(\verb+>+), push only(\verb+=+) a nedovolenú kombináciu(\verb+E+). Operácia je z tabuľky vybraná na základe načítaného terminálu a posledného terminálu na zásobníku. Takže dochádza ku postupnému vyhodnocovaniu a redukovaniu symbolov na zásobníku pomocou pravidiel precedenčnej tabuľky. Pre potreby algoritmu bol implementovaný zásobník, ktorý predstavuje pomocnú dátovú štruktúru.
+Samotný algoritmus je tvorený, postupným načítavaním jednotlivých tokenov a vykonávaním operácie určenej precedenčnou tabuľkou s využitím zásobníku. Jednotlivé znaky v tabuľke vyjadrujú operácie push(\verb+<+), reduce(\verb+>+), push only(\verb+=+) a nedovolenú kombináciu(\verb+E+). Operácia je z tabuľky vybraná na základe načítaného terminálu a posledného terminálu na zásobníku. Takže dochádza ku postupnému vyhodnocovaniu a redukovaniu symbolov na zásobníku pomocou pravidiel precedenčnej tabuľky. Pre potreby algoritmu bol implementovaný zásobník, ktorý predstavuje pomocnú dátovú štruktúru.
 
 
 %=============================================================================
 \subsection{Interpret}
-Úlohou interpretu je vykonávanie programu, zapísaného pomocou pseudoinštrukcií. Interpret postupne lineárne prechádza a vykonáva postupnosť inštrukcií. Ako pomocnú dátovú štuktúru využíva zásobník, kde uchováva potrebné dáta, premenné, medzivýsledky operácií a riadiace hodnoty. Naviac umožňuje aj nelineárny posun vo vektore inštrukcií pomocou skokových inštrukcií. Jazyk IFJ15 umožňuje aj volanie funkcií, z toho dôvodu bolo potrebné implementovať mechanizmus volania ako súčasť interpreteru. Výsledné riešenie vytvorí nový funkčný rámec na zásobníku dát a následne opäť lineárne vykonáva postupnosť pseudoinštrukcií. Pri návrate z funkcie je obnovený funkčný rámec volajúcej funkcie a návratová hodnota je predaná na vrchole zásobníku. Vstupná funkcia do interpretovaného programu je funkcia \texttt{main}, ktorej adresa je počiatočnou adresou pseudoinštrukcie pri začatí vykonávania programu.
+Úlohou interpretu je vykonávanie programu, zapísaného pomocou pseudoinštrukcií. Interpret postupne lineárne prechádza a vykonáva postupnosť inštrukcií. Ako pomocnú dátovú štuktúru využíva zásobník, kde uchováva potrebné dáta, premenné, medzivýsledky operácií a riadiace hodnoty. Naviac umožňuje aj nelineárny posun vo vektore inštrukcií pomocou skokových inštrukcií. Jazyk IFJ15 umožňuje aj volanie funkcií, z toho dôvodu bolo potrebné implementovať mechanizmus volania ako súčasť interpreteru. Výsledné riešenie vytvorí nový funkčný rámec na zásobníku dát a následne opäť lineárne vykonáva postupnosť pseudoinštrukcií. Pri návrate z funkcie je obnovený funkčný rámec volajúcej funkcie a návratová hodnota je predaná na vrchole zásobníku. Vstupná funkcia do interpretovaného programu je funkcia \texttt{main}, ktorej adresa je počiatočnou adresou pseudoinštrukcie pri začatí vykonávania programu.
 
 %=============================================================================
 \subsection{Riešenie vybraných algoritmov}
@@ -191,13 +205,13 @@ Ide o radiaci algoritmus s najmenšou priemernou zložitosťou na reálnych dát
 %=============================================================================
 \subsection{Popis riešenia}
 
-Pretože na zložitosť projektu a jeho náročnosť na čas, ale i schopnosti sme boli upozornení dopredu, v dostatočnom predstihu sme si zložili tým. Mesiac po začiatku semestra sme si stanovili pravidelné týždenné schôdzky, kde sme riešili vykonanú prácu, analyzovali postup práce a jednotlivé problémy. 
+Pretože na zložitosť projektu a jeho náročnosť na čas, ale i schopnosti sme boli upozornení dopredu, v dostatočnom predstihu sme si zložili tým. Mesiac po začiatku semestra sme si stanovili pravidelné týždenné schôdzky, kde sme riešili vykonanú prácu, analyzovali postup práce a jednotlivé problémy. 
 
-Praktická tvorba kódu prebiehala s využitím verzovacieho nástroja Git, na komunikáciu slúžila uzavretá skupina na Facebook-u. Komunikačný kanál nebol zvolený vhodne, čo sa ukázalo v okamihu keď sa zväčšil objem komunikácie a stala sa neprehľadnou. Následne sme prešli na Slack. Pre potreby zdieľania informácií sme využili Google Docs.
+Praktická tvorba kódu prebiehala s využitím verzovacieho nástroja Git, na komunikáciu slúžila uzavretá skupina na Facebook-u. Komunikačný kanál nebol zvolený vhodne, čo sa ukázalo v okamihu keď sa zväčšil objem komunikácie a stala sa neprehľadnou. Následne sme prešli na Slack. Pre potreby zdieľania informácií sme využili Google Docs.
 
-Práca na vybraných jednotlivých častiach projektu prebiehala paralelne, naopak iné časti na seba boli úzko naviazané a s vývojom sa čakalo, resp. vývoj týchto častí mal na starosti jeden človek pre uľahčenie tvorby kódu a celistvosť práce. 
+Práca na vybraných jednotlivých častiach projektu prebiehala paralelne, naopak iné časti na seba boli úzko naviazané a s vývojom sa čakalo, resp. vývoj týchto častí mal na starosti jeden človek pre uľahčenie tvorby kódu a celistvosť práce. 
 
-Mnohé časti implementácie boli predmetom diskusií (napr. forma a obsah tokenov predávaných lexikálnym analyzátorom), naopak iné časti boli plne v kompetencii daného člena týmu. 
+Mnohé časti implementácie boli predmetom diskusií (napr. forma a obsah tokenov predávaných lexikálnym analyzátorom), naopak iné časti boli plne v kompetencii daného člena týmu. 
 
 \subsubsection{Rozdelenie práce}
 \begin{description}
@@ -209,13 +223,13 @@ Mnohé časti implementácie boli predmetom diskusií (napr. forma a obsah toke
 
 \subsubsection{Metriky kódu}
 \paragraph{Počet súborov:} 31
-\paragraph{Počet riadkov zdrojového kódu:} 5279 //TODO
-\paragraph{Veľkosť statických dát:} 
-\paragraph{Veľkosť spustiteľného súboru:}
+\paragraph{Počet riadkov zdrojového kódu:} 5405
+\paragraph{Veľkosť statických dát:} 1204B
+\paragraph{Veľkosť spustiteľného súboru:} 85508B
 
 %=============================================================================
 \subsection{Záver}
-Hoci šlo len o školský projekt, museli sme sa vysporiadať s rovnakými problémami aké sa vyskytujú v každom komerčnom projekte, či lepšie povedané v reálnom prostredí. Stratégia vývojového procesu, medziľudská komunikácia, uchovávanie a zdieľanie informácií a mnoho ďalších problémov nám prinieslo mnoho užitočných skúseností. 
+Hoci šlo len o školský projekt, museli sme sa vysporiadať s rovnakými problémami aké sa vyskytujú v každom komerčnom projekte, či lepšie povedané v reálnom prostredí. Stratégia vývojového procesu, medziľudská komunikácia, uchovávanie a zdieľanie informácií a mnoho ďalších problémov nám prinieslo mnoho užitočných skúseností. 
 
 \subsection{Literatúra}
 \begin{thebibliography}{Per00}
