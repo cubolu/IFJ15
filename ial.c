@@ -1,3 +1,4 @@
+
 #include "ial.h"
 #include "str.h"
 
@@ -8,12 +9,12 @@ int length(str_t * s)
 
 str_t * substr(str_t * s, int i, int n)
 {
-    if (i > s->length)
-        return NULL;
+    if ( (unsigned int) i > s->length || n < 0)
+        error("Parameters of function substr: Out of range.", ERROR_RUNTIME);
 
     str_t * ret = str_init();
 
-    if (n+i > s->length)
+    if ( (size_t) n+i > s->length)
         n = s->length-i;
 
     _str_resize(ret, n+1);
@@ -68,7 +69,7 @@ int find(str_t * s, str_t * search)
 
 
     //Go through the string
-    int i = pattlen-1;
+    size_t i = pattlen-1;
 
     while (i < s->length)
     {
