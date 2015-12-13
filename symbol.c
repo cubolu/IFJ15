@@ -67,8 +67,11 @@ bool is_equal_paramlist(ulist_str_t* paramList1, ulist_str_t* paramList2) {
 bool is_equal_paramtypes(vector_int_t* paramTypes, ulist_str_t* paramList) {
     int iter1 = paramTypes->size -1;
     unode_str_t* iter2 = paramList->front;
+    e_data_t iter1_type;
     while (iter1 >= 0 && iter2 != NULL) {
-        if((e_data_t)vector_at(paramTypes, iter1) != iter2->item.type)
+        iter1_type = vector_at(paramTypes, iter1);
+        if((iter1_type == STRING_DT || iter2->item.type == STRING_DT) &&
+            iter1_type != iter2->item.type)
             return false;
         --iter1;
         iter2 = iter2->next;

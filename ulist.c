@@ -4,14 +4,14 @@ unode_t* unode_init(void* key, ptr_t item);
 unode_str_t* unode_str_init(str_t* key, symbol_t item);
 
 ulist_t* _ulist_init(bool ptable_insert) {
-    ulist_t* ulist = _ifj15_malloc(SIMPLE, sizeof(ulist_t), ptable_insert);
+    ulist_t* ulist = _ifj15_malloc(ULIST, sizeof(ulist_t), ptable_insert);
     ulist->front = NULL;
     ulist->back = NULL;
     return ulist;
 }
 
 ulist_str_t* _ulist_str_init(bool ptable_insert) {
-    ulist_str_t* ulist = _ifj15_malloc(SIMPLE, sizeof(ulist_str_t),
+    ulist_str_t* ulist = _ifj15_malloc(ULISTSTR, sizeof(ulist_str_t),
                                        ptable_insert);
     ulist->front = NULL;
     ulist->back = NULL;

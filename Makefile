@@ -1,6 +1,7 @@
 CC = gcc
-CFLAGS = -std=c11 -Wall -Wextra
+CFLAGS = -std=c11 -Wall -Wextra -DNDEBUG
 DBGFLAGS = -g
+DBGINFO = -UNDEBUG
 GPFLAGS = -pg
 LOGIN = xabcde00
 CHECK = `pkg-config --cflags --libs check`
@@ -21,12 +22,12 @@ clean:
 	@cd test; make clean
 
 pack:
-	zip $(LOGIN).zip *.c *.h Makefile
+	zip $(LOGIN).zip *.c *.h Makefile rozdeleni
 
 test: ifj15
 	@cd test; make run
 
-debug: CFLAGS+= $(DBGFLAGS)
+debug: CFLAGS+= $(DBGFLAGS) $(DBGINFO)
 debug: remake
 
 gprof: CFLAGS+= $(GPFLAGS) $(DBGFLAGS)

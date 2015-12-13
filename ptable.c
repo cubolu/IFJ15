@@ -1,9 +1,8 @@
 #include "ptable.h"
 
-typedef enum {UP, DOWN} resize_t;
-const size_t PTABLE_START_POW = 5;
+const size_t PTABLE_START_POW = 7;
 
-void ptable_resize(ptable_t* ptable, resize_t resize);
+void ptable_resize(ptable_t* ptable);
 static size_t hash(const void* key, size_t capacity_pow);
 static unsigned int pow2(unsigned int pow);
 
@@ -28,8 +27,8 @@ void _ptable_free(ptable_t* ptable) {
 
 void ptable_insert(ptable_t* ptable, void* ptr, ptr_t type) {
     ++(ptable->size);
-    if (ptable->size > 10*pow2(ptable->capacity_pow))
-        ptable_resize(ptable, UP);
+    if (ptable->size > 2*pow2(ptable->capacity_pow))
+        ptable_resize(ptable);
     size_t hash_code = hash(ptr, ptable->capacity_pow);
     if (ptable->array[hash_code] == NULL)
         ptable->array[hash_code] = _ulist_init(false);
@@ -38,21 +37,18 @@ void ptable_insert(ptable_t* ptable, void* ptr, ptr_t type) {
 
 ptr_t ptable_pop(ptable_t* ptable, void* ptr) {
     --(ptable->size);
-    if (ptable->size < 2*pow2(ptable->capacity_pow)
-        && ptable->capacity_pow > PTABLE_START_POW)
-        ptable_resize(ptable, DOWN);
+    //if (ptable->size < 2*pow2(ptable->capacity_pow)
+    //    && ptable->capacity_pow > PTABLE_START_POW)
+    //    ptable_resize(ptable, DOWN);
     size_t hash_code = hash(ptr, ptable->capacity_pow);
     if (ptable->array[hash_code] == NULL)
         error("ptable_pop: Failed to find searched for item", ERROR_INTERNAL);
     return ulist_pop(ptable->array[hash_code], ptr);
 }
 
-void ptable_resize(ptable_t* ptable, resize_t resize) {
+void ptable_resize(ptable_t* ptable) {
     size_t old_capacity = pow2(ptable->capacity_pow);
-    if (resize == UP)
-        ptable->capacity_pow += 1;
-    else
-        ptable->capacity_pow -= 1;
+    ptable->capacity_pow += 2;
 
     ulist_t** old_array = ptable->array;
     ptable->array = _ifj15_calloc(ARRAY, sizeof(ulist_t*)*pow2(ptable->capacity_pow), false);

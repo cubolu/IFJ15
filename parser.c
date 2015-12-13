@@ -283,11 +283,15 @@ void parse_block(bool new_scope) {
     switch(next_token.type) {
         case TT_BLOCK_START:
             match(TT_BLOCK_START);
-            if (new_scope)
+            bool emptyBlock = false;
+            if (next_token.type == TT_BLOCK_END)
+                emptyBlock = true;
+            if (new_scope && !emptyBlock)
                 var_table_scope_enter();
             parse_stmts();
             match(TT_BLOCK_END);
-            var_table_scope_exit();
+            if (!new_scope || (new_scope && !emptyBlock))
+                var_table_scope_exit();
             break;
         default:
             error("Syntactic error: Failed to parse the program", ERROR_SYN);
