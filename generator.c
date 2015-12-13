@@ -444,10 +444,14 @@ expression_t* op_left, expression_t* op_right, \
 bool op_l_convert, bool op_r_convert) {
     double op1 = (op_l_convert) ? (double)op_left->int_val : op_left->double_val;
     double op2 = (op_r_convert) ? (double)op_right->int_val : op_right->double_val;
+    if (oper == OP_ARITH_DIVIDE && op2 == 0)
+        error("Division by zero", ERROR_DIVZERO);
     return_arith(oper, op1, op2);
 }
 
 int solve_arith_IL_IL(op_arithmetic_t oper, \
 expression_t* op_left, expression_t* op_right) {
+    if (oper == OP_ARITH_DIVIDE && op_right->int_val == 0)
+        error("Division by zero", ERROR_DIVZERO);
     return_arith(oper, op_left->int_val, op_right->int_val);
 }

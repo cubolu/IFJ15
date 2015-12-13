@@ -261,13 +261,13 @@ expression_t parse_asgnFollow(symbol_t* var) {
                 if(var->type == DOUBLE_DT)
                     generate_mov_double(var->addr, expr.double_val);
                 else
-                    generate_mov_double(var->addr, (int)expr.double_val);
+                    generate_mov_int(var->addr, (int)expr.double_val);
                 break;
             case INT_LIT_DT:
                 if(var->type == INT_DT)
                     generate_mov_int(var->addr, expr.int_val);
                 else
-                    generate_mov_int(var->addr, (double)expr.int_val);
+                    generate_mov_double(var->addr, (double)expr.int_val);
                 break;
             case STRING_LIT_DT:
                 generate_mov_string(var->addr, expr.str_val);
