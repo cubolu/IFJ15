@@ -233,14 +233,14 @@ void set_jump_addr(size_t inst_addr, size_t dest) {
     inst->res_addr = dest;
 }
 
-void generate_call(size_t dest, size_t param_cnt) {
+void generate_call(symbol_t* func, size_t param_cnt) {
     inst_t curr_inst = {.inst_code = INST_CALL};
     //store return address
     curr_inst.op1_addr = get_code_seg_top() + 1;
     //store count
     curr_inst.op2_addr = param_cnt;
     //set function address
-    curr_inst.res_addr = dest;
+    curr_inst.func = func;
     vector_push(code_seg, curr_inst);
 }
 

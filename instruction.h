@@ -166,7 +166,10 @@ struct _inst_t {
         int op2_int_val;
         str_t* op2_str_val;
     };
-    size_t res_addr;
+    union {
+        size_t res_addr;
+        symbol_t* func;
+    };
 #ifndef NDEBUG
     size_t line;
 #endif

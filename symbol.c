@@ -24,8 +24,11 @@ symbol_t* func_table_find(str_t* name) {
 
 void var_table_add(symbol_t* var) {
     symbol_t* prevEntry = htable_get(curr_symtable, var->name);
+    symbol_t* funcEntry = func_table_find(var->name);
     if (prevEntry != NULL)
         error("Variable redefinition", ERROR_SEM);
+    else if (funcEntry != NULL)
+        error("Variable name same as an existing function", ERROR_SEM);
     else
         htable_set(curr_symtable, var->name, *var);
 }

@@ -446,8 +446,11 @@ void run_program() {
                 //push return address
                 push_value.inst_addr = inst->op1_addr;
                 vector_push(data_seg, push_value);
-                //call function at address inst->res_addr
-                inst_ptr = inst->res_addr - 1; //-1 because of ++inst_ptr at the end
+                //call function
+                if (inst->func->def)
+                    inst_ptr = inst->func->addr - 1; //-1 because of ++inst_ptr at the end
+                else
+                    error("Function call for an undefined function", ERROR_SEM);
                 //change stack frame
                 curr_stack_frame_ptr = size - 1;
                 break;

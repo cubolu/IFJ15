@@ -180,8 +180,6 @@ expression_t parse_asgnFollow(symbol_t* var) {
                 symbol_t* func_def = func_table_find(curr_token.str);
                 size_t return_value_addr;
                 if (func_def){
-                    if (!func_def->def)
-                        error("Function call for an undefined function", ERROR_SEM);
                     //alocate space for return value
                     return_value_addr = generate_call_init();
                 } else {
@@ -193,7 +191,7 @@ expression_t parse_asgnFollow(symbol_t* var) {
                 func_call_t* func_call = func_call_finish();
                 if (!is_valid_func_call(func_call, func_def))
                     error("Bad function call parameters types/count", ERROR_TYPE_COMPAT);
-                generate_call(func_def->addr, param_count);
+                generate_call(func_def, param_count);
                 expr.type = func_def->type;
                 expr.addr = return_value_addr;
                 cached_identificator.type = TT_NONE;
@@ -543,6 +541,8 @@ void parse_funcBody(symbol_t* funcRef) {
             break;
         case TT_BLOCK_START:
             func = func_table_find(func_get_name());
+            if (func->def)
+                error("Redefinition of a function", ERROR_SEM);
             func->def = true; //function is defined
             func->addr = get_code_seg_top();
             var_table_scope_enter();

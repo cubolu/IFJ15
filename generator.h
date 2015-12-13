@@ -49,7 +49,7 @@ void generate_neg_cond_jump(size_t dest, size_t source);
 void set_jump_addr(size_t inst_addr, size_t dest);
 
 #define generate_call_init() generate_push()
-void generate_call(size_t dest, size_t param_cnt);
+void generate_call(symbol_t* func, size_t param_cnt);
 void generate_return(size_t source, size_t param_cnt);
 void generate_return_double(double val, size_t param_cnt);
 void generate_return_int(int val, size_t param_cnt);
