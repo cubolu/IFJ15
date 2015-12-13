@@ -94,32 +94,29 @@ int find(str_t * s, str_t * search)
     return -1;
 }
 
-void _swap(char array[], int left, int right)
+void _quicksort(char array[], int left_begin, int right_begin)
 {
-    int tmp = array[right];
-    array[right] = array[left];
-    array[left] = tmp;
-}
+    char pivot = array[(left_begin + right_begin) / 2];
+    char tmp;
+    int left_index, right_index;
+    left_index = left_begin;
+    right_index = right_begin;
 
+    do {
+        while (array[left_index] < pivot && left_index < right_begin)
+            left_index++;
+        while (array[right_index] > pivot && right_index > left_begin)
+            right_index--;
 
-void _quicksort(char array[], int left, int right)
-{
-    if(left < right)
-    {
-        int boundary = left;
-
-        for(int i = left + 1; i < right; i++)
-        {
-            if(array[i] < array[left])
-                _swap(array, i, ++boundary);
+        if (left_index <= right_index) {
+            tmp = array[left_index];
+            array[left_index++] = array[right_index];
+            array[right_index--] = tmp;
         }
+    } while (left_index < right_index);
 
-        _swap(array, left, boundary);
-
-        _quicksort(array, left, boundary);
-
-        _quicksort(array, boundary + 1, right);
-    }
+    if (right_index > left_begin) _quicksort(array, left_begin, right_index);
+    if (left_index < right_begin) _quicksort(array, left_index, right_begin);
 }
 
 //Quicksort
@@ -129,7 +126,7 @@ str_t * sort(str_t * orig)
 
     str_copy(s, orig->c_str);
 
-    _quicksort(s->c_str, 0, s->length);
+    _quicksort(s->c_str, 0, s->length-1);
 
     return s;
 }
