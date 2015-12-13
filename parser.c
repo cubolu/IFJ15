@@ -470,7 +470,7 @@ void parse_forClause() {
             match(TT_SEMICOLON);
             //loop start
             loop_start = get_code_seg_top();
-            generate_data_seg_restore();
+            generate_data_seg_restore(store_stack_frame());
             expr = parse_expr();
             match(TT_SEMICOLON);
             //gen jc
@@ -520,11 +520,12 @@ void parse_forClause() {
             //jump to assignment
             generate_jump(asgn_start);
             //loop end
-            load_stack_frame(block_frame);
             loop_end = get_code_seg_top();
             if (jmp_used)
                 set_jump_addr(jc_addr, loop_end);
             break;
+            load_stack_frame(block_frame);
+            generate_data_seg_restore(block_frame);
         default:
             error("Syntactic error: Failed to parse the program", ERROR_SYN);
     }
@@ -640,6 +641,7 @@ void parse_ifClause() {
             stack_frame = store_stack_frame();
             parse_block(true);
             load_stack_frame(stack_frame);
+            generate_data_seg_restore(stack_frame);
             jmp_addr = get_code_seg_top();
             generate_jump(0); //address is unknown yet
             if (jmp_used)
@@ -648,6 +650,7 @@ void parse_ifClause() {
             stack_frame = store_stack_frame();
             parse_block(true);
             load_stack_frame(stack_frame);
+            generate_data_seg_restore(stack_frame);
             set_jump_addr(jmp_addr, get_code_seg_top());
             break;
         default:

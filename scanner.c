@@ -53,10 +53,10 @@ void _scanner_free(scanner_t* s) {
 #define is_identificator_start(c)   ( c == '_' || ( c >= 'A' && c <= 'Z') || ( c >= 'a' && c <= 'z') )
 #define is_identificator(c)         ( is_identificator_start(c) || is_digit(c) )
 
-#define is_hex(c)   ( (c >= '0' && c <= '9') || (c >= 'A' && c >= 'F') || (c >= 'a' && c >= 'f')  )
+#define is_hex(c)   ( (c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f')  )
 
 #define hex_decode(c) ( ( c >= '0' && c <= '9') ? (c-'0') : ( \
-                        ( c >= 'A' && c >= 'F') ? (c-'A' + 10 ) : ( \
+                        ( c >= 'A' && c <= 'F') ? (c-'A' + 10 ) : ( \
                                                   (c-'a' + 10 ) ) ) )
 
 
@@ -292,14 +292,9 @@ token_t get_next_token(scanner_t * s)
             else if( str_last_char(s->str) == '0' && is_digit(c))
                 error("Incorrect representation of number", ERROR_LEX);
 
-            else if (c >= '1' && c <= '9')
+            else if (c >= '0' && c <= '9')
             {
                 state = SS_INT_PART_2;
-            }
-
-            else if (c == '0')
-            {
-                state = SS_INT_PART_1;
             }
 
             else if (c == '.')
@@ -404,8 +399,8 @@ token_t get_next_token(scanner_t * s)
                 state = SS_EXPONENCIAL_PART;
             }
 
-            else if(c == '.')
-                error("Incorrect representation of number", ERROR_LEX);
+            else if(c == '.' || c == '-' || c == '+')
+                error("Incorrect representation of number.", ERROR_LEX);
 
             else
             {
@@ -422,6 +417,10 @@ token_t get_next_token(scanner_t * s)
 
             if(c == '\\' )
                 state = SS_STRING_BACKSLASH;
+            else if (c == '\n')
+            {
+                error("Incorrect representation of string.", ERROR_LEX);
+            }
 
             else if(c == '"')
             {
@@ -456,6 +455,8 @@ token_t get_next_token(scanner_t * s)
                 state = SS_STRING_ESCAPE_HEX_1;
                 break;
             }
+            else
+                error("Non allowed character after backslash.", ERROR_LEX);
 
             state = SS_STRING;
             break;
@@ -478,6 +479,10 @@ token_t get_next_token(scanner_t * s)
             if( is_hex(c) )
             {
                 hex_char |= hex_decode(c);
+                if (hex_char == 0)
+                {
+                    error("Escape sequence \\x00 is not allowed.", ERROR_LEX);
+                }
 
                 str_append_char(s->str, hex_char);
 

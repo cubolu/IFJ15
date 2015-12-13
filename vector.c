@@ -111,6 +111,7 @@ void _vector_push_inst(vector_inst_t* vct, inst_t i) {
     if (vct->size == vct->capacity)
         vector_resize(inst_t, vct, vct->capacity*2);
 
+    dAddLineNum(i);
     vct->array[(vct->size)++] = i;
 }
 void _vector_push_data_seg(vector_data_seg_t* vct, data_seg_t d) {

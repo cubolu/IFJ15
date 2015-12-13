@@ -32,7 +32,7 @@ void generator_init() {
     curr_inst.inst_code = INST_BUILTIN_FIND;
     vector_push(code_seg, curr_inst);
     curr_inst.inst_code = INST_RESTORE;
-        curr_inst.op1_addr = 2;
+    curr_inst.op1_addr = 2;
     vector_push(code_seg, curr_inst);
 
     //function address is 8
@@ -60,9 +60,9 @@ void load_stack_frame(size_t stack_frame_value) {
     curr_stack_frame = stack_frame_value;
 }
 
-void generate_data_seg_restore() {
+void generate_data_seg_restore(size_t restore_val) {
     inst_t curr_inst = {.inst_code = INST_DATA_SEGMENT_RESTORE};
-    curr_inst.op1_addr = curr_stack_frame;
+    curr_inst.op1_addr = restore_val;
     vector_push(code_seg, curr_inst);
 }
 
