@@ -1,0 +1,21 @@
+\select@language {czech}
+\contentsline {section}{\numberline {1}\IeC {\'U}vod}{1}{section.1}
+\contentsline {subsection}{\numberline {1.1}Rozbor zadania}{1}{subsection.1.1}
+\contentsline {section}{\numberline {2}Implement\IeC {\'a}cia}{2}{section.2}
+\contentsline {subsection}{\numberline {2.1}Lexik\IeC {\'a}ln\IeC {\'y} analyz\IeC {\'a}tor}{2}{subsection.2.1}
+\contentsline {subsection}{\numberline {2.2}Syntaktick\IeC {\'y} a s\IeC {\'e}mantick\IeC {\'y} analyz\IeC {\'a}tor}{2}{subsection.2.2}
+\contentsline {subsection}{\numberline {2.3}Preceden\IeC {\v c}n\IeC {\'a} anal\IeC {\'y}za}{4}{subsection.2.3}
+\contentsline {subsection}{\numberline {2.4}Interpret}{5}{subsection.2.4}
+\contentsline {subsection}{\numberline {2.5}Rie\IeC {\v s}enie vybran\IeC {\'y}ch algoritmov}{5}{subsection.2.5}
+\contentsline {subsubsection}{\numberline {2.5.1}Tabu\IeC {\v l}ka symbolov}{5}{subsubsection.2.5.1}
+\contentsline {subsubsection}{\numberline {2.5.2}Boyer-Moore}{5}{subsubsection.2.5.2}
+\contentsline {subsubsection}{\numberline {2.5.3}Quick-sort}{5}{subsubsection.2.5.3}
+\contentsline {subsection}{\numberline {2.6}Popis rie\IeC {\v s}enia}{6}{subsection.2.6}
+\contentsline {subsubsection}{\numberline {2.6.1}Rozdelenie pr\IeC {\'a}ce}{6}{subsubsection.2.6.1}
+\contentsline {subsubsection}{\numberline {2.6.2}Metriky k\IeC {\'o}du}{6}{subsubsection.2.6.2}
+\contentsline {paragraph}{Po\IeC {\v c}et s\IeC {\'u}borov:}{6}{section*.2}
+\contentsline {paragraph}{Po\IeC {\v c}et riadkov zdrojov\IeC {\'e}ho k\IeC {\'o}du:}{6}{section*.3}
+\contentsline {paragraph}{Ve\IeC {\v l}kos\IeC {\v t} statick\IeC {\'y}ch d\IeC {\'a}t:}{6}{section*.4}
+\contentsline {paragraph}{Ve\IeC {\v l}kos\IeC {\v t} spustite\IeC {\v l}n\IeC {\'e}ho s\IeC {\'u}boru:}{6}{section*.5}
+\contentsline {subsection}{\numberline {2.7}Z\IeC {\'a}ver}{6}{subsection.2.7}
+\contentsline {subsection}{\numberline {2.8}Literat\IeC {\'u}ra}{7}{subsection.2.8}

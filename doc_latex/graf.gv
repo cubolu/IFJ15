@@ -1,0 +1,139 @@
+digraph finite_state_machine {
+    rankdir=LR;
+    size="4000"
+    graph [splines = polyline];
+    edge [fontname="times bold"];
+
+
+
+    node [shape = oval, label="SS_DEFAULT", fontsize=14, style=filled, fillcolor=skyblue2] SS_DEFAULT;
+    node [shape = oval, label="SS_COMMENT", fontsize=12] SS_COMMENT;
+	node [shape = oval, label="SS_SLASH", fontsize=12] SS_SLASH;
+	node [shape = oval, label="SS_BLOCK_COMMENT", fontsize=12] SS_BLOCK_COMMENT;
+	node [shape = oval, label="SS_BLOCK_COMMENT_ASTERISK", fontsize=12] SS_BLOCK_COMMENT_ASTERISK;
+	node [shape = oval, label="SS_INT_PART_1", fontsize=12] SS_INT_PART_1;
+	node [shape = oval, label="SS_FRACTIONAL_PART", fontsize=12] SS_FRACTIONAL_PART;
+	node [shape = oval, label="SS_EXPONENCIAL_PART", fontsize=12] SS_EXPONENCIAL_PART;
+	node [shape = oval, label="SS_STRING_BACKSLASH", fontsize=12] SS_STRING_BACKSLASH;
+	node [shape = oval, label="SS_STRING_ESCAPE_HEX_1", fontsize=12] SS_STRING_ESCAPE_HEX_1;
+	node [shape = oval, label="SS_STRING_ESCAPE_HEX_2", fontsize=12] SS_STRING_ESCAPE_HEX_2;
+	node [shape = oval, label="SS_LESS_THEN", fontsize=12] SS_LESS_THEN;
+	node [shape = oval, label="SS_GREATER_THEN", fontsize=12] SS_GREATER_THEN;
+	node [shape = oval, label="SS_OPERATOR_OF_ASSIGNEMENT", fontsize=12] SS_OPERATOR_OF_ASSIGNEMENT;
+	node [shape = oval, label="SS_EXCLAMATION", fontsize=12] SS_EXCLAMATION;
+	
+	node [shape = point ]; qi
+
+
+	node [shape = doublecircle, label="SS_IDENTIFICATOR", fontsize=12, style=filled, fillcolor=gold2 ] SS_IDENTIFICATOR;
+	node [shape = doublecircle, label="SS_EXPONENCIAL_PART_2", fontsize=12] SS_EXPONENCIAL_PART_2;
+	node [shape = doublecircle, label="SS_STRING", fontsize=12] SS_STRING;
+	node [shape = doublecircle, label="SS_INT_PART_2", fontsize=12] SS_INT_PART_2;
+	node [shape = doublecircle, label="SS_INT_PART_2", fontsize=12] SS_INT_PART_2;
+
+
+	node [shape = doublecircle, label=";", fontsize=10] POM_SEMICOLON;
+	node [shape = doublecircle, label="(", fontsize=10] POM_PARENTHESES_OPEN;
+	node [shape = doublecircle, label=")", fontsize=10] POM_PARENTHESES_CLOSE;
+	node [shape = doublecircle, label="{", fontsize=10] POM_BLOCK_START;
+	node [shape = doublecircle, label="}", fontsize=10] POM_BLOCK_END;
+	node [shape = doublecircle, label="*", fontsize=10] POM_MULTIPLY;
+	node [shape = doublecircle, label="-", fontsize=10] POM_SUBSTRACT;
+	node [shape = doublecircle, label="+", fontsize=10] POM_ADD;
+	node [shape = doublecircle, label="=", fontsize=10] POM_ASSIGNEMENT;
+	node [shape = doublecircle, label="<", fontsize=10] POM_LESSTHAN_FINAL;
+	node [shape = doublecircle, label="<=", fontsize=10] POM_LESS_EQ;
+	node [shape = doublecircle, label=">", fontsize=10] POM_GREATERTHAN_FINAL;
+	node [shape = doublecircle, label=">=", fontsize=10] POM_GREATER_EQ;
+	node [shape = doublecircle, label="==", fontsize=10] POM_EQUAL;
+	node [shape = doublecircle, label="/", fontsize=10] POM_DIVIDE;
+	node [shape = doublecircle, label="<<", fontsize=10] POM_STREAM_OUT;
+	node [shape = doublecircle, label=">>", fontsize=10] POM_STREAM_IN;
+	node [shape = doublecircle, label="!=", fontsize=10] POM_NOT_EQUAL;
+
+	node [shape = oval, label="LEX_ERROR", fontsize=12, style=filled, fillcolor=red] SS_ERROR;
+
+    
+    qi -> SS_DEFAULT;
+
+    
+    SS_DEFAULT   -> SS_INT_PART_1  [ label = "0-9"];
+	SS_INT_PART_1	-> SS_FRACTIONAL_PART [label = "."];
+	SS_INT_PART_1 		-> SS_INT_PART_2		[label = "(0-9)"];
+	SS_INT_PART_2 		-> SS_INT_PART_2 		[label = "(0-9)"];
+	SS_INT_PART_2 		-> SS_FRACTIONAL_PART 	[label = "."];
+	SS_INT_PART_2 		-> SS_EXPONENCIAL_PART 	[label = "Ee"];
+
+
+	SS_FRACTIONAL_PART	-> SS_FRACTIONAL_PART [label = "(0-9)"];
+	SS_FRACTIONAL_PART	-> SS_EXPONENCIAL_PART [label = "Ee"];
+	SS_FRACTIONAL_PART 	-> SS_ERROR 			[label = "."];
+	SS_EXPONENCIAL_PART	-> SS_EXPONENCIAL_PART_2 [label = "+-(0-9)"];
+	SS_EXPONENCIAL_PART_2 -> SS_EXPONENCIAL_PART_2 [label = "(0-9)"];
+	SS_EXPONENCIAL_PART_2 -> SS_ERROR 			[label = "Ee"];
+
+	SS_DEFAULT   -> SS_SLASH  [ label = "/" ];	
+	SS_SLASH 			-> SS_COMMENT 			[label = "/"];
+	SS_COMMENT 			-> SS_COMMENT 			[label = "else"];
+	SS_COMMENT 			-> SS_DEFAULT 			[label = "LF"];
+	SS_SLASH 			-> SS_BLOCK_COMMENT 	[label = "*"];
+	SS_BLOCK_COMMENT 	->SS_BLOCK_COMMENT 		[label = "else"];
+	SS_BLOCK_COMMENT 	-> SS_BLOCK_COMMENT_ASTERISK [label = "*"];
+	SS_BLOCK_COMMENT_ASTERISK -> SS_BLOCK_COMMENT [label = "else"];
+	SS_BLOCK_COMMENT_ASTERISK -> SS_DEFAULT [label = "/"];
+	SS_SLASH 			-> POM_DIVIDE 		[label = "else"];
+
+
+    SS_DEFAULT   		-> SS_IDENTIFICATOR [ label = "_(a-z)(A-Z)" ];
+    SS_IDENTIFICATOR	-> SS_IDENTIFICATOR [ label = "_(a-z)(A-Z)(0-9)"];
+    
+
+    SS_DEFAULT 			-> POM_MULTIPLY 	[ label = "*"];
+    SS_DEFAULT 			-> POM_ADD			[ label = "+"];
+    SS_DEFAULT 			-> POM_SUBSTRACT 	[ label = "-"];
+    SS_DEFAULT 			-> POM_BLOCK_START 	[ label = "{"];
+    SS_DEFAULT 			-> POM_BLOCK_END 	[ label = "}"];
+    SS_DEFAULT 			-> POM_PARENTHESES_OPEN 	[ label = "("];
+    SS_DEFAULT 			-> POM_PARENTHESES_CLOSE 	[ label = ")"];
+	SS_DEFAULT 			-> POM_SEMICOLON 	[ label = ";"];
+	
+	SS_DEFAULT 			-> SS_LESS_THEN		[ label = "<"];
+	SS_LESS_THEN 		-> POM_LESSTHAN_FINAL [ label = "NOT(=)"];
+	SS_LESS_THEN 		-> POM_LESS_EQ 		[ label = "="];
+	SS_LESS_THEN 		-> POM_STREAM_OUT	[ label = "<"];
+
+
+	SS_DEFAULT 			-> SS_GREATER_THEN 	[ label = ">"];
+	SS_GREATER_THEN  	-> POM_GREATERTHAN_FINAL [ label = "NOT(=)"];
+	SS_GREATER_THEN 	-> POM_GREATER_EQ 		[ label = "="];
+	SS_GREATER_THEN 	-> POM_STREAM_IN 		[ label = ">"];
+
+	SS_DEFAULT 			-> SS_OPERATOR_OF_ASSIGNEMENT [label = "="];
+	SS_OPERATOR_OF_ASSIGNEMENT -> POM_ASSIGNEMENT 	[label = "NOT(=)"];
+	SS_OPERATOR_OF_ASSIGNEMENT -> POM_EQUAL 	[label = "="];
+
+	SS_DEFAULT 			-> SS_EXCLAMATION 		[label = "!"];
+	SS_EXCLAMATION 		-> POM_NOT_EQUAL		[label = "="];
+	SS_EXCLAMATION 		->SS_ERROR 				[label = "else"];
+
+	SS_DEFAULT 			-> SS_STRING 		[ label = "\""];
+	SS_STRING 			-> SS_STRING_BACKSLASH [label = "\\"];
+	SS_STRING_BACKSLASH -> SS_STRING 		[label = "\",n,t,\\"];
+	SS_STRING_BACKSLASH -> SS_STRING_ESCAPE_HEX_1 [label = "x"];
+	SS_STRING_ESCAPE_HEX_1 -> SS_STRING_ESCAPE_HEX_2 [label = "(0-9)(aA-fF)"];
+	SS_STRING_ESCAPE_HEX_1 -> SS_ERROR 		[label = "else"];
+	SS_STRING_ESCAPE_HEX_2 -> SS_STRING 	[label = "(0-9)(aA-fF)"];
+	SS_STRING_ESCAPE_HEX_2 -> SS_ERROR 		[label = "else"];
+	SS_STRING 			-> SS_STRING 		[label = "\""];
+	SS_STRING 			-> SS_STRING 		[label = "in ASCII >31"];
+
+	SS_DEFAULT 			-> SS_ERROR 		[label = "else"];
+
+    
+    
+    
+    
+   
+
+    
+}

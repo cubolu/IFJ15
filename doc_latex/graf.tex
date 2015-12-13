@@ -1,0 +1,522 @@
+\documentclass{article}
+\usepackage[x11names, rgb]{xcolor}
+\usepackage[utf8]{inputenc}
+\usepackage{tikz}
+\usetikzlibrary{snakes,arrows,shapes}
+\usepackage{amsmath}
+%
+%
+
+%
+
+%
+
+\begin{document}
+\pagestyle{empty}
+%
+%
+%
+
+\enlargethispage{100cm}
+% Start of code
+% \begin{tikzpicture}[anchor=mid,>=latex',line join=bevel,]
+\begin{tikzpicture}[>=latex',line join=bevel,]
+  \pgfsetlinewidth{1bp}
+%%
+\pgfsetcolor{black}
+  % Edge: SS_DEFAULT -> POM_ADD
+  \draw [->] (111.01bp,712.72bp) .. controls (124.88bp,609.98bp) and (192.49bp,109.0bp)  .. (192.49bp,109.0bp) .. controls (192.49bp,109.0bp) and (276.49bp,53.0bp)  .. (276.49bp,53.0bp) .. controls (276.49bp,53.0bp) and (339.04bp,38.306bp)  .. (387.84bp,26.844bp);
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \draw (225.49bp,116.5bp) node {+};
+  % Edge: SS_FRACTIONAL_PART -> SS_ERROR
+  \draw [->] (1103.2bp,1323.9bp) .. controls (1260.8bp,1332.7bp) and (1572.3bp,1350.0bp)  .. (1572.3bp,1350.0bp) .. controls (1572.3bp,1350.0bp) and (1792.1bp,1350.0bp)  .. (1792.1bp,1350.0bp) .. controls (1792.1bp,1350.0bp) and (1861.4bp,1200.9bp)  .. (1894.9bp,1129.0bp);
+  \draw (1519.3bp,1356.5bp) node {.};
+  % Edge: SS_GREATER_THEN -> POM_GREATERTHAN_FINAL
+  \draw [->] (469.88bp,772.84bp) .. controls (504.9bp,765.68bp) and (542.42bp,758.0bp)  .. (542.42bp,758.0bp) .. controls (542.42bp,758.0bp) and (560.42bp,683.0bp)  .. (560.42bp,683.0bp) .. controls (560.42bp,683.0bp) and (627.42bp,624.0bp)  .. (627.42bp,624.0bp) .. controls (627.42bp,624.0bp) and (661.67bp,612.22bp)  .. (697.53bp,599.88bp);
+  \draw (584.92bp,690.5bp) node {NOT(=)};
+  % Edge: SS_DEFAULT -> SS_OPERATOR_OF_ASSIGNEMENT
+  \draw [->] (174.73bp,731.0bp) .. controls (201.74bp,731.0bp) and (234.08bp,731.0bp)  .. (276.3bp,731.0bp);
+  \draw (225.49bp,738.5bp) node {=};
+  % Edge: SS_STRING_ESCAPE_HEX_1 -> SS_STRING_ESCAPE_HEX_2
+  \draw [->] (1443.0bp,1020.2bp) .. controls (1495.9bp,1027.2bp) and (1554.3bp,1035.0bp)  .. (1554.3bp,1035.0bp) .. controls (1554.3bp,1035.0bp) and (1568.5bp,1036.9bp)  .. (1597.3bp,1040.8bp);
+  \draw (1519.3bp,1042.5bp) node {(0-9)(aA-fF)};
+  % Edge: SS_DEFAULT -> POM_PARENTHESES_OPEN
+  \draw [->] (114.99bp,712.8bp) .. controls (134.65bp,657.3bp) and (192.49bp,494.0bp)  .. (192.49bp,494.0bp) .. controls (192.49bp,494.0bp) and (276.49bp,425.0bp)  .. (276.49bp,425.0bp) .. controls (276.49bp,425.0bp) and (339.04bp,410.31bp)  .. (387.84bp,398.84bp);
+  \draw (225.49bp,501.5bp) node {(};
+  % Edge: SS_STRING_BACKSLASH -> SS_STRING
+  \draw [->] (923.55bp,1016.6bp) .. controls (877.87bp,1020.5bp) and (823.25bp,1025.1bp)  .. (771.84bp,1029.5bp);
+  \draw (846.14bp,1032.5bp) node {$\backslash$",n,t,};
+  % Edge: SS_COMMENT -> SS_DEFAULT
+  \draw [->] (659.47bp,1648.5bp) .. controls (614.72bp,1644.2bp) and (560.42bp,1639.0bp)  .. (560.42bp,1639.0bp) .. controls (560.42bp,1639.0bp) and (276.49bp,1590.0bp)  .. (276.49bp,1590.0bp) .. controls (276.49bp,1590.0bp) and (192.49bp,1519.0bp)  .. (192.49bp,1519.0bp) .. controls (192.49bp,1519.0bp) and (126.58bp,900.29bp)  .. (110.5bp,749.32bp);
+  \draw (409.45bp,1643.5bp) node {LF};
+  % Edge: SS_DEFAULT -> SS_LESS_THEN
+  \draw [->] (136.5bp,747.32bp) .. controls (160.92bp,761.57bp) and (192.49bp,780.0bp)  .. (192.49bp,780.0bp) .. controls (192.49bp,780.0bp) and (276.49bp,812.0bp)  .. (276.49bp,812.0bp) .. controls (276.49bp,812.0bp) and (312.53bp,819.37bp)  .. (357.06bp,828.48bp);
+  \draw (225.49bp,813.5bp) node {<};
+  % Edge: SS_STRING -> SS_STRING_BACKSLASH
+  \draw [->] (769.15bp,1017.0bp) .. controls (797.57bp,1007.3bp) and (827.64bp,997.0bp)  .. (827.64bp,997.0bp) .. controls (827.64bp,997.0bp) and (864.64bp,997.0bp)  .. (864.64bp,997.0bp) .. controls (864.64bp,997.0bp) and (886.24bp,998.76bp)  .. (922.93bp,1001.7bp);
+  \draw (846.14bp,1005.5bp) node {$\backslash$};
+  % Edge: SS_SLASH -> SS_COMMENT
+  \draw [->] (446.58bp,1573.7bp) .. controls (500.61bp,1589.7bp) and (602.74bp,1620.0bp)  .. (674.65bp,1641.3bp);
+  \draw (584.92bp,1627.5bp) node {/};
+  % Edge: SS_INT_PART_1 -> SS_INT_PART_2
+  \draw [->] (474.83bp,1240.0bp) .. controls (522.62bp,1240.0bp) and (588.06bp,1240.0bp)  .. (649.25bp,1240.0bp);
+  \draw (584.92bp,1247.5bp) node {(0-9)};
+  % Edge: SS_INT_PART_2 -> SS_INT_PART_2
+  \draw [->] (696.03bp,1305.8bp) .. controls (698.73bp,1318.4bp) and (706.22bp,1327.3bp)  .. (718.53bp,1327.3bp) .. controls (727.37bp,1327.3bp) and (733.73bp,1322.7bp)  .. (741.02bp,1305.8bp);
+  \draw (718.53bp,1334.8bp) node {(0-9)};
+  % Edge: SS_INT_PART_2 -> SS_FRACTIONAL_PART
+  \draw [->] (785.56bp,1257.8bp) .. controls (834.29bp,1271.0bp) and (900.22bp,1288.8bp)  .. (958.09bp,1304.4bp);
+  \draw (846.14bp,1285.5bp) node {.};
+  % Edge: SS_LESS_THEN -> POM_LESS_EQ
+  \draw [->] (461.85bp,828.48bp) .. controls (498.91bp,820.9bp) and (542.42bp,812.0bp)  .. (542.42bp,812.0bp) .. controls (542.42bp,812.0bp) and (560.42bp,783.0bp)  .. (560.42bp,783.0bp) .. controls (560.42bp,783.0bp) and (627.42bp,748.0bp)  .. (627.42bp,748.0bp) .. controls (627.42bp,748.0bp) and (661.67bp,736.22bp)  .. (697.53bp,723.88bp);
+  \draw (584.92bp,790.5bp) node {=};
+  % Edge: SS_BLOCK_COMMENT_ASTERISK -> SS_BLOCK_COMMENT
+  \draw [->] (883.92bp,1489.4bp) .. controls (872.21bp,1489.2bp) and (864.64bp,1489.0bp)  .. (864.64bp,1489.0bp) .. controls (864.64bp,1489.0bp) and (827.64bp,1489.0bp)  .. (827.64bp,1489.0bp) .. controls (827.64bp,1489.0bp) and (816.87bp,1490.6bp)  .. (791.94bp,1494.3bp);
+  \draw (846.14bp,1497.5bp) node {else};
+  % Edge: SS_DEFAULT -> POM_PARENTHESES_CLOSE
+  \draw [->] (113.42bp,712.99bp) .. controls (131.34bp,646.83bp) and (192.49bp,421.0bp)  .. (192.49bp,421.0bp) .. controls (192.49bp,421.0bp) and (276.49bp,363.0bp)  .. (276.49bp,363.0bp) .. controls (276.49bp,363.0bp) and (339.04bp,348.31bp)  .. (387.84bp,336.84bp);
+  \draw (225.49bp,428.5bp) node {)};
+  % Edge: SS_IDENTIFICATOR -> SS_IDENTIFICATOR
+  \draw [->] (378.74bp,656.81bp) .. controls (382.74bp,670.7bp) and (392.97bp,680.41bp)  .. (409.45bp,680.41bp) .. controls (421.95bp,680.41bp) and (430.85bp,674.84bp)  .. (440.17bp,656.81bp);
+  \draw (409.45bp,687.91bp) node {\_(a-z)(A-Z)(0-9)};
+  % Edge: SS_INT_PART_1 -> SS_FRACTIONAL_PART
+  \draw [->] (441.54bp,1255.9bp) .. controls (501.53bp,1286.6bp) and (627.42bp,1351.0bp)  .. (627.42bp,1351.0bp) .. controls (627.42bp,1351.0bp) and (809.64bp,1351.0bp)  .. (809.64bp,1351.0bp) .. controls (809.64bp,1351.0bp) and (874.01bp,1340.8bp)  .. (940.17bp,1330.4bp);
+  \draw (718.53bp,1358.5bp) node {.};
+  % Edge: SS_EXCLAMATION -> POM_NOT_EQUAL
+  \draw [->] (474.45bp,903.0bp) .. controls (539.3bp,913.14bp) and (636.9bp,928.4bp)  .. (696.47bp,937.71bp);
+  \draw (584.92bp,930.5bp) node {=};
+  % Edge: SS_BLOCK_COMMENT_ASTERISK -> SS_DEFAULT
+  \draw [->] (896.01bp,1483.9bp) .. controls (669.89bp,1468.2bp) and (192.49bp,1435.0bp)  .. (192.49bp,1435.0bp) .. controls (192.49bp,1435.0bp) and (127.55bp,890.36bp)  .. (110.7bp,749.11bp);
+  \draw (584.92bp,1471.5bp) node {/};
+  % Edge: SS_EXPONENCIAL_PART -> SS_EXPONENCIAL_PART_2
+  \draw [->] (1438.6bp,1229.6bp) .. controls (1476.1bp,1224.7bp) and (1521.5bp,1218.8bp)  .. (1573.0bp,1212.1bp);
+  \draw (1519.3bp,1230.5bp) node {+-(0-9)};
+  % Edge: SS_DEFAULT -> POM_BLOCK_START
+  \draw [->] (112.59bp,712.96bp) .. controls (129.36bp,638.25bp) and (192.49bp,357.0bp)  .. (192.49bp,357.0bp) .. controls (192.49bp,357.0bp) and (276.49bp,301.0bp)  .. (276.49bp,301.0bp) .. controls (276.49bp,301.0bp) and (339.04bp,286.31bp)  .. (387.84bp,274.84bp);
+  \draw (225.49bp,364.5bp) node {\{};
+  % Edge: SS_BLOCK_COMMENT -> SS_BLOCK_COMMENT
+  \draw [->] (695.88bp,1522.8bp) .. controls (692.03bp,1532.3bp) and (699.58bp,1541.0bp)  .. (718.53bp,1541.0bp) .. controls (730.08bp,1541.0bp) and (737.39bp,1537.8bp)  .. (741.18bp,1522.8bp);
+  \draw (718.53bp,1548.5bp) node {else};
+  % Edge: SS_GREATER_THEN -> POM_GREATER_EQ
+  \draw [->] (469.88bp,772.84bp) .. controls (504.9bp,765.68bp) and (542.42bp,758.0bp)  .. (542.42bp,758.0bp) .. controls (542.42bp,758.0bp) and (560.42bp,623.0bp)  .. (560.42bp,623.0bp) .. controls (560.42bp,623.0bp) and (627.42bp,562.0bp)  .. (627.42bp,562.0bp) .. controls (627.42bp,562.0bp) and (661.67bp,550.22bp)  .. (697.53bp,537.88bp);
+  \draw (584.92bp,630.5bp) node {=};
+  % Edge: SS_GREATER_THEN -> POM_STREAM_IN
+  \draw [->] (469.88bp,772.84bp) .. controls (504.9bp,765.68bp) and (542.42bp,758.0bp)  .. (542.42bp,758.0bp) .. controls (542.42bp,758.0bp) and (560.42bp,740.0bp)  .. (560.42bp,740.0bp) .. controls (560.42bp,740.0bp) and (627.42bp,686.0bp)  .. (627.42bp,686.0bp) .. controls (627.42bp,686.0bp) and (661.67bp,674.22bp)  .. (697.53bp,661.88bp);
+  \draw (584.92bp,747.5bp) node {>};
+  % Edge: SS_DEFAULT -> POM_SUBSTRACT
+  \draw [->] (111.24bp,713.0bp) .. controls (125.61bp,617.15bp) and (192.49bp,171.0bp)  .. (192.49bp,171.0bp) .. controls (192.49bp,171.0bp) and (276.49bp,115.0bp)  .. (276.49bp,115.0bp) .. controls (276.49bp,115.0bp) and (339.04bp,100.31bp)  .. (387.84bp,88.844bp);
+  \draw (225.49bp,178.5bp) node {-};
+  % Edge: SS_OPERATOR_OF_ASSIGNEMENT -> POM_ASSIGNEMENT
+  \draw [->] (483.77bp,716.0bp) .. controls (514.15bp,709.79bp) and (542.42bp,704.0bp)  .. (542.42bp,704.0bp) .. controls (542.42bp,704.0bp) and (560.42bp,500.0bp)  .. (560.42bp,500.0bp) .. controls (560.42bp,500.0bp) and (627.42bp,438.0bp)  .. (627.42bp,438.0bp) .. controls (627.42bp,438.0bp) and (661.67bp,426.22bp)  .. (697.53bp,413.88bp);
+  \draw (584.92bp,507.5bp) node {NOT(=)};
+  % Edge: SS_DEFAULT -> SS_GREATER_THEN
+  \draw [->] (159.31bp,742.49bp) .. controls (176.99bp,746.49bp) and (192.49bp,750.0bp)  .. (192.49bp,750.0bp) .. controls (192.49bp,750.0bp) and (270.81bp,762.69bp)  .. (343.36bp,774.45bp);
+  \draw (225.49bp,768.5bp) node {>};
+  % Edge: SS_EXCLAMATION -> SS_ERROR
+  \draw [->] (487.94bp,892.5bp) .. controls (578.91bp,891.9bp) and (717.53bp,891.0bp)  .. (717.53bp,891.0bp) .. controls (717.53bp,891.0bp) and (717.53bp,891.0bp)  .. (1683.2bp,891.0bp) .. controls (1683.2bp,891.0bp) and (1832.1bp,1023.0bp)  .. (1832.1bp,1023.0bp) .. controls (1832.1bp,1023.0bp) and (1861.7bp,1059.6bp)  .. (1889.2bp,1093.6bp);
+  \draw (1196.6bp,898.5bp) node {else};
+  % Edge: SS_COMMENT -> SS_COMMENT
+  \draw [->] (696.2bp,1671.0bp) .. controls (691.64bp,1680.9bp) and (699.09bp,1690.0bp)  .. (718.53bp,1690.0bp) .. controls (730.68bp,1690.0bp) and (738.14bp,1686.4bp)  .. (740.86bp,1671.0bp);
+  \draw (718.53bp,1697.5bp) node {else};
+  % Edge: SS_SLASH -> POM_DIVIDE
+  \draw [->] (454.12bp,1567.7bp) .. controls (516.99bp,1574.4bp) and (631.47bp,1586.8bp)  .. (696.61bp,1593.8bp);
+  \draw (584.92bp,1591.5bp) node {else};
+  % Edge: SS_DEFAULT -> SS_ERROR
+  \draw [->] (112.65bp,749.15bp) .. controls (129.5bp,823.63bp) and (192.49bp,1102.0bp)  .. (192.49bp,1102.0bp) .. controls (192.49bp,1102.0bp) and (276.49bp,1267.0bp)  .. (276.49bp,1267.0bp) .. controls (276.49bp,1267.0bp) and (408.45bp,1421.0bp)  .. (408.45bp,1421.0bp) .. controls (408.45bp,1421.0bp) and (408.45bp,1421.0bp)  .. (1683.2bp,1421.0bp) .. controls (1683.2bp,1421.0bp) and (1792.1bp,1364.0bp)  .. (1792.1bp,1364.0bp) .. controls (1792.1bp,1364.0bp) and (1832.1bp,1302.0bp)  .. (1832.1bp,1302.0bp) .. controls (1832.1bp,1302.0bp) and (1873.4bp,1191.3bp)  .. (1896.6bp,1129.0bp);
+  \draw (1013.1bp,1428.5bp) node {else};
+  % Edge: SS_FRACTIONAL_PART -> SS_FRACTIONAL_PART
+  \draw [->] (983.5bp,1336.4bp) .. controls (977.97bp,1346.1bp) and (987.85bp,1355.0bp)  .. (1013.1bp,1355.0bp) .. controls (1028.9bp,1355.0bp) and (1038.7bp,1351.5bp)  .. (1042.8bp,1336.4bp);
+  \draw (1013.1bp,1362.5bp) node {(0-9)};
+  % Edge: SS_LESS_THEN -> POM_LESSTHAN_FINAL
+  \draw [->] (462.55bp,828.82bp) .. controls (526.9bp,816.25bp) and (634.29bp,795.26bp)  .. (696.8bp,783.05bp);
+  \draw (584.92bp,816.5bp) node {NOT(=)};
+  % Edge: SS_DEFAULT -> SS_SLASH
+  \draw [->] (110.62bp,749.34bp) .. controls (123.55bp,863.6bp) and (192.49bp,1473.0bp)  .. (192.49bp,1473.0bp) .. controls (192.49bp,1473.0bp) and (304.81bp,1519.8bp)  .. (377.05bp,1549.9bp);
+  \draw (225.49bp,1507.5bp) node {/};
+  % Edge: SS_STRING_BACKSLASH -> SS_STRING_ESCAPE_HEX_1
+  \draw [->] (1111.9bp,1009.0bp) .. controls (1151.6bp,1009.0bp) and (1197.8bp,1009.0bp)  .. (1249.4bp,1009.0bp);
+  \draw (1196.6bp,1016.5bp) node {x};
+  % Edge: SS_INT_PART_2 -> SS_EXPONENCIAL_PART
+  \draw [->] (788.05bp,1240.0bp) .. controls (898.68bp,1240.0bp) and (1117.5bp,1240.0bp)  .. (1259.3bp,1240.0bp);
+  \draw (1013.1bp,1247.5bp) node {Ee};
+  % Edge: qi -> SS_DEFAULT
+  \draw [->] (3.9651bp,731.0bp) .. controls (7.3001bp,731.0bp) and (17.466bp,731.0bp)  .. (40.327bp,731.0bp);
+  % Edge: SS_FRACTIONAL_PART -> SS_EXPONENCIAL_PART
+  \draw [->] (1073.9bp,1305.2bp) .. controls (1133.0bp,1291.6bp) and (1223.4bp,1270.8bp)  .. (1295.9bp,1254.1bp);
+  \draw (1196.6bp,1292.5bp) node {Ee};
+  % Edge: SS_SLASH -> SS_BLOCK_COMMENT
+  \draw [->] (451.23bp,1555.3bp) .. controls (499.84bp,1546.1bp) and (582.04bp,1530.6bp)  .. (652.13bp,1517.4bp);
+  \draw (584.92bp,1541.5bp) node {*};
+  % Edge: SS_DEFAULT -> POM_BLOCK_END
+  \draw [->] (112.04bp,712.82bp) .. controls (127.93bp,630.3bp) and (192.49bp,295.0bp)  .. (192.49bp,295.0bp) .. controls (192.49bp,295.0bp) and (276.49bp,239.0bp)  .. (276.49bp,239.0bp) .. controls (276.49bp,239.0bp) and (339.04bp,224.31bp)  .. (387.84bp,212.84bp);
+  \draw (225.49bp,302.5bp) node {\}};
+  % Edge: SS_EXPONENCIAL_PART_2 -> SS_ERROR
+  \draw [->] (1784.5bp,1157.9bp) .. controls (1810.8bp,1147.6bp) and (1837.6bp,1136.9bp)  .. (1868.7bp,1124.7bp);
+  \draw (1821.1bp,1154.5bp) node {Ee};
+  % Edge: SS_EXPONENCIAL_PART_2 -> SS_EXPONENCIAL_PART_2
+  \draw [->] (1660.3bp,1305.8bp) .. controls (1664.4bp,1318.0bp) and (1671.7bp,1325.9bp)  .. (1682.2bp,1325.9bp) .. controls (1689.8bp,1325.9bp) and (1695.7bp,1321.8bp)  .. (1704.1bp,1305.8bp);
+  \draw (1682.2bp,1333.4bp) node {(0-9)};
+  % Edge: SS_DEFAULT -> SS_IDENTIFICATOR
+  \draw [->] (139.79bp,715.16bp) .. controls (183.4bp,693.06bp) and (264.1bp,652.16bp)  .. (334.66bp,616.4bp);
+  \draw (225.49bp,694.5bp) node {\_(a-z)(A-Z)};
+  % Edge: SS_STRING -> SS_STRING
+  \draw [->] (707.1bp,1086.2bp) .. controls (708.26bp,1097.3bp) and (712.07bp,1105.2bp)  .. (718.53bp,1105.2bp) .. controls (722.77bp,1105.2bp) and (725.87bp,1101.8bp)  .. (729.96bp,1086.2bp);
+  \draw (718.53bp,1112.7bp) node {$\backslash$};
+  % Edge: SS_STRING -> SS_STRING
+  \draw [->] (695.32bp,1082.2bp) .. controls (692.95bp,1104.2bp) and (700.69bp,1123.2bp)  .. (718.53bp,1123.2bp) .. controls (733.58bp,1123.2bp) and (741.44bp,1109.7bp)  .. (741.74bp,1082.2bp);
+  \draw (718.53bp,1130.7bp) node {in ASCII >31};
+  % Edge: SS_LESS_THEN -> POM_STREAM_OUT
+  \draw [->] (473.71bp,839.41bp) .. controls (538.48bp,839.83bp) and (636.5bp,840.47bp)  .. (696.36bp,840.86bp);
+  \draw (584.92bp,848.5bp) node {<};
+  % Edge: SS_STRING_ESCAPE_HEX_1 -> SS_ERROR
+  \draw [->] (1466.3bp,1009.2bp) .. controls (1594.6bp,1009.5bp) and (1792.1bp,1010.0bp)  .. (1792.1bp,1010.0bp) .. controls (1792.1bp,1010.0bp) and (1844.3bp,1057.4bp)  .. (1884.7bp,1094.1bp);
+  \draw (1682.2bp,1018.5bp) node {else};
+  % Edge: SS_OPERATOR_OF_ASSIGNEMENT -> POM_EQUAL
+  \draw [->] (483.77bp,716.0bp) .. controls (514.15bp,709.79bp) and (542.42bp,704.0bp)  .. (542.42bp,704.0bp) .. controls (542.42bp,704.0bp) and (560.42bp,562.0bp)  .. (560.42bp,562.0bp) .. controls (560.42bp,562.0bp) and (627.42bp,500.0bp)  .. (627.42bp,500.0bp) .. controls (627.42bp,500.0bp) and (661.67bp,488.22bp)  .. (697.53bp,475.88bp);
+  \draw (584.92bp,569.5bp) node {=};
+  % Edge: SS_DEFAULT -> POM_MULTIPLY
+  \draw [->] (111.58bp,712.98bp) .. controls (126.63bp,623.7bp) and (192.49bp,233.0bp)  .. (192.49bp,233.0bp) .. controls (192.49bp,233.0bp) and (276.49bp,177.0bp)  .. (276.49bp,177.0bp) .. controls (276.49bp,177.0bp) and (339.04bp,162.31bp)  .. (387.84bp,150.84bp);
+  \draw (225.49bp,240.5bp) node {*};
+  % Edge: SS_BLOCK_COMMENT -> SS_BLOCK_COMMENT_ASTERISK
+  \draw [->] (808.8bp,1507.5bp) .. controls (820.01bp,1507.8bp) and (827.64bp,1508.0bp)  .. (827.64bp,1508.0bp) .. controls (827.64bp,1508.0bp) and (864.64bp,1508.0bp)  .. (864.64bp,1508.0bp) .. controls (864.64bp,1508.0bp) and (879.61bp,1506.4bp)  .. (910.1bp,1503.1bp);
+  \draw (846.14bp,1515.5bp) node {*};
+  % Edge: SS_STRING_ESCAPE_HEX_2 -> SS_ERROR
+  \draw [->] (1743.4bp,1066.9bp) .. controls (1768.6bp,1073.2bp) and (1792.1bp,1079.0bp)  .. (1792.1bp,1079.0bp) .. controls (1792.1bp,1079.0bp) and (1823.5bp,1088.0bp)  .. (1862.8bp,1099.4bp);
+  \draw (1821.1bp,1098.5bp) node {else};
+  % Edge: SS_DEFAULT -> SS_STRING
+  \draw [->] (118.84bp,748.9bp) .. controls (141.25bp,787.89bp) and (192.49bp,877.0bp)  .. (192.49bp,877.0bp) .. controls (192.49bp,877.0bp) and (276.49bp,920.0bp)  .. (276.49bp,920.0bp) .. controls (276.49bp,920.0bp) and (535.63bp,986.98bp)  .. (666.5bp,1020.8bp);
+  \draw (409.45bp,996.5bp) node {$\backslash$};
+  % Edge: SS_STRING_ESCAPE_HEX_2 -> SS_STRING
+  \draw [->] (1574.0bp,1051.0bp) .. controls (1344.7bp,1048.8bp) and (827.64bp,1044.0bp)  .. (827.64bp,1044.0bp) .. controls (827.64bp,1044.0bp) and (805.77bp,1042.0bp)  .. (771.68bp,1038.8bp);
+  \draw (1196.6bp,1055.5bp) node {(0-9)(aA-fF)};
+  % Edge: SS_DEFAULT -> SS_INT_PART_1
+  \draw [->] (113.92bp,749.33bp) .. controls (132.45bp,812.45bp) and (192.49bp,1017.0bp)  .. (192.49bp,1017.0bp) .. controls (192.49bp,1017.0bp) and (328.14bp,1157.1bp)  .. (391.51bp,1222.5bp);
+  \draw (225.49bp,1090.5bp) node {0-9};
+  % Edge: SS_DEFAULT -> SS_EXCLAMATION
+  \draw [->] (124.33bp,748.68bp) .. controls (148.65bp,775.91bp) and (192.49bp,825.0bp)  .. (192.49bp,825.0bp) .. controls (192.49bp,825.0bp) and (276.49bp,866.0bp)  .. (276.49bp,866.0bp) .. controls (276.49bp,866.0bp) and (308.21bp,872.49bp)  .. (350.57bp,881.16bp);
+  \draw (225.49bp,865.5bp) node {!};
+  % Edge: SS_DEFAULT -> POM_SEMICOLON
+  \draw [->] (120.89bp,713.06bp) .. controls (159.68bp,656.71bp) and (276.49bp,487.0bp)  .. (276.49bp,487.0bp) .. controls (276.49bp,487.0bp) and (339.04bp,472.31bp)  .. (387.84bp,460.84bp);
+  \draw (225.49bp,616.5bp) node {;};
+  % Node: SS_INT_PART_1
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \definecolor{fillcol}{rgb}{0.49,0.75,0.93};
+  \pgfsetfillcolor{fillcol}
+  \draw (409.45bp,1240.0bp) node {SS\_INT\_PART\_1};
+\end{scope}
+  % Node: SS_INT_PART_2
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \definecolor{fillcol}{rgb}{0.93,0.79,0.0};
+  \pgfsetfillcolor{fillcol}
+  \draw (718.53bp,1240.0bp) node {SS\_INT\_PART\_2};
+\end{scope}
+  % Node: SS_SLASH
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \definecolor{fillcol}{rgb}{0.49,0.75,0.93};
+  \pgfsetfillcolor{fillcol}
+  \draw (409.45bp,1563.0bp) node {SS\_SLASH};
+\end{scope}
+  % Node: SS_STRING_ESCAPE_HEX_2
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \definecolor{fillcol}{rgb}{0.49,0.75,0.93};
+  \pgfsetfillcolor{fillcol}
+  \draw (1682.2bp,1052.0bp) node {SS\_STRING\_ESCAPE\_HEX\_2};
+\end{scope}
+  % Node: SS_EXPONENCIAL_PART
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \definecolor{fillcol}{rgb}{0.49,0.75,0.93};
+  \pgfsetfillcolor{fillcol}
+  \draw (1358.0bp,1240.0bp) node {SS\_EXPONENCIAL\_PART};
+\end{scope}
+  % Node: SS_FRACTIONAL_PART
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \definecolor{fillcol}{rgb}{0.49,0.75,0.93};
+  \pgfsetfillcolor{fillcol}
+  \draw (1013.1bp,1319.0bp) node {SS\_FRACTIONAL\_PART};
+\end{scope}
+  % Node: SS_BLOCK_COMMENT_ASTERISK
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \definecolor{fillcol}{rgb}{0.49,0.75,0.93};
+  \pgfsetfillcolor{fillcol}
+  \draw (1013.1bp,1492.0bp) node {SS\_BLOCK\_COMMENT\_ASTERISK};
+\end{scope}
+  % Node: POM_SUBSTRACT
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \definecolor{fillcol}{rgb}{0.93,0.79,0.0};
+  \pgfsetfillcolor{fillcol}
+  \draw (409.45bp,84.0bp) node {-};
+\end{scope}
+  % Node: SS_DEFAULT
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \definecolor{fillcol}{rgb}{0.49,0.75,0.93};
+  \pgfsetfillcolor{fillcol}
+  \draw (107.54bp,731.0bp) node {SS\_DEFAULT};
+\end{scope}
+  % Node: POM_BLOCK_END
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \definecolor{fillcol}{rgb}{0.93,0.79,0.0};
+  \pgfsetfillcolor{fillcol}
+  \draw (409.45bp,208.0bp) node {\}};
+\end{scope}
+  % Node: POM_LESSTHAN_FINAL
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \definecolor{fillcol}{rgb}{0.93,0.79,0.0};
+  \pgfsetfillcolor{fillcol}
+  \draw (718.53bp,779.0bp) node {<};
+\end{scope}
+  % Node: SS_GREATER_THEN
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \definecolor{fillcol}{rgb}{0.49,0.75,0.93};
+  \pgfsetfillcolor{fillcol}
+  \draw (409.45bp,785.0bp) node {SS\_GREATER\_THEN};
+\end{scope}
+  % Node: SS_EXPONENCIAL_PART_2
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \definecolor{fillcol}{rgb}{0.93,0.79,0.0};
+  \pgfsetfillcolor{fillcol}
+  \draw (1682.2bp,1198.0bp) node {SS\_EXPONENCIAL\_PART\_2};
+\end{scope}
+  % Node: POM_ASSIGNEMENT
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \definecolor{fillcol}{rgb}{0.93,0.79,0.0};
+  \pgfsetfillcolor{fillcol}
+  \draw (718.53bp,407.0bp) node {=};
+\end{scope}
+  % Node: SS_STRING_ESCAPE_HEX_1
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \definecolor{fillcol}{rgb}{0.49,0.75,0.93};
+  \pgfsetfillcolor{fillcol}
+  \draw (1358.0bp,1009.0bp) node {SS\_STRING\_ESCAPE\_HEX\_1};
+\end{scope}
+  % Node: SS_STRING
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \definecolor{fillcol}{rgb}{0.93,0.79,0.0};
+  \pgfsetfillcolor{fillcol}
+  \draw (718.53bp,1034.0bp) node {SS\_STRING};
+\end{scope}
+  % Node: SS_BLOCK_COMMENT
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \definecolor{fillcol}{rgb}{0.49,0.75,0.93};
+  \pgfsetfillcolor{fillcol}
+  \draw (718.53bp,1505.0bp) node {SS\_BLOCK\_COMMENT};
+\end{scope}
+  % Node: POM_ADD
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \definecolor{fillcol}{rgb}{0.93,0.79,0.0};
+  \pgfsetfillcolor{fillcol}
+  \draw (409.45bp,22.0bp) node {+};
+\end{scope}
+  % Node: SS_IDENTIFICATOR
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \definecolor{fillcol}{rgb}{0.93,0.79,0.0};
+  \pgfsetfillcolor{fillcol}
+  \draw (409.45bp,579.0bp) node {SS\_IDENTIFICATOR};
+\end{scope}
+  % Node: POM_BLOCK_START
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \definecolor{fillcol}{rgb}{0.93,0.79,0.0};
+  \pgfsetfillcolor{fillcol}
+  \draw (409.45bp,270.0bp) node {\{};
+\end{scope}
+  % Node: SS_EXCLAMATION
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \definecolor{fillcol}{rgb}{0.49,0.75,0.93};
+  \pgfsetfillcolor{fillcol}
+  \draw (409.45bp,893.0bp) node {SS\_EXCLAMATION};
+\end{scope}
+  % Node: POM_LESS_EQ
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \definecolor{fillcol}{rgb}{0.93,0.79,0.0};
+  \pgfsetfillcolor{fillcol}
+  \draw (718.53bp,717.0bp) node {<=};
+\end{scope}
+  % Node: POM_STREAM_IN
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \definecolor{fillcol}{rgb}{0.93,0.79,0.0};
+  \pgfsetfillcolor{fillcol}
+  \draw (718.53bp,655.0bp) node {>>};
+\end{scope}
+  % Node: POM_STREAM_OUT
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \definecolor{fillcol}{rgb}{0.93,0.79,0.0};
+  \pgfsetfillcolor{fillcol}
+  \draw (718.53bp,841.0bp) node {<<};
+\end{scope}
+  % Node: POM_DIVIDE
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \definecolor{fillcol}{rgb}{0.93,0.79,0.0};
+  \pgfsetfillcolor{fillcol}
+  \draw (718.53bp,1596.0bp) node {/};
+\end{scope}
+  % Node: SS_OPERATOR_OF_ASSIGNEMENT
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \definecolor{fillcol}{rgb}{0.49,0.75,0.93};
+  \pgfsetfillcolor{fillcol}
+  \draw (409.45bp,731.0bp) node {SS\_OPERATOR\_OF\_ASSIGNEMENT};
+\end{scope}
+  % Node: POM_PARENTHESES_OPEN
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \definecolor{fillcol}{rgb}{0.93,0.79,0.0};
+  \pgfsetfillcolor{fillcol}
+  \draw (409.45bp,394.0bp) node {(};
+\end{scope}
+  % Node: POM_GREATER_EQ
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \definecolor{fillcol}{rgb}{0.93,0.79,0.0};
+  \pgfsetfillcolor{fillcol}
+  \draw (718.53bp,531.0bp) node {>=};
+\end{scope}
+  % Node: POM_EQUAL
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \definecolor{fillcol}{rgb}{0.93,0.79,0.0};
+  \pgfsetfillcolor{fillcol}
+  \draw (718.53bp,469.0bp) node {==};
+\end{scope}
+  % Node: SS_COMMENT
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \definecolor{fillcol}{rgb}{0.49,0.75,0.93};
+  \pgfsetfillcolor{fillcol}
+  \draw (718.53bp,1654.0bp) node {SS\_COMMENT};
+\end{scope}
+  % Node: SS_ERROR
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \definecolor{fillcol}{rgb}{1.0,0.0,0.0};
+  \pgfsetfillcolor{fillcol}
+  \draw (1904.3bp,1111.0bp) node {LEX\_ERROR};
+\end{scope}
+  % Node: SS_STRING_BACKSLASH
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \definecolor{fillcol}{rgb}{0.49,0.75,0.93};
+  \pgfsetfillcolor{fillcol}
+  \draw (1013.1bp,1009.0bp) node {SS\_STRING\_BACKSLASH};
+\end{scope}
+  % Node: POM_NOT_EQUAL
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \definecolor{fillcol}{rgb}{0.93,0.79,0.0};
+  \pgfsetfillcolor{fillcol}
+  \draw (718.53bp,941.0bp) node {!=};
+\end{scope}
+  % Node: POM_PARENTHESES_CLOSE
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \definecolor{fillcol}{rgb}{0.93,0.79,0.0};
+  \pgfsetfillcolor{fillcol}
+  \draw (409.45bp,332.0bp) node {)};
+\end{scope}
+  % Node: POM_MULTIPLY
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \definecolor{fillcol}{rgb}{0.93,0.79,0.0};
+  \pgfsetfillcolor{fillcol}
+  \draw (409.45bp,146.0bp) node {*};
+\end{scope}
+  % Node: POM_GREATERTHAN_FINAL
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \definecolor{fillcol}{rgb}{0.93,0.79,0.0};
+  \pgfsetfillcolor{fillcol}
+  \draw (718.53bp,593.0bp) node {>};
+\end{scope}
+  % Node: qi
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \definecolor{fillcol}{rgb}{0.49,0.75,0.93};
+  \pgfsetfillcolor{fillcol}
+\end{scope}
+  % Node: SS_LESS_THEN
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \definecolor{fillcol}{rgb}{0.49,0.75,0.93};
+  \pgfsetfillcolor{fillcol}
+  \draw (409.45bp,839.0bp) node {SS\_LESS\_THEN};
+\end{scope}
+  % Node: POM_SEMICOLON
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \definecolor{fillcol}{rgb}{0.93,0.79,0.0};
+  \pgfsetfillcolor{fillcol}
+  \draw (409.45bp,456.0bp) node {;};
+\end{scope}
+%
+\end{tikzpicture}
+% End of code
+
+%
+\end{document}
+%
+
+
+
