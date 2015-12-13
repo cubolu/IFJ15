@@ -319,6 +319,16 @@ void run_program() {
                 push_value = *op_left;
                 vector_push(data_seg, push_value);
                 break;
+            case INST_CONV_TO_DOUBLE_AND_PUSH_VALUE:
+                op_left = vector_at(data_seg, inst->op1_addr + curr_stack_frame_ptr);
+                push_value.double_val = (double)op_left->int_val;
+                vector_push(data_seg, push_value);
+                break;
+            case INST_CONV_TO_INT_AND_PUSH_VALUE:
+                op_left = vector_at(data_seg, inst->op1_addr + curr_stack_frame_ptr);
+                push_value.int_val = (int)op_left->double_val;
+                vector_push(data_seg, push_value);
+                break;
             case INST_PUSH_DOUBLE:
                 push_value.double_val = inst->op1_double_val;
                 vector_push(data_seg, push_value);
