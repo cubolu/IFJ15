@@ -222,7 +222,10 @@ token_t get_next_token(scanner_t * s)
             else
             {
                 ungetc(c, s->file);
-                state = SS_DEFAULT;
+                tok.type = TT_OP_ARITHMETIC;
+                tok.op_arith = OP_ARITH_DIVIDE;
+                return tok;
+
             }
 
             break;
