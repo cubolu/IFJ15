@@ -190,6 +190,8 @@ token_t get_next_token(scanner_t * s)
 
             else if(c == '!')
                 state = SS_EXCLAMATION;
+            else if(c == '\r')
+                ;
 
             else
                 error("Using an unknown character", ERROR_LEX);
