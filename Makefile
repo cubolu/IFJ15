@@ -3,7 +3,7 @@ CFLAGS = -std=c11 -Wall -Wextra -DNDEBUG
 DBGFLAGS = -g
 DBGINFO = -UNDEBUG
 GPFLAGS = -pg
-LOGIN = xabcde00
+LOGIN = xluzny00
 CHECK = `pkg-config --cflags --libs check`
 
 SRC = $(wildcard *.c)
@@ -22,7 +22,7 @@ clean:
 	@cd test; make clean
 
 pack:
-	zip $(LOGIN).zip *.c *.h Makefile rozdeleni
+	zip $(LOGIN).zip *.c *.h Makefile rozdeleni dokumentace.pdf
 
 test: ifj15
 	@cd test; make run
