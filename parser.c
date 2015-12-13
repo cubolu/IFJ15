@@ -69,8 +69,8 @@ void parse_funcBody();
 void parse_funcHead();
 void parse_funcs();
 void parse_ifClause();
-void parse_paramList();
-void parse_paramListFollow();
+void parse_paramList(symbol_t* func);
+void parse_paramListFollow(unode_str_t* param);
 void parse_paramSpec();
 void parse_paramSpecFollow();
 void parse_stmt();
@@ -188,7 +188,7 @@ expression_t parse_asgnFollow(symbol_t* var) {
                     error("Call to unknown function", ERROR_SEM);
                 }
                 match(TT_PARENTHESES_OPEN);
-                parse_paramList();
+                parse_paramList(func_def);
                 match(TT_PARENTHESES_CLOSE);
                 func_call_t* func_call = func_call_finish();
                 if (!is_valid_func_call(func_call, func_def))
@@ -662,25 +662,36 @@ void parse_ifClause() {
     }
 }
 
-void parse_paramList() {
+void parse_paramList(symbol_t* func) {
     param_count = 0; //initialize param counter
     symbol_t* var;
+    unode_str_t* param;
+    e_data_t func_param_type;
     switch(next_token.type) {
         case TT_LIT_INT:
         case TT_LIT_DOUBLE:
         case TT_LIT_STRING:
         case TT_IDENTIFICATOR:
             parse_term();
+            if (func->paramList && (param = func->paramList->back))
+                func_param_type = param->item.type;
+            else
+                error("Bad function call parameters types/count", ERROR_TYPE_COMPAT);
             //var_init(); //TODO: ???
-            //TODO: implicit conversion
             switch (curr_token.type) {
                 case TT_LIT_INT:
                     func_call_add_param(INT_DT);
-                    generate_param_push_int(curr_token.int_val);
+                    if (func_param_type == INT_DT)
+                        generate_param_push_int(curr_token.int_val);
+                    else
+                        generate_param_push_double((double)curr_token.int_val);
                     break;
                 case TT_LIT_DOUBLE:
                     func_call_add_param(DOUBLE_DT);
-                    generate_param_push_double(curr_token.double_val);
+                    if (func_param_type == DOUBLE_DT)
+                        generate_param_push_double(curr_token.double_val);
+                    else
+                        generate_param_push_int((int)curr_token.double_val);
                     break;
                 case TT_LIT_STRING:
                     func_call_add_param(STRING_DT);
@@ -694,36 +705,51 @@ void parse_paramList() {
                         error("Trying to use uninitialized variable", ERROR_UNDEF);
                     } else {
                         func_call_add_param(var->type);
-                        generate_param_push(var->addr);
+                        if (var->type == DOUBLE_DT && func_param_type == INT_DT)
+                            generate_param_conv_push(var->addr, true, false);
+                        else if (var->type == INT_DT && func_param_type == DOUBLE_DT)
+                            generate_param_conv_push(var->addr, false, true);
+                        else
+                            generate_param_push(var->addr);
                     }
                     break;
                 default:
                     ;
             }
             ++param_count;
-            parse_paramListFollow();
+            parse_paramListFollow(param->prev);
             break;
         default:
             return;
     }
 }
 
-void parse_paramListFollow() {
+void parse_paramListFollow(unode_str_t* param) {
     symbol_t* var;
+    e_data_t func_param_type;
     switch(next_token.type) {
         case TT_COMMA:
             match(TT_COMMA);
             parse_term();
+            if (param)
+                func_param_type = param->item.type;
+            else
+                error("Bad function call parameters types/count", ERROR_TYPE_COMPAT);
             //var_init(); //TODO: ???
-            //TODO: implicit conversion
             switch (curr_token.type) {
                 case TT_LIT_INT:
                     func_call_add_param(INT_DT);
-                    generate_param_push_int(curr_token.int_val);
+                    if (func_param_type == INT_DT)
+                        generate_param_push_int(curr_token.int_val);
+                    else
+                        generate_param_push_double((double)curr_token.int_val);
                     break;
                 case TT_LIT_DOUBLE:
                     func_call_add_param(DOUBLE_DT);
-                    generate_param_push_double(curr_token.double_val);
+                    if (func_param_type == DOUBLE_DT)
+                        generate_param_push_double(curr_token.double_val);
+                    else
+                        generate_param_push_int((int)curr_token.double_val);
                     break;
                 case TT_LIT_STRING:
                     func_call_add_param(STRING_DT);
@@ -737,14 +763,19 @@ void parse_paramListFollow() {
                         error("Trying to use uninitialized variable", ERROR_UNDEF);
                     } else {
                         func_call_add_param(var->type);
-                        generate_param_push(var->addr);
+                        if (var->type == DOUBLE_DT && func_param_type == INT_DT)
+                            generate_param_conv_push(var->addr, true, false);
+                        else if (var->type == INT_DT && func_param_type == DOUBLE_DT)
+                            generate_param_conv_push(var->addr, false, true);
+                        else
+                            generate_param_push(var->addr);
                     }
                     break;
                 default:
                     ;
             }
             ++param_count;
-            parse_paramListFollow();
+            parse_paramListFollow(param->prev);
             break;
         default:
             return;
