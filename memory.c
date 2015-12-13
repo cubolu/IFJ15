@@ -98,7 +98,6 @@ FILE* ifj15_fopen(const char* filename, const char* mod) {
     return fp;
 }
 void ifj15_fclose(FILE* fp) {
-    ptable_pop(ifj15_ptable, fp);
     if (fclose(fp) == EOF)
         error("Failed to close file", ERROR_INTERNAL);
 }
