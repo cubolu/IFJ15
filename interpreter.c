@@ -20,6 +20,7 @@ void interpreter_init() {
 void run_program() {
     inst_t* inst;
     size_t size;
+    symbol_t* func_def;
     data_seg_t* op_left;
     data_seg_t* op_right;
     data_seg_t* res_addr;
@@ -447,8 +448,9 @@ void run_program() {
                 push_value.inst_addr = inst->op1_addr;
                 vector_push(data_seg, push_value);
                 //call function
-                if (inst->func->def)
-                    inst_ptr = inst->func->addr - 1; //-1 because of ++inst_ptr at the end
+                func_def = func_table_find(inst->func);
+                if (func_def->def)
+                    inst_ptr = func_def->addr - 1; //-1 because of ++inst_ptr at the end
                 else
                     error("Function call for an undefined function", ERROR_SEM);
                 //change stack frame

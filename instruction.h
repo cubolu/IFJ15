@@ -168,7 +168,7 @@ struct _inst_t {
     };
     union {
         size_t res_addr;
-        symbol_t* func;
+        str_t* func;
     };
 #ifndef NDEBUG
     size_t line;

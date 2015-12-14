@@ -191,7 +191,7 @@ expression_t parse_asgnFollow(symbol_t* var) {
                 func_call_t* func_call = func_call_finish();
                 if (!is_valid_func_call(func_call, func_def))
                     error("Bad function call parameters types/count", ERROR_TYPE_COMPAT);
-                generate_call(func_def, param_count);
+                generate_call(func_def->name, param_count);
                 expr.type = func_def->type;
                 expr.addr = return_value_addr;
                 cached_identificator.type = TT_NONE;
